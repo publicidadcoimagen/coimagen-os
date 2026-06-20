@@ -30,7 +30,14 @@ import type {
   AuditLog,
   AuditLogInput,
   Client,
+  ClientAccess,
+  ClientAccessInput,
+  ClientAccessUpdate,
+  ClientBrand,
+  ClientBrandInput,
   ClientInput,
+  ClientOnboarding,
+  ClientOnboardingInput,
   ClientUpdate,
   ConfigEntry,
   ConfigEntryInput,
@@ -512,6 +519,599 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteClientMutationOptions(options));
+    }
+
+export const getListClientAccessUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/access`
+}
+
+/**
+ * @summary List access records for a client
+ */
+export const listClientAccess = async (clientId: number, options?: RequestInit): Promise<ClientAccess[]> => {
+
+  return customFetch<ClientAccess[]>(getListClientAccessUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListClientAccessQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/access`
+    ] as const;
+    }
+
+
+export const getListClientAccessQueryOptions = <TData = Awaited<ReturnType<typeof listClientAccess>>, TError = ErrorType<unknown>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListClientAccessQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listClientAccess>>> = ({ signal }) => listClientAccess(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listClientAccess>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListClientAccessQueryResult = NonNullable<Awaited<ReturnType<typeof listClientAccess>>>
+export type ListClientAccessQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List access records for a client
+ */
+
+export function useListClientAccess<TData = Awaited<ReturnType<typeof listClientAccess>>, TError = ErrorType<unknown>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListClientAccessQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateClientAccessUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/access`
+}
+
+/**
+ * @summary Create an access record
+ */
+export const createClientAccess = async (clientId: number,
+    clientAccessInput: ClientAccessInput, options?: RequestInit): Promise<ClientAccess> => {
+
+  return customFetch<ClientAccess>(getCreateClientAccessUrl(clientId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientAccessInput,)
+  }
+);}
+
+
+
+
+export const getCreateClientAccessMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientAccess>>, TError,{clientId: number;data: BodyType<ClientAccessInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createClientAccess>>, TError,{clientId: number;data: BodyType<ClientAccessInput>}, TContext> => {
+
+const mutationKey = ['createClientAccess'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createClientAccess>>, {clientId: number;data: BodyType<ClientAccessInput>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  createClientAccess(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateClientAccessMutationResult = NonNullable<Awaited<ReturnType<typeof createClientAccess>>>
+    export type CreateClientAccessMutationBody = BodyType<ClientAccessInput>
+    export type CreateClientAccessMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an access record
+ */
+export const useCreateClientAccess = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientAccess>>, TError,{clientId: number;data: BodyType<ClientAccessInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createClientAccess>>,
+        TError,
+        {clientId: number;data: BodyType<ClientAccessInput>},
+        TContext
+      > => {
+      return useMutation(getCreateClientAccessMutationOptions(options));
+    }
+
+export const getUpdateClientAccessUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/access/${id}`
+}
+
+/**
+ * @summary Update an access record
+ */
+export const updateClientAccess = async (clientId: number,
+    id: number,
+    clientAccessUpdate: ClientAccessUpdate, options?: RequestInit): Promise<ClientAccess> => {
+
+  return customFetch<ClientAccess>(getUpdateClientAccessUrl(clientId,id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientAccessUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateClientAccessMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateClientAccess>>, TError,{clientId: number;id: number;data: BodyType<ClientAccessUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateClientAccess>>, TError,{clientId: number;id: number;data: BodyType<ClientAccessUpdate>}, TContext> => {
+
+const mutationKey = ['updateClientAccess'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateClientAccess>>, {clientId: number;id: number;data: BodyType<ClientAccessUpdate>}> = (props) => {
+          const {clientId,id,data} = props ?? {};
+
+          return  updateClientAccess(clientId,id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateClientAccessMutationResult = NonNullable<Awaited<ReturnType<typeof updateClientAccess>>>
+    export type UpdateClientAccessMutationBody = BodyType<ClientAccessUpdate>
+    export type UpdateClientAccessMutationError = ErrorType<void>
+
+    /**
+ * @summary Update an access record
+ */
+export const useUpdateClientAccess = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateClientAccess>>, TError,{clientId: number;id: number;data: BodyType<ClientAccessUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateClientAccess>>,
+        TError,
+        {clientId: number;id: number;data: BodyType<ClientAccessUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateClientAccessMutationOptions(options));
+    }
+
+export const getDeleteClientAccessUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/access/${id}`
+}
+
+/**
+ * @summary Delete an access record
+ */
+export const deleteClientAccess = async (clientId: number,
+    id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteClientAccessUrl(clientId,id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteClientAccessMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteClientAccess>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteClientAccess>>, TError,{clientId: number;id: number}, TContext> => {
+
+const mutationKey = ['deleteClientAccess'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteClientAccess>>, {clientId: number;id: number}> = (props) => {
+          const {clientId,id} = props ?? {};
+
+          return  deleteClientAccess(clientId,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteClientAccessMutationResult = NonNullable<Awaited<ReturnType<typeof deleteClientAccess>>>
+
+    export type DeleteClientAccessMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete an access record
+ */
+export const useDeleteClientAccess = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteClientAccess>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteClientAccess>>,
+        TError,
+        {clientId: number;id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteClientAccessMutationOptions(options));
+    }
+
+export const getGetClientBrandUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/brand`
+}
+
+/**
+ * @summary Get brand assets for a client
+ */
+export const getClientBrand = async (clientId: number, options?: RequestInit): Promise<ClientBrand> => {
+
+  return customFetch<ClientBrand>(getGetClientBrandUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetClientBrandQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/brand`
+    ] as const;
+    }
+
+
+export const getGetClientBrandQueryOptions = <TData = Awaited<ReturnType<typeof getClientBrand>>, TError = ErrorType<void>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientBrand>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetClientBrandQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getClientBrand>>> = ({ signal }) => getClientBrand(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getClientBrand>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetClientBrandQueryResult = NonNullable<Awaited<ReturnType<typeof getClientBrand>>>
+export type GetClientBrandQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get brand assets for a client
+ */
+
+export function useGetClientBrand<TData = Awaited<ReturnType<typeof getClientBrand>>, TError = ErrorType<void>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientBrand>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetClientBrandQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpsertClientBrandUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/brand`
+}
+
+/**
+ * @summary Create or update brand assets for a client
+ */
+export const upsertClientBrand = async (clientId: number,
+    clientBrandInput: ClientBrandInput, options?: RequestInit): Promise<ClientBrand> => {
+
+  return customFetch<ClientBrand>(getUpsertClientBrandUrl(clientId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientBrandInput,)
+  }
+);}
+
+
+
+
+export const getUpsertClientBrandMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertClientBrand>>, TError,{clientId: number;data: BodyType<ClientBrandInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof upsertClientBrand>>, TError,{clientId: number;data: BodyType<ClientBrandInput>}, TContext> => {
+
+const mutationKey = ['upsertClientBrand'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertClientBrand>>, {clientId: number;data: BodyType<ClientBrandInput>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  upsertClientBrand(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertClientBrandMutationResult = NonNullable<Awaited<ReturnType<typeof upsertClientBrand>>>
+    export type UpsertClientBrandMutationBody = BodyType<ClientBrandInput>
+    export type UpsertClientBrandMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create or update brand assets for a client
+ */
+export const useUpsertClientBrand = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertClientBrand>>, TError,{clientId: number;data: BodyType<ClientBrandInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof upsertClientBrand>>,
+        TError,
+        {clientId: number;data: BodyType<ClientBrandInput>},
+        TContext
+      > => {
+      return useMutation(getUpsertClientBrandMutationOptions(options));
+    }
+
+export const getGetClientOnboardingUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/onboarding`
+}
+
+/**
+ * @summary Get onboarding checklist for a client
+ */
+export const getClientOnboarding = async (clientId: number, options?: RequestInit): Promise<ClientOnboarding> => {
+
+  return customFetch<ClientOnboarding>(getGetClientOnboardingUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetClientOnboardingQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/onboarding`
+    ] as const;
+    }
+
+
+export const getGetClientOnboardingQueryOptions = <TData = Awaited<ReturnType<typeof getClientOnboarding>>, TError = ErrorType<void>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientOnboarding>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetClientOnboardingQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getClientOnboarding>>> = ({ signal }) => getClientOnboarding(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getClientOnboarding>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetClientOnboardingQueryResult = NonNullable<Awaited<ReturnType<typeof getClientOnboarding>>>
+export type GetClientOnboardingQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get onboarding checklist for a client
+ */
+
+export function useGetClientOnboarding<TData = Awaited<ReturnType<typeof getClientOnboarding>>, TError = ErrorType<void>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientOnboarding>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetClientOnboardingQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpsertClientOnboardingUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/onboarding`
+}
+
+/**
+ * @summary Create or update onboarding checklist for a client
+ */
+export const upsertClientOnboarding = async (clientId: number,
+    clientOnboardingInput: ClientOnboardingInput, options?: RequestInit): Promise<ClientOnboarding> => {
+
+  return customFetch<ClientOnboarding>(getUpsertClientOnboardingUrl(clientId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientOnboardingInput,)
+  }
+);}
+
+
+
+
+export const getUpsertClientOnboardingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertClientOnboarding>>, TError,{clientId: number;data: BodyType<ClientOnboardingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof upsertClientOnboarding>>, TError,{clientId: number;data: BodyType<ClientOnboardingInput>}, TContext> => {
+
+const mutationKey = ['upsertClientOnboarding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertClientOnboarding>>, {clientId: number;data: BodyType<ClientOnboardingInput>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  upsertClientOnboarding(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertClientOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof upsertClientOnboarding>>>
+    export type UpsertClientOnboardingMutationBody = BodyType<ClientOnboardingInput>
+    export type UpsertClientOnboardingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create or update onboarding checklist for a client
+ */
+export const useUpsertClientOnboarding = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertClientOnboarding>>, TError,{clientId: number;data: BodyType<ClientOnboardingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof upsertClientOnboarding>>,
+        TError,
+        {clientId: number;data: BodyType<ClientOnboardingInput>},
+        TContext
+      > => {
+      return useMutation(getUpsertClientOnboardingMutationOptions(options));
     }
 
 export const getListProjectsUrl = (params?: ListProjectsParams,) => {

@@ -9,6 +9,9 @@ servers:
 tags:
   - name: health
   - name: clients
+  - name: client-access
+  - name: client-brand
+  - name: client-onboarding
   - name: projects
   - name: agents
   - name: tasks
@@ -115,6 +118,150 @@ paths:
           description: Deleted
         "404":
           description: Not found
+
+  # ─── CLIENT ACCESS VAULT ───────────────────────────────────────────────────
+  /clients/{clientId}/access:
+    get:
+      operationId: listClientAccess
+      tags: [client-access]
+      summary: List access records for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientAccess"
+    post:
+      operationId: createClientAccess
+      tags: [client-access]
+      summary: Create an access record
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientAccessInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientAccess"
+  /clients/{clientId}/access/{id}:
+    patch:
+      operationId: updateClientAccess
+      tags: [client-access]
+      summary: Update an access record
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientAccessUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientAccess"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteClientAccess
+      tags: [client-access]
+      summary: Delete an access record
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── CLIENT BRAND ASSETS ───────────────────────────────────────────────────
+  /clients/{clientId}/brand:
+    get:
+      operationId: getClientBrand
+      tags: [client-brand]
+      summary: Get brand assets for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientBrand"
+        "404":
+          description: Not found
+    put:
+      operationId: upsertClientBrand
+      tags: [client-brand]
+      summary: Create or update brand assets for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientBrandInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientBrand"
+
+  # ─── CLIENT ONBOARDING ──────────────────────────────────────────────────────
+  /clients/{clientId}/onboarding:
+    get:
+      operationId: getClientOnboarding
+      tags: [client-onboarding]
+      summary: Get onboarding checklist for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientOnboarding"
+        "404":
+          description: Not found
+    put:
+      operationId: upsertClientOnboarding
+      tags: [client-onboarding]
+      summary: Create or update onboarding checklist for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientOnboardingInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientOnboarding"
 
   # ─── PROJECTS ──────────────────────────────────────────────────────────────
   /projects:
@@ -1579,3 +1726,123 @@ components:
       required: [value]
       properties:
         value: { type: string }
+
+    # ── CLIENT ACCESS VAULT ────────────────────────────────────────────────────
+    ClientAccess:
+      type: object
+      required: [id, clientId, accessType, permissionStatus, accessStatus, createdAt]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        accessType: { type: string }
+        platform: { type: ["string", "null"] }
+        accountName: { type: ["string", "null"] }
+        loginUrl: { type: ["string", "null"] }
+        usernameEmail: { type: ["string", "null"] }
+        passwordPlaceholder: { type: ["string", "null"] }
+        apiKeyPlaceholder: { type: ["string", "null"] }
+        tokenPlaceholder: { type: ["string", "null"] }
+        permissionStatus: { type: string }
+        accessStatus: { type: string }
+        lastVerified: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ClientAccessInput:
+      type: object
+      required: [clientId, accessType]
+      properties:
+        clientId: { type: integer }
+        accessType: { type: string }
+        platform: { type: string }
+        accountName: { type: string }
+        loginUrl: { type: string }
+        usernameEmail: { type: string }
+        passwordPlaceholder: { type: string }
+        apiKeyPlaceholder: { type: string }
+        tokenPlaceholder: { type: string }
+        permissionStatus: { type: string }
+        accessStatus: { type: string }
+        lastVerified: { type: string }
+        notes: { type: string }
+    ClientAccessUpdate:
+      type: object
+      properties:
+        accessType: { type: string }
+        platform: { type: string }
+        accountName: { type: string }
+        loginUrl: { type: string }
+        usernameEmail: { type: string }
+        passwordPlaceholder: { type: string }
+        apiKeyPlaceholder: { type: string }
+        tokenPlaceholder: { type: string }
+        permissionStatus: { type: string }
+        accessStatus: { type: string }
+        lastVerified: { type: string }
+        notes: { type: string }
+
+    # ── CLIENT BRAND ASSETS ────────────────────────────────────────────────────
+    ClientBrand:
+      type: object
+      required: [id, clientId, createdAt]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        logoUrl: { type: ["string", "null"] }
+        brandColors: { type: ["string", "null"] }
+        fonts: { type: ["string", "null"] }
+        brandNotes: { type: ["string", "null"] }
+        websiteUrl: { type: ["string", "null"] }
+        facebookUrl: { type: ["string", "null"] }
+        instagramUrl: { type: ["string", "null"] }
+        googleBusinessUrl: { type: ["string", "null"] }
+        youtubeUrl: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ClientBrandInput:
+      type: object
+      properties:
+        logoUrl: { type: string }
+        brandColors: { type: string }
+        fonts: { type: string }
+        brandNotes: { type: string }
+        websiteUrl: { type: string }
+        facebookUrl: { type: string }
+        instagramUrl: { type: string }
+        googleBusinessUrl: { type: string }
+        youtubeUrl: { type: string }
+
+    # ── CLIENT ONBOARDING ──────────────────────────────────────────────────────
+    ClientOnboarding:
+      type: object
+      required: [id, clientId, hasLogo, hasWebsiteAccess, hasDomainAccess, hasHostingAccess, hasFacebookAccess, hasInstagramAccess, hasGoogleBusinessAccess, hasWhatsappAccess, hasBrandColors, hasBusinessInfo, createdAt]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        hasLogo: { type: boolean }
+        hasWebsiteAccess: { type: boolean }
+        hasDomainAccess: { type: boolean }
+        hasHostingAccess: { type: boolean }
+        hasFacebookAccess: { type: boolean }
+        hasInstagramAccess: { type: boolean }
+        hasGoogleBusinessAccess: { type: boolean }
+        hasWhatsappAccess: { type: boolean }
+        hasBrandColors: { type: boolean }
+        hasBusinessInfo: { type: boolean }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ClientOnboardingInput:
+      type: object
+      properties:
+        hasLogo: { type: boolean }
+        hasWebsiteAccess: { type: boolean }
+        hasDomainAccess: { type: boolean }
+        hasHostingAccess: { type: boolean }
+        hasFacebookAccess: { type: boolean }
+        hasInstagramAccess: { type: boolean }
+        hasGoogleBusinessAccess: { type: boolean }
+        hasWhatsappAccess: { type: boolean }
+        hasBrandColors: { type: boolean }
+        hasBusinessInfo: { type: boolean }
+        notes: { type: string }

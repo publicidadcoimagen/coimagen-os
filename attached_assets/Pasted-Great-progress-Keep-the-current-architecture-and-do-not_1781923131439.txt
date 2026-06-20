@@ -1,0 +1,125 @@
+Great progress. Keep the current architecture and do not rebuild from scratch.
+
+Important CTO update:
+
+The current Settings module should remain for global Coimagen configuration only.
+
+We also need a Client Access & API Vault per client.
+
+Add this inside the Clients module and also link it from Onboarding.
+
+Create a new submodule:
+
+Client Access Vault
+
+Purpose:
+Store and manage each client’s access information, platform connections, API placeholders, brand assets, and onboarding credentials.
+
+Each client must have their own separate access records.
+
+Do not store real API keys in plain text.
+Use masked values, encrypted fields if possible, or placeholders prepared for environment variables/secrets.
+Never expose full credentials in the UI.
+
+Fields:
+
+* Client
+* Access Type
+* Platform
+* Account Name
+* Login URL
+* Username / Email
+* Password Placeholder
+* API Key Placeholder
+* Token Placeholder
+* Permission Status
+* Access Status
+* Last Verified
+* Notes
+
+Access Types:
+
+* Social Media
+* Google Business
+* Website
+* Domain
+* Hosting
+* Email
+* WhatsApp
+* YouTube
+* Facebook Business Manager
+* Instagram
+* Google Analytics
+* Google Search Console
+* Payment Platform
+* CRM
+* Other
+
+Permission Status:
+
+* Not Requested
+* Requested
+* Received
+* Verified
+* Needs Update
+* Revoked
+
+Access Status:
+
+* Active
+* Pending
+* Expired
+* Invalid
+* Suspended
+
+Add Client Brand Assets:
+
+* Logo
+* Brand Colors
+* Fonts
+* Brand Notes
+* Website URL
+* Facebook URL
+* Instagram URL
+* Google Business URL
+* YouTube URL
+
+Add Onboarding Checklist relation:
+Onboarding should show whether the client has provided:
+
+* Logo
+* Website access
+* Domain access
+* Hosting access
+* Facebook access
+* Instagram access
+* Google Business access
+* WhatsApp access
+* Brand colors
+* Business information
+
+Add future placeholder:
+Client Portal Onboarding
+
+Status: Coming Soon / Disabled
+
+Purpose:
+In the future, clients will log in and securely submit their own access information, brand assets, files, approvals, and onboarding data.
+
+Do NOT build public client login yet.
+Do NOT connect real APIs yet.
+Do NOT expose secrets.
+Keep everything internal and database-driven for now.
+
+Update:
+
+* OpenAPI spec
+* Drizzle schema
+* API routes
+* frontend Clients module
+* Onboarding page
+* Settings page distinction between Global Settings and Client Access Vault
+* Audit Log when access records are created/updated
+
+Keep dark mode and current UI style.
+Make sure the app still builds and runs.

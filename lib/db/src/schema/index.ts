@@ -11,3 +11,6 @@ export * from "./subscriptions";
 export * from "./costs";
 export * from "./audit-logs";
 export * from "./config";
+export * from "./client-access";
+export * from "./client-brand";
+export * from "./client-onboarding";

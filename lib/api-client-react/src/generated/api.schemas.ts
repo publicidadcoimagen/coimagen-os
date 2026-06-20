@@ -1048,6 +1048,138 @@ export interface ConfigEntryInput {
   value: string;
 }
 
+export interface ClientAccess {
+  id: number;
+  clientId: number;
+  accessType: string;
+  /** @nullable */
+  platform?: string | null;
+  /** @nullable */
+  accountName?: string | null;
+  /** @nullable */
+  loginUrl?: string | null;
+  /** @nullable */
+  usernameEmail?: string | null;
+  /** @nullable */
+  passwordPlaceholder?: string | null;
+  /** @nullable */
+  apiKeyPlaceholder?: string | null;
+  /** @nullable */
+  tokenPlaceholder?: string | null;
+  permissionStatus: string;
+  accessStatus: string;
+  /** @nullable */
+  lastVerified?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ClientAccessInput {
+  clientId: number;
+  accessType: string;
+  platform?: string;
+  accountName?: string;
+  loginUrl?: string;
+  usernameEmail?: string;
+  passwordPlaceholder?: string;
+  apiKeyPlaceholder?: string;
+  tokenPlaceholder?: string;
+  permissionStatus?: string;
+  accessStatus?: string;
+  lastVerified?: string;
+  notes?: string;
+}
+
+export interface ClientAccessUpdate {
+  accessType?: string;
+  platform?: string;
+  accountName?: string;
+  loginUrl?: string;
+  usernameEmail?: string;
+  passwordPlaceholder?: string;
+  apiKeyPlaceholder?: string;
+  tokenPlaceholder?: string;
+  permissionStatus?: string;
+  accessStatus?: string;
+  lastVerified?: string;
+  notes?: string;
+}
+
+export interface ClientBrand {
+  id: number;
+  clientId: number;
+  /** @nullable */
+  logoUrl?: string | null;
+  /** @nullable */
+  brandColors?: string | null;
+  /** @nullable */
+  fonts?: string | null;
+  /** @nullable */
+  brandNotes?: string | null;
+  /** @nullable */
+  websiteUrl?: string | null;
+  /** @nullable */
+  facebookUrl?: string | null;
+  /** @nullable */
+  instagramUrl?: string | null;
+  /** @nullable */
+  googleBusinessUrl?: string | null;
+  /** @nullable */
+  youtubeUrl?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ClientBrandInput {
+  logoUrl?: string;
+  brandColors?: string;
+  fonts?: string;
+  brandNotes?: string;
+  websiteUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  googleBusinessUrl?: string;
+  youtubeUrl?: string;
+}
+
+export interface ClientOnboarding {
+  id: number;
+  clientId: number;
+  hasLogo: boolean;
+  hasWebsiteAccess: boolean;
+  hasDomainAccess: boolean;
+  hasHostingAccess: boolean;
+  hasFacebookAccess: boolean;
+  hasInstagramAccess: boolean;
+  hasGoogleBusinessAccess: boolean;
+  hasWhatsappAccess: boolean;
+  hasBrandColors: boolean;
+  hasBusinessInfo: boolean;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ClientOnboardingInput {
+  hasLogo?: boolean;
+  hasWebsiteAccess?: boolean;
+  hasDomainAccess?: boolean;
+  hasHostingAccess?: boolean;
+  hasFacebookAccess?: boolean;
+  hasInstagramAccess?: boolean;
+  hasGoogleBusinessAccess?: boolean;
+  hasWhatsappAccess?: boolean;
+  hasBrandColors?: boolean;
+  hasBusinessInfo?: boolean;
+  notes?: string;
+}
+
 export type ListProjectsParams = {
 clientId?: number;
 status?: string;

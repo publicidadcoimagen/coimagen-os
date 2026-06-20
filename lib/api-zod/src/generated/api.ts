@@ -105,6 +105,236 @@ export const DeleteClientParams = zod.object({
 })
 
 
+/**
+ * @summary List access records for a client
+ */
+export const ListClientAccessParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const ListClientAccessResponseItem = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "accessType": zod.string(),
+  "platform": zod.string().nullish(),
+  "accountName": zod.string().nullish(),
+  "loginUrl": zod.string().nullish(),
+  "usernameEmail": zod.string().nullish(),
+  "passwordPlaceholder": zod.string().nullish(),
+  "apiKeyPlaceholder": zod.string().nullish(),
+  "tokenPlaceholder": zod.string().nullish(),
+  "permissionStatus": zod.string(),
+  "accessStatus": zod.string(),
+  "lastVerified": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListClientAccessResponse = zod.array(ListClientAccessResponseItem)
+
+
+/**
+ * @summary Create an access record
+ */
+export const CreateClientAccessParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const CreateClientAccessBody = zod.object({
+  "clientId": zod.number(),
+  "accessType": zod.string(),
+  "platform": zod.string().optional(),
+  "accountName": zod.string().optional(),
+  "loginUrl": zod.string().optional(),
+  "usernameEmail": zod.string().optional(),
+  "passwordPlaceholder": zod.string().optional(),
+  "apiKeyPlaceholder": zod.string().optional(),
+  "tokenPlaceholder": zod.string().optional(),
+  "permissionStatus": zod.string().optional(),
+  "accessStatus": zod.string().optional(),
+  "lastVerified": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update an access record
+ */
+export const UpdateClientAccessParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+export const UpdateClientAccessBody = zod.object({
+  "accessType": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "accountName": zod.string().optional(),
+  "loginUrl": zod.string().optional(),
+  "usernameEmail": zod.string().optional(),
+  "passwordPlaceholder": zod.string().optional(),
+  "apiKeyPlaceholder": zod.string().optional(),
+  "tokenPlaceholder": zod.string().optional(),
+  "permissionStatus": zod.string().optional(),
+  "accessStatus": zod.string().optional(),
+  "lastVerified": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateClientAccessResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "accessType": zod.string(),
+  "platform": zod.string().nullish(),
+  "accountName": zod.string().nullish(),
+  "loginUrl": zod.string().nullish(),
+  "usernameEmail": zod.string().nullish(),
+  "passwordPlaceholder": zod.string().nullish(),
+  "apiKeyPlaceholder": zod.string().nullish(),
+  "tokenPlaceholder": zod.string().nullish(),
+  "permissionStatus": zod.string(),
+  "accessStatus": zod.string(),
+  "lastVerified": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete an access record
+ */
+export const DeleteClientAccessParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Get brand assets for a client
+ */
+export const GetClientBrandParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const GetClientBrandResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "logoUrl": zod.string().nullish(),
+  "brandColors": zod.string().nullish(),
+  "fonts": zod.string().nullish(),
+  "brandNotes": zod.string().nullish(),
+  "websiteUrl": zod.string().nullish(),
+  "facebookUrl": zod.string().nullish(),
+  "instagramUrl": zod.string().nullish(),
+  "googleBusinessUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Create or update brand assets for a client
+ */
+export const UpsertClientBrandParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const UpsertClientBrandBody = zod.object({
+  "logoUrl": zod.string().optional(),
+  "brandColors": zod.string().optional(),
+  "fonts": zod.string().optional(),
+  "brandNotes": zod.string().optional(),
+  "websiteUrl": zod.string().optional(),
+  "facebookUrl": zod.string().optional(),
+  "instagramUrl": zod.string().optional(),
+  "googleBusinessUrl": zod.string().optional(),
+  "youtubeUrl": zod.string().optional()
+})
+
+export const UpsertClientBrandResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "logoUrl": zod.string().nullish(),
+  "brandColors": zod.string().nullish(),
+  "fonts": zod.string().nullish(),
+  "brandNotes": zod.string().nullish(),
+  "websiteUrl": zod.string().nullish(),
+  "facebookUrl": zod.string().nullish(),
+  "instagramUrl": zod.string().nullish(),
+  "googleBusinessUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get onboarding checklist for a client
+ */
+export const GetClientOnboardingParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const GetClientOnboardingResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "hasLogo": zod.boolean(),
+  "hasWebsiteAccess": zod.boolean(),
+  "hasDomainAccess": zod.boolean(),
+  "hasHostingAccess": zod.boolean(),
+  "hasFacebookAccess": zod.boolean(),
+  "hasInstagramAccess": zod.boolean(),
+  "hasGoogleBusinessAccess": zod.boolean(),
+  "hasWhatsappAccess": zod.boolean(),
+  "hasBrandColors": zod.boolean(),
+  "hasBusinessInfo": zod.boolean(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Create or update onboarding checklist for a client
+ */
+export const UpsertClientOnboardingParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const UpsertClientOnboardingBody = zod.object({
+  "hasLogo": zod.boolean().optional(),
+  "hasWebsiteAccess": zod.boolean().optional(),
+  "hasDomainAccess": zod.boolean().optional(),
+  "hasHostingAccess": zod.boolean().optional(),
+  "hasFacebookAccess": zod.boolean().optional(),
+  "hasInstagramAccess": zod.boolean().optional(),
+  "hasGoogleBusinessAccess": zod.boolean().optional(),
+  "hasWhatsappAccess": zod.boolean().optional(),
+  "hasBrandColors": zod.boolean().optional(),
+  "hasBusinessInfo": zod.boolean().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpsertClientOnboardingResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "hasLogo": zod.boolean(),
+  "hasWebsiteAccess": zod.boolean(),
+  "hasDomainAccess": zod.boolean(),
+  "hasHostingAccess": zod.boolean(),
+  "hasFacebookAccess": zod.boolean(),
+  "hasInstagramAccess": zod.boolean(),
+  "hasGoogleBusinessAccess": zod.boolean(),
+  "hasWhatsappAccess": zod.boolean(),
+  "hasBrandColors": zod.boolean(),
+  "hasBusinessInfo": zod.boolean(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
 export const ListProjectsQueryParams = zod.object({
   "clientId": zod.coerce.number().optional(),
   "status": zod.coerce.string().optional()
