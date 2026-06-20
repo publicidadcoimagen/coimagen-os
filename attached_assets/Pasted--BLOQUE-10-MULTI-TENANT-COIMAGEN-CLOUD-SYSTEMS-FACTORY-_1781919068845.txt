@@ -1,0 +1,244 @@
+# BLOQUE 10 - MULTI TENANT + COIMAGEN CLOUD SYSTEMS + FACTORY ENGINE
+
+# FILOSOFÍA
+
+Construir una sola vez.
+
+Reutilizar infinitamente.
+
+No desarrollar proyectos aislados.
+
+Construir plataformas reutilizables.
+
+---
+
+# COIMAGEN CLOUD SYSTEMS
+
+Objetivo:
+
+Crear un ecosistema de sistemas especializados basados en una sola arquitectura.
+
+---
+
+# MULTI TENANT
+
+Preparar arquitectura para soportar múltiples empresas.
+
+No activar en V1.
+
+Preparar para V3.
+
+Cada tenant podrá tener:
+
+* Logo
+* Colores
+* Usuarios
+* Clientes
+* Agentes
+* Configuración
+* APIs
+* Idioma
+
+---
+
+# FACTORY ENGINE
+
+Objetivo:
+
+Crear nuevos sistemas mediante plantillas.
+
+Cambiar:
+
+Logo
+
+Colores
+
+Prompts
+
+Agentes
+
+Módulos
+
+Pero reutilizar:
+
+Arquitectura
+
+Base de datos
+
+Dashboard
+
+Producción
+
+Finanzas
+
+Centro de aprobaciones
+
+Billing Engine
+
+Bitácora
+
+Seguridad
+
+---
+
+# PRODUCTOS ACTUALES
+
+## COIMAGEN OS
+
+Sistema interno de la agencia.
+
+---
+
+## MEDICAL OS
+
+Producto SaaS validado con Dr Segovia.
+
+Especialidades futuras:
+
+Neurocirugía
+
+Ortopedia
+
+Cirugía Plástica
+
+Psiquiatría
+
+Cardiología
+
+Odontología
+
+Veterinaria
+
+---
+
+## LAW OS
+
+Abogados.
+
+---
+
+## WELLNESS OS
+
+Spa
+
+Medicina estética
+
+Wellness
+
+---
+
+## RESTAURANT OS
+
+Restaurantes
+
+Cafeterías
+
+Food trucks
+
+---
+
+## REAL ESTATE OS
+
+Bienes raíces
+
+Agentes inmobiliarios
+
+Constructores
+
+---
+
+# AGENT FACTORY
+
+Cada vertical tendrá agentes especializados.
+
+Ejemplo:
+
+Medical Agent
+
+Legal Agent
+
+Restaurant Agent
+
+Dental Agent
+
+Real Estate Agent
+
+CEO Agent
+
+CTO Agent
+
+Finance Agent
+
+Content Agent
+
+CRM Agent
+
+---
+
+# TEMPLATE LIBRARY
+
+Guardar:
+
+Prompts
+
+SOP
+
+PDF
+
+Correos
+
+Plantillas
+
+Automatizaciones
+
+Agentes
+
+Workflows
+
+---
+
+# KNOWLEDGE BASE
+
+Todo conocimiento generado por Coimagen debe almacenarse.
+
+Nunca perder experiencia.
+
+Reutilizarla.
+
+---
+
+# FILOSOFÍA CEO + CTO
+
+Camila es CEO.
+
+ChatGPT es CTO.
+
+Replit desarrolla.
+
+Los agentes trabajan.
+
+Camila supervisa.
+
+Los sistemas escalan.
+
+---
+
+# OBJETIVO FINAL
+
+Construir una fábrica de SaaS y agentes IA reutilizables.
+
+No vender horas.
+
+No vender páginas web.
+
+No vender proyectos.
+
+Construir activos digitales reutilizables.
+
+---
+
+# REGLA DE ORO
+
+Construir una vez.
+
+Escalar infinitamente.
