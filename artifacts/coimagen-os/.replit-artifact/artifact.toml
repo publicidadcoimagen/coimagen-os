@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "COIMAGEN OS"
+version = "1.0.0"
+id = "artifacts/coimagen-os"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19323
+
+[services.development]
+run = "pnpm --filter @workspace/coimagen-os run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/coimagen-os", "run", "build" ]
+publicDir = "artifacts/coimagen-os/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19323"
+BASE_PATH = "/"
