@@ -348,11 +348,66 @@ export interface TaskUpdate {
 
 export interface DashboardSummary {
   totalClients: number;
+  activeClients: number;
+  suspendedClients: number;
   activeProjects: number;
-  totalAgents: number;
   openTasks: number;
+  overdueTasks: number;
   completedProjectsThisMonth: number;
+  totalAgents: number;
   activeClientsThisMonth: number;
+  pendingApprovals: number;
+  mrr: number;
+  arr: number;
+  totalCostsThisMonth: number;
+  marginThisMonth: number;
+  overdueInvoices: number;
+  upcomingPayments: number;
+}
+
+export interface ClientTimeline {
+  id: number;
+  clientId: number;
+  eventType: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  occurredAt: string;
+  createdAt: string;
+}
+
+export interface ClientTimelineInput {
+  eventType?: string;
+  title: string;
+  description?: string;
+  occurredAt?: string;
+}
+
+export interface ClientNote {
+  id: number;
+  clientId: number;
+  title: string;
+  category: string;
+  /** @nullable */
+  content?: string | null;
+  pinned: boolean;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ClientNoteInput {
+  title: string;
+  category?: string;
+  content?: string;
+  pinned?: boolean;
+}
+
+export interface ClientNoteUpdate {
+  title?: string;
+  category?: string;
+  content?: string;
+  pinned?: boolean;
 }
 
 export type ActivityEntryType = typeof ActivityEntryType[keyof typeof ActivityEntryType];

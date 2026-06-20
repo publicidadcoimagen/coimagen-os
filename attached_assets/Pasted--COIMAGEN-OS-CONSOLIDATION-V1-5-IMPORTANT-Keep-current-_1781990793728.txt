@@ -1,0 +1,498 @@
+# COIMAGEN OS — CONSOLIDATION V1.5
+
+IMPORTANT:
+
+Keep current architecture.
+
+DO NOT rebuild from scratch.
+
+Preserve all existing pages, routes, database schemas and UI.
+
+Maintain dark mode and current brand style.
+
+Spanish-first UI, English-ready architecture.
+
+Responsive-first.
+
+PWA-ready.
+
+Everything must continue compiling and running.
+
+---
+
+## PRIORITY 1 — DASHBOARD CEO V2
+
+Convert Dashboard into a Mission Control.
+
+Add sections:
+
+* Alerts
+* MRR
+* ARR
+* Revenue
+* Costs
+* Margin
+* Active Clients
+* Suspended Clients
+* Active Projects
+* Overdue Tasks
+* Pending Approvals
+* Upcoming Payments
+* Replit Cost Widget
+* Recent Activity
+* Calendar Widget
+* Pipeline Widget
+
+Add "Needs Attention" widget:
+
+* Overdue invoices
+* Delayed projects
+* Pending proposals
+* Expiring subscriptions
+* Pending approvals
+* API warnings
+
+---
+
+## PRIORITY 2 — CLIENT HOME
+
+Before tabs, create Client Home summary.
+
+Show:
+
+* Client status
+* Service
+* Monthly fee
+* Last payment
+* Next payment
+* Profitability
+* Onboarding %
+* Active project
+* Responsible person
+* Alerts
+
+Cards:
+
+* Tasks
+* Approvals
+* Documents
+* Reports
+* Payments
+
+---
+
+## PRIORITY 3 — CLIENT TIMELINE
+
+Chronological history.
+
+Examples:
+
+Proposal sent
+
+Payment received
+
+Landing delivered
+
+Facebook connected
+
+Video uploaded
+
+Report delivered
+
+---
+
+## PRIORITY 4 — NOTES CENTER
+
+Per client notes.
+
+Fields:
+
+Title
+
+Category
+
+Content
+
+Pinned
+
+Created date
+
+Updated date
+
+---
+
+## PRIORITY 5 — DOCUMENT CENTER
+
+Per client.
+
+Categories:
+
+Contracts
+
+Invoices
+
+Proposals
+
+Reports
+
+Images
+
+Videos
+
+Logos
+
+ZIP files
+
+Brand manuals
+
+Case studies
+
+Versioning:
+
+v1
+
+v2
+
+v3
+
+States:
+
+Draft
+
+Approved
+
+Archived
+
+---
+
+## PRIORITY 6 — BILLING ENGINE
+
+Subscription lifecycle:
+
+Trial
+
+Active
+
+Paused
+
+Suspended
+
+Cancelled
+
+Grace days
+
+Automatic reminders
+
+7 days
+
+3 days
+
+1 day
+
+Reactivation workflow
+
+Temporary suspension state
+
+Future maintenance page support
+
+---
+
+## PRIORITY 7 — CUSTOMER SUCCESS
+
+Testimonials
+
+Referrals
+
+Case studies
+
+Dormant clients
+
+Renewals
+
+Ambassadors
+
+---
+
+## PRIORITY 8 — DOWNSELL ENGINE
+
+Premium
+
+Growth
+
+Lite
+
+Hosting only
+
+Dormant
+
+Reactivated
+
+Track downgrade history.
+
+---
+
+## PRIORITY 9 — REPORT CENTER
+
+Monthly reports.
+
+SEO
+
+Google Business
+
+Facebook
+
+Instagram
+
+YouTube
+
+Leads
+
+AI
+
+Historical reports
+
+PDF-ready structure.
+
+---
+
+## PRIORITY 10 — KNOWLEDGE BASE
+
+Prepare migration from published Notion.
+
+Sections:
+
+Architecture
+
+SOP
+
+Prompts
+
+Playbooks
+
+Lessons Learned
+
+Factory Engine
+
+Medical OS
+
+Sales
+
+Prospecting
+
+Versioning support.
+
+---
+
+## PRIORITY 11 — TEMPLATE LIBRARY
+
+Templates:
+
+Proposals
+
+Diagnostics
+
+Contracts
+
+Emails
+
+WhatsApp
+
+Landing Pages
+
+Videos
+
+Campaigns
+
+Automations
+
+Prompt Library
+
+---
+
+## PRIORITY 12 — NOTIFICATION CENTER
+
+Bell icon.
+
+Notifications:
+
+Payments
+
+Approvals
+
+Tasks
+
+Projects
+
+Clients
+
+Warnings
+
+Unread count.
+
+---
+
+## PRIORITY 13 — RESPONSIVE + PWA
+
+Desktop
+
+Tablet
+
+Mobile
+
+Hamburger menu.
+
+Card layouts on mobile.
+
+Prepare PWA:
+
+Manifest
+
+Installable app
+
+Icons
+
+Splash screen
+
+Push notification ready
+
+Do not build native Android app.
+
+---
+
+## PRIORITY 14 — REPLIT COST ENGINE
+
+Provider:
+
+Replit
+
+Period:
+
+Jun 10 - Jul 10
+
+Credits remaining:
+
+14.37 USD
+
+Credits used:
+
+5.64 USD
+
+Agent cost:
+
+5.06 USD
+
+Deployment cost:
+
+0.56 USD
+
+PostgreSQL:
+
+0.01 USD
+
+Main risk:
+
+Excessive Agent usage
+
+Rule:
+
+Group changes before executing Agent.
+
+Future providers:
+
+OpenAI
+
+Claude
+
+Gemini
+
+n8n
+
+Twilio
+
+Stripe
+
+Hosting
+
+Domains
+
+---
+
+## PRIORITY 15 — TRANSLATION
+
+Spanish-first interface.
+
+Replace English labels where needed.
+
+Use:
+
+Clientes
+
+Proyectos
+
+Tareas
+
+Nuevo Cliente
+
+Nuevo Proyecto
+
+Activo
+
+Suspendido
+
+Pendiente
+
+---
+
+## PRIORITY 16 — FIXES
+
+Fix New Client button.
+
+Fix New Project button.
+
+Change:
+
+Dr. Alejandro Segovia
+
+to
+
+Dr. José Manuel Segovia
+
+Preserve Client Vault, Brand and Onboarding modules.
+
+---
+
+## DO NOT IMPLEMENT YET
+
+Portal Cliente
+
+AI Agents
+
+OpenAI
+
+WhatsApp
+
+n8n
+
+Medical OS
+
+Factory Engine
+
+Multi-tenant
+
+Native Android app
+
+---
+
+FINAL RULE
+
+Preserve architecture.
+
+Preserve OpenAPI.
+
+Preserve Drizzle schema.
+
+Preserve current UI style.
+
+Make everything compile successfully.
+
+Do not break existing modules.

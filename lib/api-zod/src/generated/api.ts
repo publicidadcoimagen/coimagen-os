@@ -335,6 +335,120 @@ export const UpsertClientOnboardingResponse = zod.object({
 })
 
 
+/**
+ * @summary List timeline events for a client
+ */
+export const ListClientTimelineParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const ListClientTimelineResponseItem = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "eventType": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "occurredAt": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListClientTimelineResponse = zod.array(ListClientTimelineResponseItem)
+
+
+/**
+ * @summary Create a timeline event for a client
+ */
+export const CreateClientTimelineParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const CreateClientTimelineBody = zod.object({
+  "eventType": zod.string().optional(),
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "occurredAt": zod.string().optional()
+})
+
+
+/**
+ * @summary Delete a timeline event
+ */
+export const DeleteClientTimelineParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List notes for a client
+ */
+export const ListClientNotesParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const ListClientNotesResponseItem = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "content": zod.string().nullish(),
+  "pinned": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListClientNotesResponse = zod.array(ListClientNotesResponseItem)
+
+
+/**
+ * @summary Create a note for a client
+ */
+export const CreateClientNoteParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const CreateClientNoteBody = zod.object({
+  "title": zod.string(),
+  "category": zod.string().optional(),
+  "content": zod.string().optional(),
+  "pinned": zod.boolean().optional()
+})
+
+
+/**
+ * @summary Update a client note
+ */
+export const UpdateClientNoteParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+export const UpdateClientNoteBody = zod.object({
+  "title": zod.string().optional(),
+  "category": zod.string().optional(),
+  "content": zod.string().optional(),
+  "pinned": zod.boolean().optional()
+})
+
+export const UpdateClientNoteResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "content": zod.string().nullish(),
+  "pinned": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete a client note
+ */
+export const DeleteClientNoteParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+
 export const ListProjectsQueryParams = zod.object({
   "clientId": zod.coerce.number().optional(),
   "status": zod.coerce.string().optional()
@@ -599,11 +713,21 @@ export const DeleteTaskParams = zod.object({
 
 export const GetDashboardSummaryResponse = zod.object({
   "totalClients": zod.number(),
+  "activeClients": zod.number(),
+  "suspendedClients": zod.number(),
   "activeProjects": zod.number(),
-  "totalAgents": zod.number(),
   "openTasks": zod.number(),
+  "overdueTasks": zod.number(),
   "completedProjectsThisMonth": zod.number(),
-  "activeClientsThisMonth": zod.number()
+  "totalAgents": zod.number(),
+  "activeClientsThisMonth": zod.number(),
+  "pendingApprovals": zod.number(),
+  "mrr": zod.number(),
+  "arr": zod.number(),
+  "totalCostsThisMonth": zod.number(),
+  "marginThisMonth": zod.number(),
+  "overdueInvoices": zod.number(),
+  "upcomingPayments": zod.number()
 })
 
 

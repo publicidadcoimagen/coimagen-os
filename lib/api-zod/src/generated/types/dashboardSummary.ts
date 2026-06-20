@@ -8,9 +8,19 @@
 
 export interface DashboardSummary {
   totalClients: number;
+  activeClients: number;
+  suspendedClients: number;
   activeProjects: number;
-  totalAgents: number;
   openTasks: number;
+  overdueTasks: number;
   completedProjectsThisMonth: number;
+  totalAgents: number;
   activeClientsThisMonth: number;
+  pendingApprovals: number;
+  mrr: number;
+  arr: number;
+  totalCostsThisMonth: number;
+  marginThisMonth: number;
+  overdueInvoices: number;
+  upcomingPayments: number;
 }

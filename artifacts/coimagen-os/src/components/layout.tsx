@@ -1,36 +1,19 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  LayoutDashboard,
-  Users,
-  FolderKanban,
-  CheckSquare,
-  Settings,
-  UserSearch,
-  TrendingUp,
-  Stethoscope,
-  FileText,
-  Receipt,
-  RefreshCw,
-  CalendarDays,
-  ShieldCheck,
-  BarChart3,
-  ScrollText,
-  Lock,
-  Bot,
+  LayoutDashboard, Users, FolderKanban, CheckSquare, Settings,
+  UserSearch, TrendingUp, Stethoscope, FileText, Receipt,
+  RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
+  Lock, Bot, Bell,
 } from "lucide-react";
+import {
+  useGetDashboardSummary,
+  getGetDashboardSummaryQueryKey,
+} from "@workspace/api-client-react";
 import logoUrl from "@assets/logo-coimagen_1781919063971.png";
 
-type NavItem = {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-};
-
-type NavGroup = {
-  label: string;
-  items: NavItem[];
-};
+type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
+type NavGroup = { label: string; items: NavItem[] };
 
 const CORE_ITEMS: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -102,6 +85,23 @@ function NavLink({ href, label, icon: Icon }: NavItem) {
   );
 }
 
+function NotificationBell() {
+  const { data: summary } = useGetDashboardSummary({
+    query: { queryKey: getGetDashboardSummaryQueryKey() }
+  });
+  const count = (summary?.pendingApprovals ?? 0) + (summary?.overdueInvoices ?? 0) + (summary?.overdueTasks ?? 0);
+  return (
+    <div className="relative">
+      <Bell className="h-4 w-4 text-muted-foreground" />
+      {count > 0 && (
+        <span className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-0.5 rounded-full bg-destructive text-[9px] font-bold text-white flex items-center justify-center leading-none">
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground dark">
@@ -117,7 +117,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
           {CORE_ITEMS.map((item) => (
             <NavLink key={item.href} {...item} />
           ))}
-
           {NAV_GROUPS.map((group) => (
             <div key={group.label} className="mt-4">
               <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
@@ -128,7 +127,6 @@ export function AppLayout({ children }: { children: ReactNode }) {
               ))}
             </div>
           ))}
-
           <div className="mt-4">
             <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">
               Próximamente
@@ -150,10 +148,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold text-xs flex-shrink-0">
               CS
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="text-xs font-medium truncate">Camila Segovia</div>
               <div className="text-[10px] text-muted-foreground">CEO</div>
             </div>
+            <NotificationBell />
           </div>
         </div>
       </aside>

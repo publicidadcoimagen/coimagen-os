@@ -36,8 +36,13 @@ import type {
   ClientBrand,
   ClientBrandInput,
   ClientInput,
+  ClientNote,
+  ClientNoteInput,
+  ClientNoteUpdate,
   ClientOnboarding,
   ClientOnboardingInput,
+  ClientTimeline,
+  ClientTimelineInput,
   ClientUpdate,
   ConfigEntry,
   ConfigEntryInput,
@@ -1112,6 +1117,522 @@ export const useUpsertClientOnboarding = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpsertClientOnboardingMutationOptions(options));
+    }
+
+export const getListClientTimelineUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/timeline`
+}
+
+/**
+ * @summary List timeline events for a client
+ */
+export const listClientTimeline = async (clientId: number, options?: RequestInit): Promise<ClientTimeline[]> => {
+
+  return customFetch<ClientTimeline[]>(getListClientTimelineUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListClientTimelineQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/timeline`
+    ] as const;
+    }
+
+
+export const getListClientTimelineQueryOptions = <TData = Awaited<ReturnType<typeof listClientTimeline>>, TError = ErrorType<unknown>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientTimeline>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListClientTimelineQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listClientTimeline>>> = ({ signal }) => listClientTimeline(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listClientTimeline>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListClientTimelineQueryResult = NonNullable<Awaited<ReturnType<typeof listClientTimeline>>>
+export type ListClientTimelineQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List timeline events for a client
+ */
+
+export function useListClientTimeline<TData = Awaited<ReturnType<typeof listClientTimeline>>, TError = ErrorType<unknown>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientTimeline>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListClientTimelineQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateClientTimelineUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/timeline`
+}
+
+/**
+ * @summary Create a timeline event for a client
+ */
+export const createClientTimeline = async (clientId: number,
+    clientTimelineInput: ClientTimelineInput, options?: RequestInit): Promise<ClientTimeline> => {
+
+  return customFetch<ClientTimeline>(getCreateClientTimelineUrl(clientId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientTimelineInput,)
+  }
+);}
+
+
+
+
+export const getCreateClientTimelineMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientTimeline>>, TError,{clientId: number;data: BodyType<ClientTimelineInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createClientTimeline>>, TError,{clientId: number;data: BodyType<ClientTimelineInput>}, TContext> => {
+
+const mutationKey = ['createClientTimeline'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createClientTimeline>>, {clientId: number;data: BodyType<ClientTimelineInput>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  createClientTimeline(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateClientTimelineMutationResult = NonNullable<Awaited<ReturnType<typeof createClientTimeline>>>
+    export type CreateClientTimelineMutationBody = BodyType<ClientTimelineInput>
+    export type CreateClientTimelineMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a timeline event for a client
+ */
+export const useCreateClientTimeline = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientTimeline>>, TError,{clientId: number;data: BodyType<ClientTimelineInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createClientTimeline>>,
+        TError,
+        {clientId: number;data: BodyType<ClientTimelineInput>},
+        TContext
+      > => {
+      return useMutation(getCreateClientTimelineMutationOptions(options));
+    }
+
+export const getDeleteClientTimelineUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/timeline/${id}`
+}
+
+/**
+ * @summary Delete a timeline event
+ */
+export const deleteClientTimeline = async (clientId: number,
+    id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteClientTimelineUrl(clientId,id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteClientTimelineMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteClientTimeline>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteClientTimeline>>, TError,{clientId: number;id: number}, TContext> => {
+
+const mutationKey = ['deleteClientTimeline'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteClientTimeline>>, {clientId: number;id: number}> = (props) => {
+          const {clientId,id} = props ?? {};
+
+          return  deleteClientTimeline(clientId,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteClientTimelineMutationResult = NonNullable<Awaited<ReturnType<typeof deleteClientTimeline>>>
+
+    export type DeleteClientTimelineMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a timeline event
+ */
+export const useDeleteClientTimeline = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteClientTimeline>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteClientTimeline>>,
+        TError,
+        {clientId: number;id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteClientTimelineMutationOptions(options));
+    }
+
+export const getListClientNotesUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/notes`
+}
+
+/**
+ * @summary List notes for a client
+ */
+export const listClientNotes = async (clientId: number, options?: RequestInit): Promise<ClientNote[]> => {
+
+  return customFetch<ClientNote[]>(getListClientNotesUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListClientNotesQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/notes`
+    ] as const;
+    }
+
+
+export const getListClientNotesQueryOptions = <TData = Awaited<ReturnType<typeof listClientNotes>>, TError = ErrorType<unknown>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListClientNotesQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listClientNotes>>> = ({ signal }) => listClientNotes(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listClientNotes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListClientNotesQueryResult = NonNullable<Awaited<ReturnType<typeof listClientNotes>>>
+export type ListClientNotesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List notes for a client
+ */
+
+export function useListClientNotes<TData = Awaited<ReturnType<typeof listClientNotes>>, TError = ErrorType<unknown>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListClientNotesQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateClientNoteUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/notes`
+}
+
+/**
+ * @summary Create a note for a client
+ */
+export const createClientNote = async (clientId: number,
+    clientNoteInput: ClientNoteInput, options?: RequestInit): Promise<ClientNote> => {
+
+  return customFetch<ClientNote>(getCreateClientNoteUrl(clientId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientNoteInput,)
+  }
+);}
+
+
+
+
+export const getCreateClientNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientNote>>, TError,{clientId: number;data: BodyType<ClientNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createClientNote>>, TError,{clientId: number;data: BodyType<ClientNoteInput>}, TContext> => {
+
+const mutationKey = ['createClientNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createClientNote>>, {clientId: number;data: BodyType<ClientNoteInput>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  createClientNote(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateClientNoteMutationResult = NonNullable<Awaited<ReturnType<typeof createClientNote>>>
+    export type CreateClientNoteMutationBody = BodyType<ClientNoteInput>
+    export type CreateClientNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a note for a client
+ */
+export const useCreateClientNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientNote>>, TError,{clientId: number;data: BodyType<ClientNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createClientNote>>,
+        TError,
+        {clientId: number;data: BodyType<ClientNoteInput>},
+        TContext
+      > => {
+      return useMutation(getCreateClientNoteMutationOptions(options));
+    }
+
+export const getUpdateClientNoteUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/notes/${id}`
+}
+
+/**
+ * @summary Update a client note
+ */
+export const updateClientNote = async (clientId: number,
+    id: number,
+    clientNoteUpdate: ClientNoteUpdate, options?: RequestInit): Promise<ClientNote> => {
+
+  return customFetch<ClientNote>(getUpdateClientNoteUrl(clientId,id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientNoteUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateClientNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateClientNote>>, TError,{clientId: number;id: number;data: BodyType<ClientNoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateClientNote>>, TError,{clientId: number;id: number;data: BodyType<ClientNoteUpdate>}, TContext> => {
+
+const mutationKey = ['updateClientNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateClientNote>>, {clientId: number;id: number;data: BodyType<ClientNoteUpdate>}> = (props) => {
+          const {clientId,id,data} = props ?? {};
+
+          return  updateClientNote(clientId,id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateClientNoteMutationResult = NonNullable<Awaited<ReturnType<typeof updateClientNote>>>
+    export type UpdateClientNoteMutationBody = BodyType<ClientNoteUpdate>
+    export type UpdateClientNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a client note
+ */
+export const useUpdateClientNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateClientNote>>, TError,{clientId: number;id: number;data: BodyType<ClientNoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateClientNote>>,
+        TError,
+        {clientId: number;id: number;data: BodyType<ClientNoteUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateClientNoteMutationOptions(options));
+    }
+
+export const getDeleteClientNoteUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/notes/${id}`
+}
+
+/**
+ * @summary Delete a client note
+ */
+export const deleteClientNote = async (clientId: number,
+    id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteClientNoteUrl(clientId,id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteClientNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteClientNote>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteClientNote>>, TError,{clientId: number;id: number}, TContext> => {
+
+const mutationKey = ['deleteClientNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteClientNote>>, {clientId: number;id: number}> = (props) => {
+          const {clientId,id} = props ?? {};
+
+          return  deleteClientNote(clientId,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteClientNoteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteClientNote>>>
+
+    export type DeleteClientNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a client note
+ */
+export const useDeleteClientNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteClientNote>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteClientNote>>,
+        TError,
+        {clientId: number;id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteClientNoteMutationOptions(options));
     }
 
 export const getListProjectsUrl = (params?: ListProjectsParams,) => {

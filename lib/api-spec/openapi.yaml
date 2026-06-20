@@ -263,6 +263,120 @@ paths:
               schema:
                 $ref: "#/components/schemas/ClientOnboarding"
 
+  /clients/{clientId}/timeline:
+    get:
+      operationId: listClientTimeline
+      tags: [client-timeline]
+      summary: List timeline events for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientTimeline"
+    post:
+      operationId: createClientTimeline
+      tags: [client-timeline]
+      summary: Create a timeline event for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientTimelineInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientTimeline"
+  /clients/{clientId}/timeline/{id}:
+    delete:
+      operationId: deleteClientTimeline
+      tags: [client-timeline]
+      summary: Delete a timeline event
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+
+  /clients/{clientId}/notes:
+    get:
+      operationId: listClientNotes
+      tags: [client-notes]
+      summary: List notes for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientNote"
+    post:
+      operationId: createClientNote
+      tags: [client-notes]
+      summary: Create a note for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientNoteInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientNote"
+  /clients/{clientId}/notes/{id}:
+    patch:
+      operationId: updateClientNote
+      tags: [client-notes]
+      summary: Update a client note
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientNoteUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientNote"
+    delete:
+      operationId: deleteClientNote
+      tags: [client-notes]
+      summary: Delete a client note
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+
   # ─── PROJECTS ──────────────────────────────────────────────────────────────
   /projects:
     get:
@@ -1369,14 +1483,70 @@ components:
     # ── DASHBOARD ─────────────────────────────────────────────────────────────
     DashboardSummary:
       type: object
-      required: [totalClients, activeProjects, totalAgents, openTasks, completedProjectsThisMonth, activeClientsThisMonth]
+      required: [totalClients, activeClients, suspendedClients, activeProjects, openTasks, overdueTasks, completedProjectsThisMonth, totalAgents, activeClientsThisMonth, pendingApprovals, mrr, arr, totalCostsThisMonth, marginThisMonth, overdueInvoices, upcomingPayments]
       properties:
         totalClients: { type: integer }
+        activeClients: { type: integer }
+        suspendedClients: { type: integer }
         activeProjects: { type: integer }
-        totalAgents: { type: integer }
         openTasks: { type: integer }
+        overdueTasks: { type: integer }
         completedProjectsThisMonth: { type: integer }
+        totalAgents: { type: integer }
         activeClientsThisMonth: { type: integer }
+        pendingApprovals: { type: integer }
+        mrr: { type: number }
+        arr: { type: number }
+        totalCostsThisMonth: { type: number }
+        marginThisMonth: { type: number }
+        overdueInvoices: { type: integer }
+        upcomingPayments: { type: integer }
+    ClientTimeline:
+      type: object
+      required: [id, clientId, eventType, title, occurredAt, createdAt]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        eventType: { type: string }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        occurredAt: { type: string }
+        createdAt: { type: string }
+    ClientTimelineInput:
+      type: object
+      required: [title]
+      properties:
+        eventType: { type: string }
+        title: { type: string }
+        description: { type: string }
+        occurredAt: { type: string }
+    ClientNote:
+      type: object
+      required: [id, clientId, title, category, pinned, createdAt]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        title: { type: string }
+        category: { type: string }
+        content: { type: ["string", "null"] }
+        pinned: { type: boolean }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ClientNoteInput:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        category: { type: string }
+        content: { type: string }
+        pinned: { type: boolean }
+    ClientNoteUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        category: { type: string }
+        content: { type: string }
+        pinned: { type: boolean }
     ActivityEntry:
       type: object
       required: [id, type, description, createdAt]
