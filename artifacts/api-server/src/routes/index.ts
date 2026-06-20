@@ -5,6 +5,16 @@ import projectsRouter from "./projects";
 import agentsRouter from "./agents";
 import tasksRouter from "./tasks";
 import dashboardRouter from "./dashboard";
+import prospectsRouter from "./prospects";
+import diagnosesRouter from "./diagnoses";
+import proposalsRouter from "./proposals";
+import approvalsRouter from "./approvals";
+import invoicesRouter from "./invoices";
+import subscriptionsRouter from "./subscriptions";
+import revenueRouter from "./revenue";
+import costsRouter from "./costs";
+import auditLogsRouter from "./audit-logs";
+import configRouter from "./config";
 
 const router: IRouter = Router();
 
@@ -14,5 +24,15 @@ router.use(projectsRouter);
 router.use(agentsRouter);
 router.use(tasksRouter);
 router.use(dashboardRouter);
+router.use(prospectsRouter);
+router.use(diagnosesRouter);
+router.use(proposalsRouter);
+router.use(approvalsRouter);
+router.use(invoicesRouter);
+router.use(subscriptionsRouter);
+router.use(revenueRouter);
+router.use(costsRouter);
+router.use(auditLogsRouter);
+router.use(configRouter);
 
 export default router;

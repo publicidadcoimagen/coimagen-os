@@ -1,0 +1,88 @@
+Great first version. Keep the current architecture and DO NOT rebuild from scratch.
+
+Now extend Coimagen OS using the existing workspace structure, API server, OpenAPI contracts, Drizzle database, React frontend, and current design system.
+
+Add the missing V1 modules while preserving the current app:
+
+1. Commercial module
+
+* Prospects
+* Digital Diagnosis
+* Commercial Pipeline
+* Proposals
+
+2. Finance module
+
+* Clients & Collections
+* Master Calendar
+* Billing Engine
+* Subscription Manager
+
+3. Approval Center
+
+* Approval items
+* Status: Draft, Pending Approval, Approved, Rejected, Executed, Archived
+* Types: Diagnosis, Proposal, Content, Automation, Production, Report, Campaign, Invoice, Email
+
+4. Revenue Engine
+
+* MRR
+* High Ticket
+* Downsell Engine
+* Dormant clients
+
+5. Cost Engine
+
+* Client revenue
+* OpenAI cost
+* Claude cost
+* Gemini cost
+* WhatsApp cost
+* n8n cost
+* Hosting cost
+* Replit cost
+* Estimated margin
+
+6. Audit Log
+
+* Date
+* Time
+* User
+* Module
+* Action
+* Result
+* Status
+
+7. Configuration module
+
+* Company name
+* Logo upload placeholder
+* Primary color
+* Secondary color
+* Language: Spanish / English
+* API placeholders for OpenAI, Anthropic, Gemini, Gmail, Google Calendar, Google Drive, WhatsApp, Facebook, Instagram, YouTube, n8n, Stripe, Twilio
+* Do not expose full API keys
+* Use environment variables / secrets placeholders
+
+8. Future modules as disabled / Coming Soon pages:
+
+* AI Agents
+* Client Portal
+* Factory Engine
+* Medical OS
+* Multi-tenant
+* Coimagen Cloud Systems
+
+Important:
+
+* Do not connect external APIs yet.
+* Do not connect OpenAI yet.
+* Do not connect n8n yet.
+* Do not connect WhatsApp yet.
+* Keep everything local/database-driven for V1.
+* Keep dark mode and current brand style.
+* Spanish-first interface, English-ready architecture.
+* Preserve the existing pages, routing, database structure, and design system.
+* Update OpenAPI, Drizzle schema, backend routes, generated API client, and frontend pages consistently.
+* Add navigation links for all new modules.
+* Make sure the app still builds and runs after changes.

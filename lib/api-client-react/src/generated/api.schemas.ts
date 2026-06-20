@@ -380,6 +380,674 @@ export interface StatusCount {
   count: number;
 }
 
+export type ProspectStatus = typeof ProspectStatus[keyof typeof ProspectStatus];
+
+
+export const ProspectStatus = {
+  lead: 'lead',
+  qualified: 'qualified',
+  disqualified: 'disqualified',
+  converted: 'converted',
+} as const;
+
+export interface Prospect {
+  id: number;
+  name: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  phone?: string | null;
+  /** @nullable */
+  company?: string | null;
+  /** @nullable */
+  industry?: string | null;
+  status: ProspectStatus;
+  /** @nullable */
+  source?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type ProspectInputStatus = typeof ProspectInputStatus[keyof typeof ProspectInputStatus];
+
+
+export const ProspectInputStatus = {
+  lead: 'lead',
+  qualified: 'qualified',
+  disqualified: 'disqualified',
+  converted: 'converted',
+} as const;
+
+export interface ProspectInput {
+  /** @minLength 1 */
+  name: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  industry?: string;
+  status?: ProspectInputStatus;
+  source?: string;
+  notes?: string;
+}
+
+export type ProspectUpdateStatus = typeof ProspectUpdateStatus[keyof typeof ProspectUpdateStatus];
+
+
+export const ProspectUpdateStatus = {
+  lead: 'lead',
+  qualified: 'qualified',
+  disqualified: 'disqualified',
+  converted: 'converted',
+} as const;
+
+export interface ProspectUpdate {
+  /** @minLength 1 */
+  name?: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  industry?: string;
+  status?: ProspectUpdateStatus;
+  source?: string;
+  notes?: string;
+}
+
+export type DiagnosisStatus = typeof DiagnosisStatus[keyof typeof DiagnosisStatus];
+
+
+export const DiagnosisStatus = {
+  draft: 'draft',
+  pending_approval: 'pending_approval',
+  approved: 'approved',
+  rejected: 'rejected',
+  executed: 'executed',
+  archived: 'archived',
+} as const;
+
+export interface Diagnosis {
+  id: number;
+  title: string;
+  /** @nullable */
+  prospectId?: number | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  content?: string | null;
+  status: DiagnosisStatus;
+  type: string;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type DiagnosisInputStatus = typeof DiagnosisInputStatus[keyof typeof DiagnosisInputStatus];
+
+
+export const DiagnosisInputStatus = {
+  draft: 'draft',
+  pending_approval: 'pending_approval',
+  approved: 'approved',
+  rejected: 'rejected',
+  executed: 'executed',
+  archived: 'archived',
+} as const;
+
+export interface DiagnosisInput {
+  /** @minLength 1 */
+  title: string;
+  prospectId?: number;
+  clientId?: number;
+  content?: string;
+  status?: DiagnosisInputStatus;
+  type?: string;
+}
+
+export type DiagnosisUpdateStatus = typeof DiagnosisUpdateStatus[keyof typeof DiagnosisUpdateStatus];
+
+
+export const DiagnosisUpdateStatus = {
+  draft: 'draft',
+  pending_approval: 'pending_approval',
+  approved: 'approved',
+  rejected: 'rejected',
+  executed: 'executed',
+  archived: 'archived',
+} as const;
+
+export interface DiagnosisUpdate {
+  /** @minLength 1 */
+  title?: string;
+  prospectId?: number;
+  clientId?: number;
+  content?: string;
+  status?: DiagnosisUpdateStatus;
+  type?: string;
+}
+
+export type ProposalStatus = typeof ProposalStatus[keyof typeof ProposalStatus];
+
+
+export const ProposalStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  accepted: 'accepted',
+  rejected: 'rejected',
+} as const;
+
+export interface Proposal {
+  id: number;
+  title: string;
+  /** @nullable */
+  prospectId?: number | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  amount?: number | null;
+  status: ProposalStatus;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  validUntil?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type ProposalInputStatus = typeof ProposalInputStatus[keyof typeof ProposalInputStatus];
+
+
+export const ProposalInputStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  accepted: 'accepted',
+  rejected: 'rejected',
+} as const;
+
+export interface ProposalInput {
+  /** @minLength 1 */
+  title: string;
+  prospectId?: number;
+  clientId?: number;
+  amount?: number;
+  status?: ProposalInputStatus;
+  notes?: string;
+  validUntil?: string;
+}
+
+export type ProposalUpdateStatus = typeof ProposalUpdateStatus[keyof typeof ProposalUpdateStatus];
+
+
+export const ProposalUpdateStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  accepted: 'accepted',
+  rejected: 'rejected',
+} as const;
+
+export interface ProposalUpdate {
+  /** @minLength 1 */
+  title?: string;
+  prospectId?: number;
+  clientId?: number;
+  amount?: number;
+  status?: ProposalUpdateStatus;
+  notes?: string;
+  validUntil?: string;
+}
+
+export type ApprovalType = typeof ApprovalType[keyof typeof ApprovalType];
+
+
+export const ApprovalType = {
+  diagnosis: 'diagnosis',
+  proposal: 'proposal',
+  content: 'content',
+  automation: 'automation',
+  production: 'production',
+  report: 'report',
+  campaign: 'campaign',
+  invoice: 'invoice',
+  email: 'email',
+} as const;
+
+export type ApprovalStatus = typeof ApprovalStatus[keyof typeof ApprovalStatus];
+
+
+export const ApprovalStatus = {
+  draft: 'draft',
+  pending_approval: 'pending_approval',
+  approved: 'approved',
+  rejected: 'rejected',
+  executed: 'executed',
+  archived: 'archived',
+} as const;
+
+export interface Approval {
+  id: number;
+  title: string;
+  type: ApprovalType;
+  status: ApprovalStatus;
+  /** @nullable */
+  submittedBy?: string | null;
+  /** @nullable */
+  reviewedBy?: string | null;
+  /** @nullable */
+  entityId?: number | null;
+  /** @nullable */
+  entityType?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type ApprovalInputType = typeof ApprovalInputType[keyof typeof ApprovalInputType];
+
+
+export const ApprovalInputType = {
+  diagnosis: 'diagnosis',
+  proposal: 'proposal',
+  content: 'content',
+  automation: 'automation',
+  production: 'production',
+  report: 'report',
+  campaign: 'campaign',
+  invoice: 'invoice',
+  email: 'email',
+} as const;
+
+export type ApprovalInputStatus = typeof ApprovalInputStatus[keyof typeof ApprovalInputStatus];
+
+
+export const ApprovalInputStatus = {
+  draft: 'draft',
+  pending_approval: 'pending_approval',
+  approved: 'approved',
+  rejected: 'rejected',
+  executed: 'executed',
+  archived: 'archived',
+} as const;
+
+export interface ApprovalInput {
+  /** @minLength 1 */
+  title: string;
+  type: ApprovalInputType;
+  status?: ApprovalInputStatus;
+  submittedBy?: string;
+  reviewedBy?: string;
+  entityId?: number;
+  entityType?: string;
+  notes?: string;
+}
+
+export type ApprovalUpdateType = typeof ApprovalUpdateType[keyof typeof ApprovalUpdateType];
+
+
+export const ApprovalUpdateType = {
+  diagnosis: 'diagnosis',
+  proposal: 'proposal',
+  content: 'content',
+  automation: 'automation',
+  production: 'production',
+  report: 'report',
+  campaign: 'campaign',
+  invoice: 'invoice',
+  email: 'email',
+} as const;
+
+export type ApprovalUpdateStatus = typeof ApprovalUpdateStatus[keyof typeof ApprovalUpdateStatus];
+
+
+export const ApprovalUpdateStatus = {
+  draft: 'draft',
+  pending_approval: 'pending_approval',
+  approved: 'approved',
+  rejected: 'rejected',
+  executed: 'executed',
+  archived: 'archived',
+} as const;
+
+export interface ApprovalUpdate {
+  /** @minLength 1 */
+  title?: string;
+  type?: ApprovalUpdateType;
+  status?: ApprovalUpdateStatus;
+  submittedBy?: string;
+  reviewedBy?: string;
+  entityId?: number;
+  entityType?: string;
+  notes?: string;
+}
+
+export type InvoiceStatus = typeof InvoiceStatus[keyof typeof InvoiceStatus];
+
+
+export const InvoiceStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  paid: 'paid',
+  overdue: 'overdue',
+  cancelled: 'cancelled',
+} as const;
+
+export interface Invoice {
+  id: number;
+  number: string;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  clientName?: string | null;
+  amount: number;
+  status: InvoiceStatus;
+  /** @nullable */
+  issuedDate?: string | null;
+  /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
+  description?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type InvoiceInputStatus = typeof InvoiceInputStatus[keyof typeof InvoiceInputStatus];
+
+
+export const InvoiceInputStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  paid: 'paid',
+  overdue: 'overdue',
+  cancelled: 'cancelled',
+} as const;
+
+export interface InvoiceInput {
+  /** @minLength 1 */
+  number: string;
+  clientId?: number;
+  amount: number;
+  status?: InvoiceInputStatus;
+  issuedDate?: string;
+  dueDate?: string;
+  description?: string;
+}
+
+export type InvoiceUpdateStatus = typeof InvoiceUpdateStatus[keyof typeof InvoiceUpdateStatus];
+
+
+export const InvoiceUpdateStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  paid: 'paid',
+  overdue: 'overdue',
+  cancelled: 'cancelled',
+} as const;
+
+export interface InvoiceUpdate {
+  /** @minLength 1 */
+  number?: string;
+  clientId?: number;
+  amount?: number;
+  status?: InvoiceUpdateStatus;
+  issuedDate?: string;
+  dueDate?: string;
+  description?: string;
+}
+
+export type SubscriptionBillingCycle = typeof SubscriptionBillingCycle[keyof typeof SubscriptionBillingCycle];
+
+
+export const SubscriptionBillingCycle = {
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  annual: 'annual',
+} as const;
+
+export type SubscriptionStatus = typeof SubscriptionStatus[keyof typeof SubscriptionStatus];
+
+
+export const SubscriptionStatus = {
+  active: 'active',
+  paused: 'paused',
+  cancelled: 'cancelled',
+} as const;
+
+export interface Subscription {
+  id: number;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  clientName?: string | null;
+  plan: string;
+  amount: number;
+  billingCycle: SubscriptionBillingCycle;
+  status: SubscriptionStatus;
+  /** @nullable */
+  startDate?: string | null;
+  /** @nullable */
+  nextBillingDate?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type SubscriptionInputBillingCycle = typeof SubscriptionInputBillingCycle[keyof typeof SubscriptionInputBillingCycle];
+
+
+export const SubscriptionInputBillingCycle = {
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  annual: 'annual',
+} as const;
+
+export type SubscriptionInputStatus = typeof SubscriptionInputStatus[keyof typeof SubscriptionInputStatus];
+
+
+export const SubscriptionInputStatus = {
+  active: 'active',
+  paused: 'paused',
+  cancelled: 'cancelled',
+} as const;
+
+export interface SubscriptionInput {
+  clientId?: number;
+  /** @minLength 1 */
+  plan: string;
+  amount: number;
+  billingCycle?: SubscriptionInputBillingCycle;
+  status?: SubscriptionInputStatus;
+  startDate?: string;
+  nextBillingDate?: string;
+  notes?: string;
+}
+
+export type SubscriptionUpdateBillingCycle = typeof SubscriptionUpdateBillingCycle[keyof typeof SubscriptionUpdateBillingCycle];
+
+
+export const SubscriptionUpdateBillingCycle = {
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  annual: 'annual',
+} as const;
+
+export type SubscriptionUpdateStatus = typeof SubscriptionUpdateStatus[keyof typeof SubscriptionUpdateStatus];
+
+
+export const SubscriptionUpdateStatus = {
+  active: 'active',
+  paused: 'paused',
+  cancelled: 'cancelled',
+} as const;
+
+export interface SubscriptionUpdate {
+  clientId?: number;
+  /** @minLength 1 */
+  plan?: string;
+  amount?: number;
+  billingCycle?: SubscriptionUpdateBillingCycle;
+  status?: SubscriptionUpdateStatus;
+  startDate?: string;
+  nextBillingDate?: string;
+  notes?: string;
+}
+
+export interface RevenueSummary {
+  mrr: number;
+  arr: number;
+  highTicketCount: number;
+  highTicketTotal: number;
+  dormantCount: number;
+  activeSubscriptions: number;
+}
+
+export interface MrrDataPoint {
+  month: string;
+  mrr: number;
+}
+
+export type CostCategory = typeof CostCategory[keyof typeof CostCategory];
+
+
+export const CostCategory = {
+  openai: 'openai',
+  claude: 'claude',
+  gemini: 'gemini',
+  whatsapp: 'whatsapp',
+  n8n: 'n8n',
+  hosting: 'hosting',
+  replit: 'replit',
+  other: 'other',
+} as const;
+
+export interface Cost {
+  id: number;
+  category: CostCategory;
+  month: string;
+  amount: number;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type CostInputCategory = typeof CostInputCategory[keyof typeof CostInputCategory];
+
+
+export const CostInputCategory = {
+  openai: 'openai',
+  claude: 'claude',
+  gemini: 'gemini',
+  whatsapp: 'whatsapp',
+  n8n: 'n8n',
+  hosting: 'hosting',
+  replit: 'replit',
+  other: 'other',
+} as const;
+
+export interface CostInput {
+  category: CostInputCategory;
+  month: string;
+  amount: number;
+  notes?: string;
+}
+
+export type CostUpdateCategory = typeof CostUpdateCategory[keyof typeof CostUpdateCategory];
+
+
+export const CostUpdateCategory = {
+  openai: 'openai',
+  claude: 'claude',
+  gemini: 'gemini',
+  whatsapp: 'whatsapp',
+  n8n: 'n8n',
+  hosting: 'hosting',
+  replit: 'replit',
+  other: 'other',
+} as const;
+
+export interface CostUpdate {
+  category?: CostUpdateCategory;
+  month?: string;
+  amount?: number;
+  notes?: string;
+}
+
+export interface CostBreakdownItem {
+  category: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface CostSummary {
+  month: string;
+  totalCosts: number;
+  totalRevenue: number;
+  estimatedMargin: number;
+  breakdown: CostBreakdownItem[];
+}
+
+export type AuditLogStatus = typeof AuditLogStatus[keyof typeof AuditLogStatus];
+
+
+export const AuditLogStatus = {
+  success: 'success',
+  error: 'error',
+  warning: 'warning',
+} as const;
+
+export interface AuditLog {
+  id: number;
+  /** @nullable */
+  userId?: string | null;
+  module: string;
+  action: string;
+  /** @nullable */
+  result?: string | null;
+  status: AuditLogStatus;
+  /** @nullable */
+  metadata?: string | null;
+  createdAt: string;
+}
+
+export type AuditLogInputStatus = typeof AuditLogInputStatus[keyof typeof AuditLogInputStatus];
+
+
+export const AuditLogInputStatus = {
+  success: 'success',
+  error: 'error',
+  warning: 'warning',
+} as const;
+
+export interface AuditLogInput {
+  userId?: string;
+  /** @minLength 1 */
+  module: string;
+  /** @minLength 1 */
+  action: string;
+  result?: string;
+  status?: AuditLogInputStatus;
+  metadata?: string;
+}
+
+export interface ConfigEntry {
+  id: number;
+  key: string;
+  /** @nullable */
+  value?: string | null;
+  updatedAt: string;
+}
+
+export interface ConfigEntryInput {
+  value: string;
+}
+
 export type ListProjectsParams = {
 clientId?: number;
 status?: string;
@@ -389,5 +1057,47 @@ export type ListTasksParams = {
 projectId?: number;
 agentId?: number;
 status?: string;
+};
+
+export type ListProspectsParams = {
+status?: string;
+};
+
+export type ListDiagnosesParams = {
+status?: string;
+prospectId?: number;
+clientId?: number;
+};
+
+export type ListProposalsParams = {
+status?: string;
+prospectId?: number;
+clientId?: number;
+};
+
+export type ListApprovalsParams = {
+status?: string;
+type?: string;
+};
+
+export type ListInvoicesParams = {
+clientId?: number;
+status?: string;
+};
+
+export type ListSubscriptionsParams = {
+clientId?: number;
+status?: string;
+};
+
+export type ListCostsParams = {
+month?: string;
+category?: string;
+};
+
+export type ListAuditLogsParams = {
+module?: string;
+status?: string;
+limit?: number;
 };
 

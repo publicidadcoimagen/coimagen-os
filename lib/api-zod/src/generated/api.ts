@@ -9,7 +9,6 @@ import * as zod from 'zod';
 
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
@@ -36,7 +35,7 @@ export const ListClientsResponse = zod.array(ListClientsResponseItem)
 
 
 /**
- * @summary Create a new client
+ * @summary Create a client
  */
 
 export const createClientBodyStatusDefault = `prospect`;
@@ -52,9 +51,6 @@ export const CreateClientBody = zod.object({
 })
 
 
-/**
- * @summary Get a client by ID
- */
 export const GetClientParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -73,9 +69,6 @@ export const GetClientResponse = zod.object({
 })
 
 
-/**
- * @summary Update a client
- */
 export const UpdateClientParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -107,17 +100,11 @@ export const UpdateClientResponse = zod.object({
 })
 
 
-/**
- * @summary Delete a client
- */
 export const DeleteClientParams = zod.object({
   "id": zod.coerce.number()
 })
 
 
-/**
- * @summary List all projects
- */
 export const ListProjectsQueryParams = zod.object({
   "clientId": zod.coerce.number().optional(),
   "status": zod.coerce.string().optional()
@@ -139,9 +126,6 @@ export const ListProjectsResponseItem = zod.object({
 export const ListProjectsResponse = zod.array(ListProjectsResponseItem)
 
 
-/**
- * @summary Create a new project
- */
 
 export const createProjectBodyStatusDefault = `planning`;
 export const createProjectBodyPriorityDefault = `medium`;
@@ -157,9 +141,6 @@ export const CreateProjectBody = zod.object({
 })
 
 
-/**
- * @summary Get a project by ID
- */
 export const GetProjectParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -179,9 +160,6 @@ export const GetProjectResponse = zod.object({
 })
 
 
-/**
- * @summary Update a project
- */
 export const UpdateProjectParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -214,17 +192,11 @@ export const UpdateProjectResponse = zod.object({
 })
 
 
-/**
- * @summary Delete a project
- */
 export const DeleteProjectParams = zod.object({
   "id": zod.coerce.number()
 })
 
 
-/**
- * @summary List all agents
- */
 export const ListAgentsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
@@ -238,9 +210,6 @@ export const ListAgentsResponseItem = zod.object({
 export const ListAgentsResponse = zod.array(ListAgentsResponseItem)
 
 
-/**
- * @summary Create a new agent
- */
 
 
 export const createAgentBodyStatusDefault = `active`;
@@ -254,9 +223,6 @@ export const CreateAgentBody = zod.object({
 })
 
 
-/**
- * @summary Get an agent by ID
- */
 export const GetAgentParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -273,9 +239,6 @@ export const GetAgentResponse = zod.object({
 })
 
 
-/**
- * @summary Update an agent
- */
 export const UpdateAgentParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -303,17 +266,11 @@ export const UpdateAgentResponse = zod.object({
 })
 
 
-/**
- * @summary Delete an agent
- */
 export const DeleteAgentParams = zod.object({
   "id": zod.coerce.number()
 })
 
 
-/**
- * @summary List all tasks
- */
 export const ListTasksQueryParams = zod.object({
   "projectId": zod.coerce.number().optional(),
   "agentId": zod.coerce.number().optional(),
@@ -337,9 +294,6 @@ export const ListTasksResponseItem = zod.object({
 export const ListTasksResponse = zod.array(ListTasksResponseItem)
 
 
-/**
- * @summary Create a new task
- */
 
 export const createTaskBodyStatusDefault = `todo`;
 export const createTaskBodyPriorityDefault = `medium`;
@@ -355,9 +309,6 @@ export const CreateTaskBody = zod.object({
 })
 
 
-/**
- * @summary Get a task by ID
- */
 export const GetTaskParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -378,9 +329,6 @@ export const GetTaskResponse = zod.object({
 })
 
 
-/**
- * @summary Update a task
- */
 export const UpdateTaskParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -414,17 +362,11 @@ export const UpdateTaskResponse = zod.object({
 })
 
 
-/**
- * @summary Delete a task
- */
 export const DeleteTaskParams = zod.object({
   "id": zod.coerce.number()
 })
 
 
-/**
- * @summary Get dashboard summary stats
- */
 export const GetDashboardSummaryResponse = zod.object({
   "totalClients": zod.number(),
   "activeProjects": zod.number(),
@@ -435,9 +377,6 @@ export const GetDashboardSummaryResponse = zod.object({
 })
 
 
-/**
- * @summary Get recent activity feed
- */
 export const GetRecentActivityResponseItem = zod.object({
   "id": zod.number(),
   "type": zod.enum(['client_added', 'project_created', 'project_completed', 'task_done', 'agent_assigned']),
@@ -448,13 +387,728 @@ export const GetRecentActivityResponseItem = zod.object({
 export const GetRecentActivityResponse = zod.array(GetRecentActivityResponseItem)
 
 
-/**
- * @summary Get project counts grouped by status
- */
 export const GetProjectsByStatusResponseItem = zod.object({
   "status": zod.string(),
   "count": zod.number()
 })
 export const GetProjectsByStatusResponse = zod.array(GetProjectsByStatusResponseItem)
+
+
+export const ListProspectsQueryParams = zod.object({
+  "status": zod.coerce.string().optional()
+})
+
+export const ListProspectsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "company": zod.string().nullish(),
+  "industry": zod.string().nullish(),
+  "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']),
+  "source": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListProspectsResponse = zod.array(ListProspectsResponseItem)
+
+
+
+export const createProspectBodyStatusDefault = `lead`;
+
+export const CreateProspectBody = zod.object({
+  "name": zod.string().min(1),
+  "email": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "company": zod.string().optional(),
+  "industry": zod.string().optional(),
+  "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']).default(createProspectBodyStatusDefault),
+  "source": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+export const GetProspectParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetProspectResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "company": zod.string().nullish(),
+  "industry": zod.string().nullish(),
+  "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']),
+  "source": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const UpdateProspectParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateProspectBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "email": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "company": zod.string().optional(),
+  "industry": zod.string().optional(),
+  "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']).optional(),
+  "source": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateProspectResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "company": zod.string().nullish(),
+  "industry": zod.string().nullish(),
+  "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']),
+  "source": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteProspectParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+export const ListDiagnosesQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "prospectId": zod.coerce.number().optional(),
+  "clientId": zod.coerce.number().optional()
+})
+
+export const ListDiagnosesResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "prospectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "content": zod.string().nullish(),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "type": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListDiagnosesResponse = zod.array(ListDiagnosesResponseItem)
+
+
+
+export const createDiagnosisBodyStatusDefault = `draft`;
+export const createDiagnosisBodyTypeDefault = `diagnosis`;
+
+export const CreateDiagnosisBody = zod.object({
+  "title": zod.string().min(1),
+  "prospectId": zod.number().optional(),
+  "clientId": zod.number().optional(),
+  "content": zod.string().optional(),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']).default(createDiagnosisBodyStatusDefault),
+  "type": zod.string().default(createDiagnosisBodyTypeDefault)
+})
+
+
+export const GetDiagnosisParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetDiagnosisResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "prospectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "content": zod.string().nullish(),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "type": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const UpdateDiagnosisParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateDiagnosisBody = zod.object({
+  "title": zod.string().min(1).optional(),
+  "prospectId": zod.number().optional(),
+  "clientId": zod.number().optional(),
+  "content": zod.string().optional(),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']).optional(),
+  "type": zod.string().optional()
+})
+
+export const UpdateDiagnosisResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "prospectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "content": zod.string().nullish(),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "type": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteDiagnosisParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+export const ListProposalsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "prospectId": zod.coerce.number().optional(),
+  "clientId": zod.coerce.number().optional()
+})
+
+export const ListProposalsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "prospectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "amount": zod.number().nullish(),
+  "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListProposalsResponse = zod.array(ListProposalsResponseItem)
+
+
+
+export const createProposalBodyStatusDefault = `draft`;
+
+export const CreateProposalBody = zod.object({
+  "title": zod.string().min(1),
+  "prospectId": zod.number().optional(),
+  "clientId": zod.number().optional(),
+  "amount": zod.number().optional(),
+  "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']).default(createProposalBodyStatusDefault),
+  "notes": zod.string().optional(),
+  "validUntil": zod.string().optional()
+})
+
+
+export const GetProposalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetProposalResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "prospectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "amount": zod.number().nullish(),
+  "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const UpdateProposalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateProposalBody = zod.object({
+  "title": zod.string().min(1).optional(),
+  "prospectId": zod.number().optional(),
+  "clientId": zod.number().optional(),
+  "amount": zod.number().optional(),
+  "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']).optional(),
+  "notes": zod.string().optional(),
+  "validUntil": zod.string().optional()
+})
+
+export const UpdateProposalResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "prospectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "amount": zod.number().nullish(),
+  "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteProposalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+export const ListApprovalsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "type": zod.coerce.string().optional()
+})
+
+export const ListApprovalsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "type": zod.enum(['diagnosis', 'proposal', 'content', 'automation', 'production', 'report', 'campaign', 'invoice', 'email']),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "submittedBy": zod.string().nullish(),
+  "reviewedBy": zod.string().nullish(),
+  "entityId": zod.number().nullish(),
+  "entityType": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListApprovalsResponse = zod.array(ListApprovalsResponseItem)
+
+
+
+export const createApprovalBodyStatusDefault = `draft`;
+
+export const CreateApprovalBody = zod.object({
+  "title": zod.string().min(1),
+  "type": zod.enum(['diagnosis', 'proposal', 'content', 'automation', 'production', 'report', 'campaign', 'invoice', 'email']),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']).default(createApprovalBodyStatusDefault),
+  "submittedBy": zod.string().optional(),
+  "reviewedBy": zod.string().optional(),
+  "entityId": zod.number().optional(),
+  "entityType": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+export const GetApprovalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetApprovalResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "type": zod.enum(['diagnosis', 'proposal', 'content', 'automation', 'production', 'report', 'campaign', 'invoice', 'email']),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "submittedBy": zod.string().nullish(),
+  "reviewedBy": zod.string().nullish(),
+  "entityId": zod.number().nullish(),
+  "entityType": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const UpdateApprovalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateApprovalBody = zod.object({
+  "title": zod.string().min(1).optional(),
+  "type": zod.enum(['diagnosis', 'proposal', 'content', 'automation', 'production', 'report', 'campaign', 'invoice', 'email']).optional(),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']).optional(),
+  "submittedBy": zod.string().optional(),
+  "reviewedBy": zod.string().optional(),
+  "entityId": zod.number().optional(),
+  "entityType": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateApprovalResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "type": zod.enum(['diagnosis', 'proposal', 'content', 'automation', 'production', 'report', 'campaign', 'invoice', 'email']),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "submittedBy": zod.string().nullish(),
+  "reviewedBy": zod.string().nullish(),
+  "entityId": zod.number().nullish(),
+  "entityType": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteApprovalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+export const ListInvoicesQueryParams = zod.object({
+  "clientId": zod.coerce.number().optional(),
+  "status": zod.coerce.string().optional()
+})
+
+export const ListInvoicesResponseItem = zod.object({
+  "id": zod.number(),
+  "number": zod.string(),
+  "clientId": zod.number().nullish(),
+  "clientName": zod.string().nullish(),
+  "amount": zod.number(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "issuedDate": zod.string().nullish(),
+  "dueDate": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListInvoicesResponse = zod.array(ListInvoicesResponseItem)
+
+
+
+export const createInvoiceBodyStatusDefault = `draft`;
+
+export const CreateInvoiceBody = zod.object({
+  "number": zod.string().min(1),
+  "clientId": zod.number().optional(),
+  "amount": zod.number(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).default(createInvoiceBodyStatusDefault),
+  "issuedDate": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "description": zod.string().optional()
+})
+
+
+export const GetInvoiceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetInvoiceResponse = zod.object({
+  "id": zod.number(),
+  "number": zod.string(),
+  "clientId": zod.number().nullish(),
+  "clientName": zod.string().nullish(),
+  "amount": zod.number(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "issuedDate": zod.string().nullish(),
+  "dueDate": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const UpdateInvoiceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateInvoiceBody = zod.object({
+  "number": zod.string().min(1).optional(),
+  "clientId": zod.number().optional(),
+  "amount": zod.number().optional(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).optional(),
+  "issuedDate": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "description": zod.string().optional()
+})
+
+export const UpdateInvoiceResponse = zod.object({
+  "id": zod.number(),
+  "number": zod.string(),
+  "clientId": zod.number().nullish(),
+  "clientName": zod.string().nullish(),
+  "amount": zod.number(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "issuedDate": zod.string().nullish(),
+  "dueDate": zod.string().nullish(),
+  "description": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteInvoiceParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+export const ListSubscriptionsQueryParams = zod.object({
+  "clientId": zod.coerce.number().optional(),
+  "status": zod.coerce.string().optional()
+})
+
+export const ListSubscriptionsResponseItem = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number().nullish(),
+  "clientName": zod.string().nullish(),
+  "plan": zod.string(),
+  "amount": zod.number(),
+  "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']),
+  "status": zod.enum(['active', 'paused', 'cancelled']),
+  "startDate": zod.string().nullish(),
+  "nextBillingDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListSubscriptionsResponse = zod.array(ListSubscriptionsResponseItem)
+
+
+
+export const createSubscriptionBodyBillingCycleDefault = `monthly`;
+export const createSubscriptionBodyStatusDefault = `active`;
+
+export const CreateSubscriptionBody = zod.object({
+  "clientId": zod.number().optional(),
+  "plan": zod.string().min(1),
+  "amount": zod.number(),
+  "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']).default(createSubscriptionBodyBillingCycleDefault),
+  "status": zod.enum(['active', 'paused', 'cancelled']).default(createSubscriptionBodyStatusDefault),
+  "startDate": zod.string().optional(),
+  "nextBillingDate": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+export const GetSubscriptionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetSubscriptionResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number().nullish(),
+  "clientName": zod.string().nullish(),
+  "plan": zod.string(),
+  "amount": zod.number(),
+  "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']),
+  "status": zod.enum(['active', 'paused', 'cancelled']),
+  "startDate": zod.string().nullish(),
+  "nextBillingDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const UpdateSubscriptionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateSubscriptionBody = zod.object({
+  "clientId": zod.number().optional(),
+  "plan": zod.string().min(1).optional(),
+  "amount": zod.number().optional(),
+  "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']).optional(),
+  "status": zod.enum(['active', 'paused', 'cancelled']).optional(),
+  "startDate": zod.string().optional(),
+  "nextBillingDate": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateSubscriptionResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number().nullish(),
+  "clientName": zod.string().nullish(),
+  "plan": zod.string(),
+  "amount": zod.number(),
+  "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']),
+  "status": zod.enum(['active', 'paused', 'cancelled']),
+  "startDate": zod.string().nullish(),
+  "nextBillingDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteSubscriptionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+export const GetRevenueSummaryResponse = zod.object({
+  "mrr": zod.number(),
+  "arr": zod.number(),
+  "highTicketCount": zod.number(),
+  "highTicketTotal": zod.number(),
+  "dormantCount": zod.number(),
+  "activeSubscriptions": zod.number()
+})
+
+
+export const GetMrrTrendResponseItem = zod.object({
+  "month": zod.string(),
+  "mrr": zod.number()
+})
+export const GetMrrTrendResponse = zod.array(GetMrrTrendResponseItem)
+
+
+export const ListCostsQueryParams = zod.object({
+  "month": zod.coerce.string().optional(),
+  "category": zod.coerce.string().optional()
+})
+
+export const ListCostsResponseItem = zod.object({
+  "id": zod.number(),
+  "category": zod.enum(['openai', 'claude', 'gemini', 'whatsapp', 'n8n', 'hosting', 'replit', 'other']),
+  "month": zod.string(),
+  "amount": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListCostsResponse = zod.array(ListCostsResponseItem)
+
+
+export const CreateCostBody = zod.object({
+  "category": zod.enum(['openai', 'claude', 'gemini', 'whatsapp', 'n8n', 'hosting', 'replit', 'other']),
+  "month": zod.string(),
+  "amount": zod.number(),
+  "notes": zod.string().optional()
+})
+
+
+export const GetCostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetCostResponse = zod.object({
+  "id": zod.number(),
+  "category": zod.enum(['openai', 'claude', 'gemini', 'whatsapp', 'n8n', 'hosting', 'replit', 'other']),
+  "month": zod.string(),
+  "amount": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const UpdateCostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateCostBody = zod.object({
+  "category": zod.enum(['openai', 'claude', 'gemini', 'whatsapp', 'n8n', 'hosting', 'replit', 'other']).optional(),
+  "month": zod.string().optional(),
+  "amount": zod.number().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateCostResponse = zod.object({
+  "id": zod.number(),
+  "category": zod.enum(['openai', 'claude', 'gemini', 'whatsapp', 'n8n', 'hosting', 'replit', 'other']),
+  "month": zod.string(),
+  "amount": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteCostParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+export const GetCostSummaryParams = zod.object({
+  "month": zod.coerce.string()
+})
+
+export const GetCostSummaryResponse = zod.object({
+  "month": zod.string(),
+  "totalCosts": zod.number(),
+  "totalRevenue": zod.number(),
+  "estimatedMargin": zod.number(),
+  "breakdown": zod.array(zod.object({
+  "category": zod.string(),
+  "amount": zod.number(),
+  "percentage": zod.number()
+}))
+})
+
+
+export const ListAuditLogsQueryParams = zod.object({
+  "module": zod.coerce.string().optional(),
+  "status": zod.coerce.string().optional(),
+  "limit": zod.coerce.number().optional()
+})
+
+export const ListAuditLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "userId": zod.string().nullish(),
+  "module": zod.string(),
+  "action": zod.string(),
+  "result": zod.string().nullish(),
+  "status": zod.enum(['success', 'error', 'warning']),
+  "metadata": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListAuditLogsResponse = zod.array(ListAuditLogsResponseItem)
+
+
+
+
+export const createAuditLogBodyStatusDefault = `success`;
+
+export const CreateAuditLogBody = zod.object({
+  "userId": zod.string().optional(),
+  "module": zod.string().min(1),
+  "action": zod.string().min(1),
+  "result": zod.string().optional(),
+  "status": zod.enum(['success', 'error', 'warning']).default(createAuditLogBodyStatusDefault),
+  "metadata": zod.string().optional()
+})
+
+
+export const ListConfigResponseItem = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "value": zod.string().nullish(),
+  "updatedAt": zod.string()
+})
+export const ListConfigResponse = zod.array(ListConfigResponseItem)
+
+
+export const GetConfigParams = zod.object({
+  "key": zod.coerce.string()
+})
+
+export const GetConfigResponse = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "value": zod.string().nullish(),
+  "updatedAt": zod.string()
+})
+
+
+export const UpsertConfigParams = zod.object({
+  "key": zod.coerce.string()
+})
+
+export const UpsertConfigBody = zod.object({
+  "value": zod.string()
+})
+
+export const UpsertConfigResponse = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "value": zod.string().nullish(),
+  "updatedAt": zod.string()
+})
 
 
