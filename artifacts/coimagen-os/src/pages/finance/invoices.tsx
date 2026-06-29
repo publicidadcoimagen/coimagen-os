@@ -31,7 +31,7 @@ const STATUSES = ["draft", "sent", "paid", "overdue", "cancelled"];
 export function Invoices() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("all");
-  const { data: invoices, isLoading } = useListInvoices({ query: { queryKey: getListInvoicesQueryKey() } });
+  const { data: invoices, isLoading } = useListInvoices({}, { query: { queryKey: getListInvoicesQueryKey() } });
   const { data: clients } = useListClients();
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();

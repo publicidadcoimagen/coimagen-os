@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
+import { useAuth } from "@workspace/replit-auth-web";
+import { Button } from "@/components/ui/button";
 
 import { Dashboard } from "@/pages/dashboard";
 import { Clients } from "@/pages/clients/index";
@@ -39,6 +41,34 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const { isLoading, isAuthenticated, login } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-muted-foreground text-sm animate-pulse">Cargando...</div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight">COIMAGEN OS</h1>
+          <p className="text-muted-foreground text-sm">Sistema Operativo Interno</p>
+        </div>
+        <Button onClick={login} size="lg">
+          Iniciar sesión con Replit
+        </Button>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 function Router() {
   return (
@@ -96,9 +126,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
+        <AuthGate>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <Router />
+          </WouterRouter>
+        </AuthGate>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

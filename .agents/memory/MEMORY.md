@@ -1,0 +1,2 @@
+- [Generated hook call pattern](hook-call-pattern.md) — useListX(params, options): always pass {} as first arg when you only need to set query options.
+- [Replit Auth setup](replit-auth-setup.md) — Auth fully integrated: sessions table, users table with role column, authMiddleware, requireAuth, auditMiddleware.

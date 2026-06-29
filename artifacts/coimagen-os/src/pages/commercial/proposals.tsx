@@ -26,7 +26,7 @@ const STATUSES = ["draft", "sent", "accepted", "rejected"];
 export function Proposals() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("all");
-  const { data: proposals, isLoading } = useListProposals({ query: { queryKey: getListProposalsQueryKey() } });
+  const { data: proposals, isLoading } = useListProposals({}, { query: { queryKey: getListProposalsQueryKey() } });
   const createProposal = useCreateProposal();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", amount: "", status: "draft", validUntil: "", notes: "" });

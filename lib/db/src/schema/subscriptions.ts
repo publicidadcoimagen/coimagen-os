@@ -1,10 +1,11 @@
 import { pgTable, serial, text, timestamp, integer, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { clientsTable } from "./clients";
 
 export const subscriptionsTable = pgTable("subscriptions", {
   id: serial("id").primaryKey(),
-  clientId: integer("client_id"),
+  clientId: integer("client_id").references(() => clientsTable.id, { onDelete: "cascade" }),
   plan: text("plan").notNull(),
   amount: numeric("amount").notNull(),
   billingCycle: text("billing_cycle").notNull().default("monthly"),

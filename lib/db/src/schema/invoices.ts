@@ -1,11 +1,12 @@
 import { pgTable, serial, text, timestamp, integer, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { clientsTable } from "./clients";
 
 export const invoicesTable = pgTable("invoices", {
   id: serial("id").primaryKey(),
   number: text("number").notNull(),
-  clientId: integer("client_id"),
+  clientId: integer("client_id").references(() => clientsTable.id, { onDelete: "cascade" }),
   amount: numeric("amount").notNull(),
   status: text("status").notNull().default("draft"),
   issuedDate: text("issued_date"),

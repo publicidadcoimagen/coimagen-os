@@ -1,0 +1,91 @@
+NO rediseñes COIMAGEN OS.
+NO cambies la estructura visual principal.
+NO agregues módulos nuevos todavía.
+
+Objetivo:
+Endurecer la seguridad y estabilidad de COIMAGEN OS V1.5 antes de seguir construyendo nuevas funciones.
+
+Implementa únicamente estas mejoras críticas:
+
+1. Autenticación
+- Implementa autenticación segura usando Replit Auth o Clerk, elige la opción más compatible con el proyecto actual.
+- Protege todas las rutas del frontend.
+- Protege todos los endpoints del backend.
+- Si el usuario no está autenticado, redirigir a login.
+- No exponer clientes, finanzas, proyectos, tareas ni agentes sin sesión.
+
+2. Roles mínimos
+Crear roles base:
+- CEO
+- Admin
+- Viewer
+
+Por ahora, CEO y Admin pueden ver y editar todo.
+Viewer solo puede ver.
+
+3. Foreign Keys
+Actualizar el schema Drizzle para agregar Foreign Key constraints reales en PostgreSQL en las relaciones principales:
+- projects.client_id → clients.id
+- tasks.project_id → projects.id
+- tasks.agent_id → agents.id
+- invoices.client_id → clients.id
+- subscriptions.client_id → clients.id
+- proposals.client_id → clients.id
+- diagnoses.client_id → clients.id
+- client_access.client_id → clients.id
+- client_brand.client_id → clients.id
+- client_onboarding.client_id → clients.id
+- client_timeline.client_id → clients.id
+- client_notes.client_id → clients.id
+
+Usar onDelete adecuado:
+- cascade para datos dependientes del cliente
+- set null solo donde sea necesario
+
+4. TypeScript
+Corrige todos los errores TypeScript existentes en:
+- commercial/prospects.tsx
+- finance/invoices.tsx
+- finance/subscriptions.tsx
+- tasks/index.tsx
+- commercial/diagnosis.tsx
+- commercial/proposals.tsx
+- approvals/index.tsx
+
+El objetivo es que `tsc --noEmit` termine con 0 errores.
+
+5. Audit Log Automático
+Implementa auditoría automática para mutaciones exitosas:
+- POST
+- PATCH
+- DELETE
+
+Registrar:
+- módulo
+- acción
+- entidad
+- entity_id
+- timestamp
+- usuario si auth lo permite
+- resultado
+
+6. Endpoint público audit_logs
+El endpoint POST /audit-logs no debe quedar abierto públicamente.
+Debe estar protegido por autenticación.
+
+7. No tocar todavía
+No implementes Portal Cliente.
+No implementes CORE AI.
+No implementes Marketplace.
+No implementes nuevos agentes.
+No rediseñes el dashboard.
+No borres módulos existentes.
+
+8. Entrega
+Al finalizar entrega un reporte con:
+- archivos modificados
+- cambios aplicados
+- riesgos resueltos
+- comandos ejecutados
+- resultado de TypeScript
+- si la autenticación quedó funcionando

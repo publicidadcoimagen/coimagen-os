@@ -32,7 +32,7 @@ const STATUSES = ["draft", "pending_approval", "approved", "rejected", "executed
 export function Diagnosis() {
   const qc = useQueryClient();
   const [filterStatus, setFilterStatus] = useState("all");
-  const { data: diagnoses, isLoading } = useListDiagnoses({ query: { queryKey: getListDiagnosesQueryKey() } });
+  const { data: diagnoses, isLoading } = useListDiagnoses({}, { query: { queryKey: getListDiagnosesQueryKey() } });
   const createDiagnosis = useCreateDiagnosis();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", content: "", type: "diagnosis", status: "draft" });

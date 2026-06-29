@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
+import authRouter from "./auth";
 import clientsRouter from "./clients";
 import clientAccessRouter from "./client-access";
 import clientBrandRouter from "./client-brand";
@@ -20,10 +21,18 @@ import revenueRouter from "./revenue";
 import costsRouter from "./costs";
 import auditLogsRouter from "./audit-logs";
 import configRouter from "./config";
+import { requireAuth } from "../middlewares/requireAuth";
+import { auditMiddleware } from "../middlewares/auditMiddleware";
 
 const router: IRouter = Router();
 
+router.use(auditMiddleware);
+
 router.use(healthRouter);
+router.use(authRouter);
+
+router.use(requireAuth);
+
 router.use(clientsRouter);
 router.use(clientAccessRouter);
 router.use(clientBrandRouter);

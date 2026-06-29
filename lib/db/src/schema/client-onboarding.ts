@@ -1,10 +1,11 @@
 import { pgTable, serial, integer, text, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { clientsTable } from "./clients";
 
 export const clientOnboardingTable = pgTable("client_onboarding", {
   id: serial("id").primaryKey(),
-  clientId: integer("client_id").notNull().unique(),
+  clientId: integer("client_id").notNull().unique().references(() => clientsTable.id, { onDelete: "cascade" }),
   hasLogo: boolean("has_logo").notNull().default(false),
   hasWebsiteAccess: boolean("has_website_access").notNull().default(false),
   hasDomainAccess: boolean("has_domain_access").notNull().default(false),
@@ -20,10 +21,6 @@ export const clientOnboardingTable = pgTable("client_onboarding", {
   updatedAt: timestamp("updated_at"),
 });
 
-export const insertClientOnboardingSchema = createInsertSchema(clientOnboardingTable).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertClientOnboardingSchema = createInsertSchema(clientOnboardingTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertClientOnboarding = z.infer<typeof insertClientOnboardingSchema>;
 export type ClientOnboarding = typeof clientOnboardingTable.$inferSelect;

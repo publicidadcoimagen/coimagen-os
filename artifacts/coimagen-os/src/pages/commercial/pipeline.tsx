@@ -16,7 +16,7 @@ const STATUS_COLORS: Record<string, string> = { lead: "text-blue-400", qualified
 
 export function Pipeline() {
   const qc = useQueryClient();
-  const { data: prospects, isLoading: lp } = useListProspects({ query: { queryKey: getListProspectsQueryKey() } });
+  const { data: prospects, isLoading: lp } = useListProspects({}, { query: { queryKey: getListProspectsQueryKey() } });
   const { data: proposals } = useListProposals();
   const updateProspect = useUpdateProspect();
 

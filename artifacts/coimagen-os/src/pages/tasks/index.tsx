@@ -8,9 +8,10 @@ import { Calendar, User, FolderKanban, Plus } from "lucide-react";
 import { formatDate } from "@/lib/format";
 
 export function Tasks() {
-  const { data: tasks, isLoading } = useListTasks({
-    query: { queryKey: getListTasksQueryKey() }
-  });
+  const { data: tasks, isLoading } = useListTasks(
+    {},
+    { query: { queryKey: getListTasksQueryKey() } }
+  );
 
   // Group tasks by status for Kanban view
   const columns = [

@@ -1,10 +1,11 @@
 import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { clientsTable } from "./clients";
 
 export const clientBrandTable = pgTable("client_brand", {
   id: serial("id").primaryKey(),
-  clientId: integer("client_id").notNull().unique(),
+  clientId: integer("client_id").notNull().unique().references(() => clientsTable.id, { onDelete: "cascade" }),
   logoUrl: text("logo_url"),
   brandColors: text("brand_colors"),
   fonts: text("fonts"),
@@ -18,10 +19,6 @@ export const clientBrandTable = pgTable("client_brand", {
   updatedAt: timestamp("updated_at"),
 });
 
-export const insertClientBrandSchema = createInsertSchema(clientBrandTable).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+export const insertClientBrandSchema = createInsertSchema(clientBrandTable).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertClientBrand = z.infer<typeof insertClientBrandSchema>;
 export type ClientBrand = typeof clientBrandTable.$inferSelect;

@@ -40,7 +40,7 @@ const badgeColor: Record<string, string> = {
 
 export function Prospects() {
   const qc = useQueryClient();
-  const { data: prospects, isLoading } = useListProspects({ query: { queryKey: getListProspectsQueryKey() } });
+  const { data: prospects, isLoading } = useListProspects({}, { query: { queryKey: getListProspectsQueryKey() } });
   const createProspect = useCreateProspect();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", industry: "", source: "", notes: "", status: "lead" });

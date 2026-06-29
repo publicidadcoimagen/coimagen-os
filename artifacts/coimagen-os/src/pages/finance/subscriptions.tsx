@@ -26,7 +26,7 @@ const STATUS_COLOR: Record<string, string> = {
 
 export function Subscriptions() {
   const qc = useQueryClient();
-  const { data: subs, isLoading } = useListSubscriptions({ query: { queryKey: getListSubscriptionsQueryKey() } });
+  const { data: subs, isLoading } = useListSubscriptions({}, { query: { queryKey: getListSubscriptionsQueryKey() } });
   const { data: clients } = useListClients();
   const createSub = useCreateSubscription();
   const [open, setOpen] = useState(false);

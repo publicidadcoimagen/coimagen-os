@@ -39,7 +39,7 @@ const ALL_TYPES = ["diagnosis", "proposal", "content", "automation", "production
 export function Approvals() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("all");
-  const { data: approvals, isLoading } = useListApprovals({ query: { queryKey: getListApprovalsQueryKey() } });
+  const { data: approvals, isLoading } = useListApprovals({}, { query: { queryKey: getListApprovalsQueryKey() } });
   const createApproval = useCreateApproval();
   const updateApproval = useUpdateApproval();
   const [open, setOpen] = useState(false);

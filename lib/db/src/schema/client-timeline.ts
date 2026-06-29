@@ -1,10 +1,11 @@
 import { pgTable, serial, integer, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+import { clientsTable } from "./clients";
 
 export const clientTimelineTable = pgTable("client_timeline", {
   id: serial("id").primaryKey(),
-  clientId: integer("client_id").notNull(),
+  clientId: integer("client_id").notNull().references(() => clientsTable.id, { onDelete: "cascade" }),
   eventType: text("event_type").notNull().default("note"),
   title: text("title").notNull(),
   description: text("description"),
@@ -12,9 +13,6 @@ export const clientTimelineTable = pgTable("client_timeline", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertClientTimelineSchema = createInsertSchema(clientTimelineTable).omit({
-  id: true,
-  createdAt: true,
-});
+export const insertClientTimelineSchema = createInsertSchema(clientTimelineTable).omit({ id: true, createdAt: true });
 export type InsertClientTimeline = z.infer<typeof insertClientTimelineSchema>;
 export type ClientTimeline = typeof clientTimelineTable.$inferSelect;
