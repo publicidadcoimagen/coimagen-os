@@ -110,6 +110,8 @@ import type {
   RoadmapItem,
   RoadmapItemCreate,
   RoadmapItemUpdate,
+  SmartOnboarding,
+  SmartOnboardingUpdate,
   StatusCount,
   Subscription,
   SubscriptionInput,
@@ -3241,6 +3243,442 @@ export const useUnassignAgentProject = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUnassignAgentProjectMutationOptions(options));
+    }
+
+export const getListSmartOnboardingsUrl = () => {
+
+
+
+
+  return `/api/onboardings`
+}
+
+/**
+ * @summary List all smart onboardings
+ */
+export const listSmartOnboardings = async ( options?: RequestInit): Promise<SmartOnboarding[]> => {
+
+  return customFetch<SmartOnboarding[]>(getListSmartOnboardingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSmartOnboardingsQueryKey = () => {
+    return [
+    `/api/onboardings`
+    ] as const;
+    }
+
+
+export const getListSmartOnboardingsQueryOptions = <TData = Awaited<ReturnType<typeof listSmartOnboardings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSmartOnboardings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSmartOnboardingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSmartOnboardings>>> = ({ signal }) => listSmartOnboardings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSmartOnboardings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSmartOnboardingsQueryResult = NonNullable<Awaited<ReturnType<typeof listSmartOnboardings>>>
+export type ListSmartOnboardingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all smart onboardings
+ */
+
+export function useListSmartOnboardings<TData = Awaited<ReturnType<typeof listSmartOnboardings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSmartOnboardings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSmartOnboardingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateSmartOnboardingUrl = () => {
+
+
+
+
+  return `/api/onboardings`
+}
+
+/**
+ * @summary Create a new onboarding draft
+ */
+export const createSmartOnboarding = async ( options?: RequestInit): Promise<SmartOnboarding> => {
+
+  return customFetch<SmartOnboarding>(getCreateSmartOnboardingUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCreateSmartOnboardingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmartOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSmartOnboarding>>, TError,void, TContext> => {
+
+const mutationKey = ['createSmartOnboarding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSmartOnboarding>>, void> = () => {
+
+
+          return  createSmartOnboarding(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSmartOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof createSmartOnboarding>>>
+
+    export type CreateSmartOnboardingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a new onboarding draft
+ */
+export const useCreateSmartOnboarding = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSmartOnboarding>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSmartOnboarding>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCreateSmartOnboardingMutationOptions(options));
+    }
+
+export const getGetSmartOnboardingUrl = (id: number,) => {
+
+
+
+
+  return `/api/onboardings/${id}`
+}
+
+/**
+ * @summary Get onboarding by id
+ */
+export const getSmartOnboarding = async (id: number, options?: RequestInit): Promise<SmartOnboarding> => {
+
+  return customFetch<SmartOnboarding>(getGetSmartOnboardingUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSmartOnboardingQueryKey = (id: number,) => {
+    return [
+    `/api/onboardings/${id}`
+    ] as const;
+    }
+
+
+export const getGetSmartOnboardingQueryOptions = <TData = Awaited<ReturnType<typeof getSmartOnboarding>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSmartOnboarding>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSmartOnboardingQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSmartOnboarding>>> = ({ signal }) => getSmartOnboarding(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSmartOnboarding>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSmartOnboardingQueryResult = NonNullable<Awaited<ReturnType<typeof getSmartOnboarding>>>
+export type GetSmartOnboardingQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get onboarding by id
+ */
+
+export function useGetSmartOnboarding<TData = Awaited<ReturnType<typeof getSmartOnboarding>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSmartOnboarding>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSmartOnboardingQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateSmartOnboardingUrl = (id: number,) => {
+
+
+
+
+  return `/api/onboardings/${id}`
+}
+
+/**
+ * @summary Update onboarding (save draft)
+ */
+export const updateSmartOnboarding = async (id: number,
+    smartOnboardingUpdate: SmartOnboardingUpdate, options?: RequestInit): Promise<SmartOnboarding> => {
+
+  return customFetch<SmartOnboarding>(getUpdateSmartOnboardingUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      smartOnboardingUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateSmartOnboardingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmartOnboarding>>, TError,{id: number;data: BodyType<SmartOnboardingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSmartOnboarding>>, TError,{id: number;data: BodyType<SmartOnboardingUpdate>}, TContext> => {
+
+const mutationKey = ['updateSmartOnboarding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSmartOnboarding>>, {id: number;data: BodyType<SmartOnboardingUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateSmartOnboarding(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSmartOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof updateSmartOnboarding>>>
+    export type UpdateSmartOnboardingMutationBody = BodyType<SmartOnboardingUpdate>
+    export type UpdateSmartOnboardingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update onboarding (save draft)
+ */
+export const useUpdateSmartOnboarding = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSmartOnboarding>>, TError,{id: number;data: BodyType<SmartOnboardingUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSmartOnboarding>>,
+        TError,
+        {id: number;data: BodyType<SmartOnboardingUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateSmartOnboardingMutationOptions(options));
+    }
+
+export const getDeleteSmartOnboardingUrl = (id: number,) => {
+
+
+
+
+  return `/api/onboardings/${id}`
+}
+
+/**
+ * @summary Delete onboarding
+ */
+export const deleteSmartOnboarding = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteSmartOnboardingUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteSmartOnboardingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSmartOnboarding>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSmartOnboarding>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteSmartOnboarding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSmartOnboarding>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteSmartOnboarding(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSmartOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSmartOnboarding>>>
+
+    export type DeleteSmartOnboardingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete onboarding
+ */
+export const useDeleteSmartOnboarding = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSmartOnboarding>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSmartOnboarding>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteSmartOnboardingMutationOptions(options));
+    }
+
+export const getCompleteSmartOnboardingUrl = (id: number,) => {
+
+
+
+
+  return `/api/onboardings/${id}/complete`
+}
+
+/**
+ * @summary Complete onboarding and auto-create entities
+ */
+export const completeSmartOnboarding = async (id: number, options?: RequestInit): Promise<SmartOnboarding> => {
+
+  return customFetch<SmartOnboarding>(getCompleteSmartOnboardingUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCompleteSmartOnboardingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSmartOnboarding>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeSmartOnboarding>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['completeSmartOnboarding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeSmartOnboarding>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  completeSmartOnboarding(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteSmartOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof completeSmartOnboarding>>>
+
+    export type CompleteSmartOnboardingMutationError = ErrorType<void>
+
+    /**
+ * @summary Complete onboarding and auto-create entities
+ */
+export const useCompleteSmartOnboarding = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeSmartOnboarding>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof completeSmartOnboarding>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getCompleteSmartOnboardingMutationOptions(options));
     }
 
 export const getListTasksUrl = (params?: ListTasksParams,) => {

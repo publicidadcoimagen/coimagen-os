@@ -717,6 +717,89 @@ paths:
         "204":
           description: Unassigned
 
+  # ─── SMART ONBOARDING ───────────────────────────────────────────────────────
+  /onboardings:
+    get:
+      operationId: listSmartOnboardings
+      tags: [onboarding]
+      summary: List all smart onboardings
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SmartOnboarding"
+    post:
+      operationId: createSmartOnboarding
+      tags: [onboarding]
+      summary: Create a new onboarding draft
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmartOnboarding"
+  /onboardings/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: getSmartOnboarding
+      tags: [onboarding]
+      summary: Get onboarding by id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmartOnboarding"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateSmartOnboarding
+      tags: [onboarding]
+      summary: Update onboarding (save draft)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SmartOnboardingUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmartOnboarding"
+    delete:
+      operationId: deleteSmartOnboarding
+      tags: [onboarding]
+      summary: Delete onboarding
+      responses:
+        "204":
+          description: Deleted
+  /onboardings/{id}/complete:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    post:
+      operationId: completeSmartOnboarding
+      tags: [onboarding]
+      summary: Complete onboarding and auto-create entities
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmartOnboarding"
+        "404":
+          description: Not found
+
   # ─── TASKS ─────────────────────────────────────────────────────────────────
   /tasks:
     get:
@@ -3040,6 +3123,76 @@ components:
         status: { type: string }
 
     # ─── BACKLOG ──────────────────────────────────────────────────────────────
+    SmartOnboarding:
+      type: object
+      required: [id, status, currentStep, createdAt]
+      properties:
+        id: { type: integer }
+        status: { type: string }
+        currentStep: { type: integer }
+        step1:
+          type: object
+          nullable: true
+          additionalProperties: true
+        step2:
+          type: object
+          nullable: true
+          additionalProperties: true
+        step3:
+          type: object
+          nullable: true
+          additionalProperties: true
+        step4:
+          type: object
+          nullable: true
+          additionalProperties: true
+        step5:
+          type: object
+          nullable: true
+          additionalProperties: true
+        step6:
+          type: object
+          nullable: true
+          additionalProperties: true
+        step7:
+          type: object
+          nullable: true
+          additionalProperties: true
+        completedEntities:
+          type: object
+          nullable: true
+          additionalProperties: true
+        clientId: { type: integer, nullable: true }
+        completedAt: { type: string, nullable: true }
+        createdAt: { type: string }
+        updatedAt: { type: string, nullable: true }
+    SmartOnboardingUpdate:
+      type: object
+      properties:
+        currentStep: { type: integer }
+        status: { type: string }
+        step1:
+          type: object
+          additionalProperties: true
+        step2:
+          type: object
+          additionalProperties: true
+        step3:
+          type: object
+          additionalProperties: true
+        step4:
+          type: object
+          additionalProperties: true
+        step5:
+          type: object
+          additionalProperties: true
+        step6:
+          type: object
+          additionalProperties: true
+        step7:
+          type: object
+          additionalProperties: true
+
     BacklogItem:
       type: object
       required: [id, title, status, priority, createdAt]

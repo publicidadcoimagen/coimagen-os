@@ -1,0 +1,295 @@
+COIMAGEN OS V1.6.5
+
+NO rediseñar el sistema.
+
+NO modificar HQ.
+
+NO modificar AI Agents.
+
+NO modificar Backlog.
+
+NO modificar Roadmap.
+
+NO modificar Clientes existentes.
+
+NO modificar autenticación.
+
+====================================================
+
+OBJETIVO
+
+Construir el Smart Client Onboarding.
+
+Este módulo será el punto de entrada de todos los nuevos clientes.
+
+Todo cliente deberá ingresar al sistema mediante este flujo.
+
+====================================================
+
+Crear un nuevo módulo:
+
+SMART CLIENT ONBOARDING
+
+Agregarlo al menú principal.
+
+====================================================
+
+El proceso deberá dividirse en etapas.
+
+ETAPA 1
+
+Información General
+
+• Empresa
+
+• Nombre comercial
+
+• Razón social
+
+• Industria
+
+• País
+
+• Ciudad
+
+• Sitio web
+
+• Redes sociales
+
+• Contacto principal
+
+• Email
+
+• WhatsApp
+
+====================================================
+
+ETAPA 2
+
+Servicios contratados
+
+Permitir seleccionar múltiples.
+
+Marketing Digital
+
+SEO
+
+Google Business
+
+Sitio Web
+
+Landing Pages
+
+Automatización
+
+AI Agents
+
+Medical OS
+
+Restaurant OS
+
+Law OS
+
+Real Estate OS
+
+Cloud Systems
+
+Consultoría
+
+Otro
+
+====================================================
+
+ETAPA 3
+
+Objetivos
+
+Registrar.
+
+Objetivos del cliente
+
+Problemas actuales
+
+Competencia
+
+KPIs esperados
+
+Prioridad
+
+====================================================
+
+ETAPA 4
+
+Accesos
+
+Registrar credenciales.
+
+Dominio
+
+Hosting
+
+Google
+
+Facebook
+
+Instagram
+
+TikTok
+
+LinkedIn
+
+YouTube
+
+Analytics
+
+Search Console
+
+Google Business
+
+Jotform
+
+OpenAI
+
+Anthropic
+
+Replit
+
+GitHub
+
+Otros
+
+Las contraseñas deberán almacenarse cifradas.
+
+====================================================
+
+ETAPA 5
+
+Branding
+
+Logo
+
+Colores
+
+Tipografía
+
+Manual de marca
+
+Fotografías
+
+Videos
+
+Archivos
+
+====================================================
+
+ETAPA 6
+
+Documentación
+
+Contrato
+
+NDA
+
+Brief
+
+Cuestionarios
+
+Archivos
+
+PDF
+
+Presentaciones
+
+====================================================
+
+ETAPA 7
+
+Asignación Inteligente
+
+Seleccionar automáticamente.
+
+Mundo
+
+Director
+
+Agentes
+
+Automatizaciones
+
+Proyecto
+
+Backlog
+
+====================================================
+
+Al finalizar el Onboarding el sistema deberá crear automáticamente.
+
+Cliente.
+
+Proyecto.
+
+Backlog.
+
+Checklist.
+
+Timeline.
+
+Carpeta documental.
+
+KPIs.
+
+Historial.
+
+Relaciones.
+
+====================================================
+
+Agregar una barra de progreso.
+
+Mostrar porcentaje completado.
+
+Permitir guardar borradores.
+
+Permitir continuar después.
+
+====================================================
+
+Crear un checklist automático.
+
+Pendiente
+
+En proceso
+
+Completado
+
+====================================================
+
+Preparar integración futura con.
+
+Jotform
+
+n8n
+
+Google Drive
+
+Google Calendar
+
+Gmail
+
+WhatsApp
+
+====================================================
+
+NO conectar APIs todavía.
+
+Solo dejar la estructura preparada.
+
+====================================================
+
+Mantener TypeScript en cero errores.
+
+Mantener QA.
+
+Mantener autenticación.
+
+Entregar reporte final.

@@ -1,0 +1,211 @@
+COIMAGEN OS V1.6.4
+
+NO crear un nuevo módulo.
+
+NO crear Agent Factory.
+
+NO duplicar AI Agents.
+
+El módulo AI Agents existente será la base de AI Agents Pro.
+
+Objetivo:
+
+Convertir AI Agents en el verdadero centro de administración de todos los agentes de COIMAGEN.
+
+====================================================
+
+Cada agente deberá tener ahora:
+
+• Mundo
+
+• Director
+
+• Objetivo
+
+• Especialidad
+
+• Estado
+
+• Prioridad
+
+• Modelo IA
+
+• Prompt Maestro
+
+• Herramientas
+
+• Automatizaciones
+
+• KPIs
+
+• Entradas
+
+• Salidas
+
+• Clientes asignados
+
+• Proyectos asignados
+
+• Versiones
+
+• Historial
+
+• Dependencias
+
+• Documentación
+
+====================================================
+
+Agregar pestañas.
+
+General
+
+Prompt
+
+Herramientas
+
+Automatizaciones
+
+Clientes
+
+Proyectos
+
+KPIs
+
+Logs
+
+Versiones
+
+Documentación
+
+====================================================
+
+Modelos IA
+
+Preparar soporte para:
+
+ChatGPT
+
+Claude
+
+Gemini
+
+Perplexity
+
+Grok
+
+DeepSeek
+
+OpenRouter
+
+Modelo personalizado
+
+====================================================
+
+Herramientas
+
+Preparar catálogo.
+
+OpenAI
+
+Anthropic
+
+Google
+
+n8n
+
+Replit
+
+GitHub
+
+Jotform
+
+WhatsApp
+
+Google Drive
+
+Gmail
+
+Calendar
+
+Search Console
+
+Analytics
+
+Facebook
+
+Instagram
+
+TikTok
+
+LinkedIn
+
+YouTube
+
+====================================================
+
+Prompts
+
+Cada agente deberá tener su Prompt Maestro.
+
+Historial de versiones.
+
+Fecha.
+
+Autor.
+
+Notas.
+
+====================================================
+
+Agregar búsqueda.
+
+Agregar filtros.
+
+Agregar ordenamiento.
+
+Agregar categorías.
+
+====================================================
+
+Categorías iniciales.
+
+Marketing
+
+SEO
+
+Ventas
+
+Clientes
+
+Producción
+
+Finanzas
+
+Administración
+
+Cloud
+
+Automatización
+
+CEO
+
+====================================================
+
+NO crear todavía conexiones reales.
+
+NO ejecutar automatizaciones.
+
+NO consumir APIs.
+
+Construir únicamente la administración profesional de los agentes.
+
+====================================================
+
+Mantener cero errores TypeScript.
+
+Mantener autenticación.
+
+Mantener QA.
+
+Entregar reporte final.

@@ -882,6 +882,127 @@ export const UnassignAgentProjectParams = zod.object({
 })
 
 
+/**
+ * @summary List all smart onboardings
+ */
+export const ListSmartOnboardingsResponseItem = zod.object({
+  "id": zod.number(),
+  "status": zod.string(),
+  "currentStep": zod.number(),
+  "step1": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step2": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step3": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step4": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step5": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step6": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step7": zod.record(zod.string(), zod.unknown()).nullish(),
+  "completedEntities": zod.record(zod.string(), zod.unknown()).nullish(),
+  "clientId": zod.number().nullish(),
+  "completedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListSmartOnboardingsResponse = zod.array(ListSmartOnboardingsResponseItem)
+
+
+/**
+ * @summary Get onboarding by id
+ */
+export const GetSmartOnboardingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetSmartOnboardingResponse = zod.object({
+  "id": zod.number(),
+  "status": zod.string(),
+  "currentStep": zod.number(),
+  "step1": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step2": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step3": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step4": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step5": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step6": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step7": zod.record(zod.string(), zod.unknown()).nullish(),
+  "completedEntities": zod.record(zod.string(), zod.unknown()).nullish(),
+  "clientId": zod.number().nullish(),
+  "completedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update onboarding (save draft)
+ */
+export const UpdateSmartOnboardingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateSmartOnboardingBody = zod.object({
+  "currentStep": zod.number().optional(),
+  "status": zod.string().optional(),
+  "step1": zod.record(zod.string(), zod.unknown()).optional(),
+  "step2": zod.record(zod.string(), zod.unknown()).optional(),
+  "step3": zod.record(zod.string(), zod.unknown()).optional(),
+  "step4": zod.record(zod.string(), zod.unknown()).optional(),
+  "step5": zod.record(zod.string(), zod.unknown()).optional(),
+  "step6": zod.record(zod.string(), zod.unknown()).optional(),
+  "step7": zod.record(zod.string(), zod.unknown()).optional()
+})
+
+export const UpdateSmartOnboardingResponse = zod.object({
+  "id": zod.number(),
+  "status": zod.string(),
+  "currentStep": zod.number(),
+  "step1": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step2": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step3": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step4": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step5": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step6": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step7": zod.record(zod.string(), zod.unknown()).nullish(),
+  "completedEntities": zod.record(zod.string(), zod.unknown()).nullish(),
+  "clientId": zod.number().nullish(),
+  "completedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete onboarding
+ */
+export const DeleteSmartOnboardingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Complete onboarding and auto-create entities
+ */
+export const CompleteSmartOnboardingParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CompleteSmartOnboardingResponse = zod.object({
+  "id": zod.number(),
+  "status": zod.string(),
+  "currentStep": zod.number(),
+  "step1": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step2": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step3": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step4": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step5": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step6": zod.record(zod.string(), zod.unknown()).nullish(),
+  "step7": zod.record(zod.string(), zod.unknown()).nullish(),
+  "completedEntities": zod.record(zod.string(), zod.unknown()).nullish(),
+  "clientId": zod.number().nullish(),
+  "completedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
 export const ListTasksQueryParams = zod.object({
   "projectId": zod.coerce.number().optional(),
   "agentId": zod.coerce.number().optional(),

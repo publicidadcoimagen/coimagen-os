@@ -28,3 +28,4 @@ export * from "./mundos";
 export * from "./agent-prompt-versions";
 export * from "./agent-clients";
 export * from "./agent-projects";
+export * from "./smart-onboarding";

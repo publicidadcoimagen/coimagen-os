@@ -1424,6 +1424,66 @@ export interface SystemUserUpdate {
   status?: string;
 }
 
+export type SmartOnboardingStep1 = { [key: string]: unknown } | null;
+
+export type SmartOnboardingStep2 = { [key: string]: unknown } | null;
+
+export type SmartOnboardingStep3 = { [key: string]: unknown } | null;
+
+export type SmartOnboardingStep4 = { [key: string]: unknown } | null;
+
+export type SmartOnboardingStep5 = { [key: string]: unknown } | null;
+
+export type SmartOnboardingStep6 = { [key: string]: unknown } | null;
+
+export type SmartOnboardingStep7 = { [key: string]: unknown } | null;
+
+export type SmartOnboardingCompletedEntities = { [key: string]: unknown } | null;
+
+export interface SmartOnboarding {
+  id: number;
+  status: string;
+  currentStep: number;
+  step1?: SmartOnboardingStep1;
+  step2?: SmartOnboardingStep2;
+  step3?: SmartOnboardingStep3;
+  step4?: SmartOnboardingStep4;
+  step5?: SmartOnboardingStep5;
+  step6?: SmartOnboardingStep6;
+  step7?: SmartOnboardingStep7;
+  completedEntities?: SmartOnboardingCompletedEntities;
+  clientId?: number | null;
+  completedAt?: string | null;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export type SmartOnboardingUpdateStep1 = { [key: string]: unknown };
+
+export type SmartOnboardingUpdateStep2 = { [key: string]: unknown };
+
+export type SmartOnboardingUpdateStep3 = { [key: string]: unknown };
+
+export type SmartOnboardingUpdateStep4 = { [key: string]: unknown };
+
+export type SmartOnboardingUpdateStep5 = { [key: string]: unknown };
+
+export type SmartOnboardingUpdateStep6 = { [key: string]: unknown };
+
+export type SmartOnboardingUpdateStep7 = { [key: string]: unknown };
+
+export interface SmartOnboardingUpdate {
+  currentStep?: number;
+  status?: string;
+  step1?: SmartOnboardingUpdateStep1;
+  step2?: SmartOnboardingUpdateStep2;
+  step3?: SmartOnboardingUpdateStep3;
+  step4?: SmartOnboardingUpdateStep4;
+  step5?: SmartOnboardingUpdateStep5;
+  step6?: SmartOnboardingUpdateStep6;
+  step7?: SmartOnboardingUpdateStep7;
+}
+
 export interface BacklogItem {
   id: number;
   title: string;
