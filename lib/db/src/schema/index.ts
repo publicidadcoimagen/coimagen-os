@@ -32,3 +32,5 @@ export * from "./smart-onboarding";
 export * from "./workflows";
 export * from "./workflow-templates";
 export * from "./workflow-stage-logs";
+export * from "./incidents";
+export * from "./tickets";

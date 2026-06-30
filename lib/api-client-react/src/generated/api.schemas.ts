@@ -1975,6 +1975,145 @@ export interface MundoUpdate {
   directorId?: number;
 }
 
+export interface Incident {
+  id: number;
+  type: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  severity: string;
+  priority: string;
+  status: string;
+  /** @nullable */
+  module?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  workflowId?: number | null;
+  /** @nullable */
+  mundoId?: number | null;
+  /** @nullable */
+  agentId?: number | null;
+  /** @nullable */
+  evidences?: string | null;
+  /** @nullable */
+  logs?: string | null;
+  /** @nullable */
+  date?: string | null;
+  /** @nullable */
+  timeSpent?: number | null;
+  /** @nullable */
+  responsibleId?: string | null;
+  /** @nullable */
+  solution?: string | null;
+  /** @nullable */
+  lessonLearned?: string | null;
+  /** @nullable */
+  ticketId?: number | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface IncidentCreate {
+  type?: string;
+  title: string;
+  description?: string;
+  severity?: string;
+  priority?: string;
+  module?: string;
+  clientId?: number;
+  projectId?: number;
+  workflowId?: number;
+  mundoId?: number;
+  agentId?: number;
+  evidences?: string;
+  logs?: string;
+  date?: string;
+  timeSpent?: number;
+  responsibleId?: string;
+  solution?: string;
+  lessonLearned?: string;
+}
+
+export interface IncidentUpdate {
+  type?: string;
+  title?: string;
+  description?: string;
+  severity?: string;
+  priority?: string;
+  status?: string;
+  module?: string;
+  clientId?: number;
+  projectId?: number;
+  workflowId?: number;
+  mundoId?: number;
+  agentId?: number;
+  evidences?: string;
+  logs?: string;
+  date?: string;
+  timeSpent?: number;
+  responsibleId?: string;
+  solution?: string;
+  lessonLearned?: string;
+  ticketId?: number;
+}
+
+export interface ConvertTicketBody {
+  assignedToType?: string;
+  assignedToId?: string;
+  assignedToName?: string;
+  dueDate?: string;
+  notes?: string;
+}
+
+export interface QcTicket {
+  id: number;
+  /** @nullable */
+  incidentId?: number | null;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  status: string;
+  priority: string;
+  /** @nullable */
+  assignedToType?: string | null;
+  /** @nullable */
+  assignedToId?: string | null;
+  /** @nullable */
+  assignedToName?: string | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
+  resolvedAt?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface QcTicketUpdate {
+  title?: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  assignedToType?: string;
+  assignedToId?: string;
+  assignedToName?: string;
+  projectId?: number;
+  clientId?: number;
+  dueDate?: string;
+  resolvedAt?: string;
+  notes?: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
@@ -2042,5 +2181,18 @@ export type ListAuditLogsParams = {
 module?: string;
 status?: string;
 limit?: number;
+};
+
+export type ListIncidentsParams = {
+status?: string;
+type?: string;
+severity?: string;
+priority?: string;
+clientId?: number;
+};
+
+export type ListQcTicketsParams = {
+status?: string;
+incidentId?: number;
 };
 

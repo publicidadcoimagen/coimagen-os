@@ -49,6 +49,13 @@ import { SmartOnboardingWizard } from "@/pages/onboarding/[id]";
 import { WorkflowEngine } from "@/pages/workflow-engine/index";
 import { WorkflowDetail } from "@/pages/workflow-engine/[id]";
 import { WorkflowTemplates } from "@/pages/workflow-engine/templates";
+import { QualityCenter } from "@/pages/quality-center/index";
+import { IncidentCenter } from "@/pages/quality-center/incidents/index";
+import { IncidentDetail } from "@/pages/quality-center/incidents/[id]";
+import {
+  CodeReview, QATesting, Performance, Security, Architecture,
+  HealthCheck, TechnicalDebt, Recommendations,
+} from "@/pages/quality-center/submodules";
 
 import { ComingSoon } from "@/pages/coming-soon";
 import { Bot, Users, Factory, Stethoscope, Layers, Cloud } from "lucide-react";
@@ -138,6 +145,17 @@ function Router() {
         <Route path="/workflow-engine" component={WorkflowEngine} />
         <Route path="/workflow-engine/templates" component={WorkflowTemplates} />
         <Route path="/workflow-engine/:id" component={WorkflowDetail} />
+        <Route path="/quality-center" component={QualityCenter} />
+        <Route path="/quality-center/incidents" component={IncidentCenter} />
+        <Route path="/quality-center/incidents/:id" component={IncidentDetail} />
+        <Route path="/quality-center/code-review" component={CodeReview} />
+        <Route path="/quality-center/qa-testing" component={QATesting} />
+        <Route path="/quality-center/performance" component={Performance} />
+        <Route path="/quality-center/security" component={Security} />
+        <Route path="/quality-center/architecture" component={Architecture} />
+        <Route path="/quality-center/health-check" component={HealthCheck} />
+        <Route path="/quality-center/technical-debt" component={TechnicalDebt} />
+        <Route path="/quality-center/recommendations" component={Recommendations} />
 
         <Route path="/coming-soon/ai-agents-pro">
           {() => <ComingSoon title="AI Agents Pro" description="Agentes de IA especializados con capacidades avanzadas de razonamiento, memoria y ejecución autónoma." Icon={Bot} />}

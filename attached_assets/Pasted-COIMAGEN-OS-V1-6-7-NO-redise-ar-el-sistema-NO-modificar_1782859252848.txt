@@ -1,0 +1,311 @@
+COIMAGEN OS V1.6.7
+
+NO rediseñar el sistema.
+
+NO modificar HQ Operations.
+
+NO modificar Workflow Engine.
+
+NO modificar Smart Client Onboarding.
+
+NO modificar AI Agents Pro.
+
+NO eliminar módulos existentes.
+
+====================================================
+
+OBJETIVO
+
+Construir QUALITY CENTER.
+
+Será el centro de calidad, auditoría y mejora continua de COIMAGEN OS.
+
+====================================================
+
+Crear un nuevo módulo:
+
+QUALITY CENTER
+
+Agregarlo al menú principal.
+
+====================================================
+
+QUALITY CENTER tendrá los siguientes submódulos.
+
+• Incident Center
+
+• Code Review
+
+• QA Testing
+
+• Performance
+
+• Security
+
+• Architecture
+
+• Health Check
+
+• Technical Debt
+
+• Recommendations
+
+====================================================
+
+INCIDENT CENTER
+
+Registrar.
+
+Bugs
+
+Incidentes
+
+Mejoras
+
+Optimización
+
+Automatizaciones fallidas
+
+Errores IA
+
+Errores API
+
+Errores Cliente
+
+Errores Producción
+
+====================================================
+
+Cada incidente deberá tener.
+
+ID
+
+Cliente
+
+Proyecto
+
+Workflow
+
+Mundo
+
+Agente
+
+Prioridad
+
+Severidad
+
+Estado
+
+Descripción
+
+Evidencias
+
+Logs
+
+Fecha
+
+Tiempo invertido
+
+Responsable
+
+Solución
+
+Lección aprendida
+
+====================================================
+
+CODE REVIEW
+
+Preparar auditoría automática para.
+
+React
+
+Express
+
+TypeScript
+
+OpenAPI
+
+Drizzle
+
+Componentes
+
+Duplicación
+
+Complejidad
+
+Código muerto
+
+Buenas prácticas
+
+====================================================
+
+QA TESTING
+
+Registrar pruebas.
+
+UI
+
+Backend
+
+Frontend
+
+Responsive
+
+Roles
+
+CRUD
+
+Automatizaciones
+
+Onboarding
+
+Workflow
+
+====================================================
+
+PERFORMANCE
+
+Preparar métricas.
+
+Queries lentas
+
+Render lento
+
+Carga
+
+Lighthouse
+
+Core Web Vitals
+
+Bundle
+
+====================================================
+
+SECURITY
+
+Preparar auditorías.
+
+Roles
+
+Permisos
+
+Endpoints
+
+Variables
+
+Secretos
+
+Autenticación
+
+====================================================
+
+ARCHITECTURE
+
+Preparar reportes.
+
+Componentes
+
+Dependencias
+
+Servicios
+
+Base de datos
+
+Relaciones
+
+Escalabilidad
+
+====================================================
+
+HEALTH CHECK
+
+Mostrar.
+
+Estado general
+
+Errores críticos
+
+Errores medios
+
+Advertencias
+
+Sistema saludable
+
+====================================================
+
+TECHNICAL DEBT
+
+Registrar.
+
+Pendientes técnicos
+
+Refactorización
+
+Código duplicado
+
+Componentes obsoletos
+
+====================================================
+
+RECOMMENDATIONS
+
+Generar recomendaciones.
+
+Alta prioridad
+
+Media
+
+Baja
+
+====================================================
+
+TICKETS
+
+Todos los incidentes deberán convertirse en Tickets.
+
+Cada Ticket deberá poder asignarse a.
+
+Director
+
+Agente
+
+Proyecto
+
+Cliente
+
+====================================================
+
+KPIs
+
+Mostrar.
+
+Errores abiertos
+
+Errores cerrados
+
+Tiempo promedio de solución
+
+Errores críticos
+
+Errores por cliente
+
+Errores por agente
+
+Errores por módulo
+
+====================================================
+
+NO conectar todavía herramientas externas.
+
+Solo dejar preparada la estructura.
+
+====================================================
+
+Mantener TypeScript en cero errores.
+
+Mantener QA.
+
+Mantener autenticación.
+
+Entregar reporte final.

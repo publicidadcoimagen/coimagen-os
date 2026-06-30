@@ -31,6 +31,8 @@ import automationsRouter from "./automations";
 import smartOnboardingRouter from "./smart-onboarding";
 import workflowsRouter from "./workflows";
 import workflowTemplatesRouter from "./workflow-templates";
+import incidentsRouter from "./incidents";
+import qualityTicketsRouter from "./quality-tickets";
 import orgRouter from "./org";
 import mundosRouter from "./mundos";
 import { requireAuth } from "../middlewares/requireAuth";
@@ -77,5 +79,7 @@ router.use(mundosRouter);
 router.use(smartOnboardingRouter);
 router.use(workflowsRouter);
 router.use(workflowTemplatesRouter);
+router.use(incidentsRouter);
+router.use(qualityTicketsRouter);
 
 export default router;

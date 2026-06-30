@@ -3019,3 +3019,288 @@ export const UpdateMundoResponse = zod.object({
 })
 
 
+/**
+ * @summary List incidents
+ */
+export const ListIncidentsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "type": zod.coerce.string().optional(),
+  "severity": zod.coerce.string().optional(),
+  "priority": zod.coerce.string().optional(),
+  "clientId": zod.coerce.number().optional()
+})
+
+export const ListIncidentsResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "severity": zod.string(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "module": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "mundoId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "evidences": zod.string().nullish(),
+  "logs": zod.string().nullish(),
+  "date": zod.string().nullish(),
+  "timeSpent": zod.number().nullish(),
+  "responsibleId": zod.string().nullish(),
+  "solution": zod.string().nullish(),
+  "lessonLearned": zod.string().nullish(),
+  "ticketId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListIncidentsResponse = zod.array(ListIncidentsResponseItem)
+
+
+/**
+ * @summary Create incident
+ */
+export const CreateIncidentBody = zod.object({
+  "type": zod.string().optional(),
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "severity": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "module": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "mundoId": zod.number().optional(),
+  "agentId": zod.number().optional(),
+  "evidences": zod.string().optional(),
+  "logs": zod.string().optional(),
+  "date": zod.string().optional(),
+  "timeSpent": zod.number().optional(),
+  "responsibleId": zod.string().optional(),
+  "solution": zod.string().optional(),
+  "lessonLearned": zod.string().optional()
+})
+
+
+/**
+ * @summary Get incident by id
+ */
+export const GetIncidentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetIncidentResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "severity": zod.string(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "module": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "mundoId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "evidences": zod.string().nullish(),
+  "logs": zod.string().nullish(),
+  "date": zod.string().nullish(),
+  "timeSpent": zod.number().nullish(),
+  "responsibleId": zod.string().nullish(),
+  "solution": zod.string().nullish(),
+  "lessonLearned": zod.string().nullish(),
+  "ticketId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update incident
+ */
+export const UpdateIncidentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateIncidentBody = zod.object({
+  "type": zod.string().optional(),
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "severity": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "status": zod.string().optional(),
+  "module": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "mundoId": zod.number().optional(),
+  "agentId": zod.number().optional(),
+  "evidences": zod.string().optional(),
+  "logs": zod.string().optional(),
+  "date": zod.string().optional(),
+  "timeSpent": zod.number().optional(),
+  "responsibleId": zod.string().optional(),
+  "solution": zod.string().optional(),
+  "lessonLearned": zod.string().optional(),
+  "ticketId": zod.number().optional()
+})
+
+export const UpdateIncidentResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "severity": zod.string(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "module": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "mundoId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "evidences": zod.string().nullish(),
+  "logs": zod.string().nullish(),
+  "date": zod.string().nullish(),
+  "timeSpent": zod.number().nullish(),
+  "responsibleId": zod.string().nullish(),
+  "solution": zod.string().nullish(),
+  "lessonLearned": zod.string().nullish(),
+  "ticketId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete incident
+ */
+export const DeleteIncidentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Convert incident to ticket
+ */
+export const ConvertIncidentToTicketParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ConvertIncidentToTicketBody = zod.object({
+  "assignedToType": zod.string().optional(),
+  "assignedToId": zod.string().optional(),
+  "assignedToName": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary List quality tickets
+ */
+export const ListQcTicketsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "incidentId": zod.coerce.number().optional()
+})
+
+export const ListQcTicketsResponseItem = zod.object({
+  "id": zod.number(),
+  "incidentId": zod.number().nullish(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "assignedToType": zod.string().nullish(),
+  "assignedToId": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "projectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "dueDate": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListQcTicketsResponse = zod.array(ListQcTicketsResponseItem)
+
+
+/**
+ * @summary Get ticket by id
+ */
+export const GetQcTicketParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetQcTicketResponse = zod.object({
+  "id": zod.number(),
+  "incidentId": zod.number().nullish(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "assignedToType": zod.string().nullish(),
+  "assignedToId": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "projectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "dueDate": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update ticket
+ */
+export const UpdateQcTicketParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateQcTicketBody = zod.object({
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "status": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "assignedToType": zod.string().optional(),
+  "assignedToId": zod.string().optional(),
+  "assignedToName": zod.string().optional(),
+  "projectId": zod.number().optional(),
+  "clientId": zod.number().optional(),
+  "dueDate": zod.string().optional(),
+  "resolvedAt": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateQcTicketResponse = zod.object({
+  "id": zod.number(),
+  "incidentId": zod.number().nullish(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "priority": zod.string(),
+  "assignedToType": zod.string().nullish(),
+  "assignedToId": zod.string().nullish(),
+  "assignedToName": zod.string().nullish(),
+  "projectId": zod.number().nullish(),
+  "clientId": zod.number().nullish(),
+  "dueDate": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete ticket
+ */
+export const DeleteQcTicketParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+

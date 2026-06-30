@@ -6,6 +6,7 @@ import {
   RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
   Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
   Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
+  Code2, TestTube2, Gauge, HeartPulse,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -57,6 +58,21 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/org", label: "Organigrama", icon: Network },
       { href: "/mundos", label: "Mundos", icon: Globe2 },
+    ],
+  },
+  {
+    label: "Quality Center",
+    items: [
+      { href: "/quality-center", label: "Hub Principal", icon: ShieldCheck },
+      { href: "/quality-center/incidents", label: "Incident Center", icon: Bug },
+      { href: "/quality-center/code-review", label: "Code Review", icon: Code2 },
+      { href: "/quality-center/qa-testing", label: "QA Testing", icon: TestTube2 },
+      { href: "/quality-center/performance", label: "Performance", icon: Gauge },
+      { href: "/quality-center/security", label: "Security", icon: Lock },
+      { href: "/quality-center/architecture", label: "Architecture", icon: Network },
+      { href: "/quality-center/health-check", label: "Health Check", icon: HeartPulse },
+      { href: "/quality-center/technical-debt", label: "Technical Debt", icon: ClipboardList },
+      { href: "/quality-center/recommendations", label: "Recommendations", icon: Lightbulb },
     ],
   },
   {
