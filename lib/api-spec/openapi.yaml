@@ -1439,6 +1439,23 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/SystemUser"
+    post:
+      operationId: createSystemUser
+      tags: [admin]
+      summary: Create a manual user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SystemUserCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemUser"
   /admin/users/{id}:
     parameters:
       - name: id
@@ -2636,7 +2653,7 @@ components:
     # ─── ADMIN / USERS ────────────────────────────────────────────────────────
     SystemUser:
       type: object
-      required: [id, role, createdAt]
+      required: [id, role, status, createdAt]
       properties:
         id: { type: string }
         email: { type: ["string", "null"] }
@@ -2644,13 +2661,24 @@ components:
         lastName: { type: ["string", "null"] }
         profileImageUrl: { type: ["string", "null"] }
         role: { type: string }
+        status: { type: string }
+        lastLogin: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
-    SystemUserUpdate:
+    SystemUserCreate:
       type: object
       required: [role]
       properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string }
         role: { type: string }
+        status: { type: string }
+    SystemUserUpdate:
+      type: object
+      properties:
+        role: { type: string }
+        status: { type: string }
 
     # ─── BACKLOG ──────────────────────────────────────────────────────────────
     BacklogItem:

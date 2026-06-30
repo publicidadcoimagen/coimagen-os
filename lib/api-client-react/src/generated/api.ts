@@ -107,6 +107,7 @@ import type {
   SubscriptionInput,
   SubscriptionUpdate,
   SystemUser,
+  SystemUserCreate,
   SystemUserUpdate,
   Task,
   TaskInput,
@@ -6402,6 +6403,77 @@ export function useListSystemUsers<TData = Awaited<ReturnType<typeof listSystemU
 
 
 
+
+export const getCreateSystemUserUrl = () => {
+
+
+
+
+  return `/api/admin/users`
+}
+
+/**
+ * @summary Create a manual user
+ */
+export const createSystemUser = async (systemUserCreate: SystemUserCreate, options?: RequestInit): Promise<SystemUser> => {
+
+  return customFetch<SystemUser>(getCreateSystemUserUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      systemUserCreate,)
+  }
+);}
+
+
+
+
+export const getCreateSystemUserMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSystemUser>>, TError,{data: BodyType<SystemUserCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSystemUser>>, TError,{data: BodyType<SystemUserCreate>}, TContext> => {
+
+const mutationKey = ['createSystemUser'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSystemUser>>, {data: BodyType<SystemUserCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createSystemUser(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSystemUserMutationResult = NonNullable<Awaited<ReturnType<typeof createSystemUser>>>
+    export type CreateSystemUserMutationBody = BodyType<SystemUserCreate>
+    export type CreateSystemUserMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a manual user
+ */
+export const useCreateSystemUser = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSystemUser>>, TError,{data: BodyType<SystemUserCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSystemUser>>,
+        TError,
+        {data: BodyType<SystemUserCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateSystemUserMutationOptions(options));
+    }
 
 export const getUpdateSystemUserUrl = (id: string,) => {
 

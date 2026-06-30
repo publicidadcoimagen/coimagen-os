@@ -1,0 +1,83 @@
+COIMAGEN OS V1.6.1 — HOTFIX USUARIOS Y ROLES
+
+No rediseñes COIMAGEN OS.
+No cambies la estructura visual.
+No modifiques HQ Operations.
+No rompas Backlog, Daily Sprint, Roadmap, Bugs, Ideas, KPIs ni Automatizaciones.
+
+Objetivo:
+Corregir el módulo Roles y Accesos para que funcione correctamente como administración real de usuarios.
+
+Problemas detectados:
+1. El login funciona y me reconoce como CEO.
+2. Pero mi usuario no aparece listado en Roles y Accesos.
+3. No puedo editar ni verificar mi usuario desde la tabla.
+4. No existe botón para crear usuario manualmente.
+5. No existe flujo claro para usuarios clientes futuros.
+
+Requisitos:
+
+1. Roles y Accesos
+- Mostrar todos los usuarios existentes en la tabla users.
+- Asegurar que el usuario autenticado actual aparezca en la tabla.
+- Mostrar:
+  - Nombre
+  - Email
+  - Rol
+  - Fecha de creación
+  - Último acceso si existe
+  - Estado
+
+2. Usuario actual
+- Si el usuario autenticado entra y no existe en la tabla users, crearlo automáticamente.
+- Si existe, actualizar last_login.
+- Si el email corresponde a Camila / cuenta principal, asignar rol CEO automáticamente o permitir asignarlo desde la tabla.
+
+3. Crear usuario manual
+Agregar botón:
+“Crear usuario”
+
+Debe permitir crear:
+- nombre
+- email
+- rol
+- estado
+
+Roles:
+- CEO
+- Admin
+- Viewer
+- Cliente
+
+4. Rol Cliente
+Agregar rol:
+Cliente
+
+El rol Cliente NO debe acceder al panel completo.
+Por ahora solo dejarlo preparado para futuro Client Room.
+No construir Client Room público todavía.
+
+5. Contraseña
+Si Replit Auth no permite gestionar contraseña directamente, mostrar nota clara:
+“Los accesos se gestionan mediante Replit Auth / proveedor de identidad. Las contraseñas no se administran desde COIMAGEN OS.”
+
+6. Seguridad
+- Solo CEO puede cambiar roles.
+- Admin puede ver usuarios, pero no cambiar CEO.
+- Viewer no puede acceder a Roles y Accesos.
+- Cliente no puede acceder a Roles y Accesos.
+
+7. QA
+Verificar:
+- Login sigue funcionando.
+- Usuario actual aparece en Roles y Accesos.
+- Se puede crear usuario manual.
+- Se puede cambiar rol.
+- Rol Cliente existe.
+- No se rompen rutas de HQ Operations.
+
+Entrega reporte con:
+- archivos modificados
+- cambios aplicados
+- resultado TypeScript
+- pruebas realizadas

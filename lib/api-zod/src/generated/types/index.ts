@@ -139,6 +139,7 @@ export * from './subscriptionUpdate';
 export * from './subscriptionUpdateBillingCycle';
 export * from './subscriptionUpdateStatus';
 export * from './systemUser';
+export * from './systemUserCreate';
 export * from './systemUserUpdate';
 export * from './task';
 export * from './taskInput';

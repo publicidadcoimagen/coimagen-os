@@ -1,18 +1,36 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
-import { UpdateSystemUserBody, UpdateSystemUserParams, DeleteSystemUserParams } from "@workspace/api-zod";
+import { UpdateSystemUserBody, UpdateSystemUserParams, DeleteSystemUserParams, CreateSystemUserBody } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
-router.get("/admin/users", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
-  const users = await db.select().from(usersTable).orderBy(usersTable.createdAt);
-  res.json(users.map((u) => ({
+function serializeUser(u: typeof usersTable.$inferSelect) {
+  return {
     ...u,
     createdAt: u.createdAt ? u.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: u.updatedAt ? u.updatedAt.toISOString() : null,
-  })));
+    lastLogin: u.lastLogin ? u.lastLogin.toISOString() : null,
+  };
+}
+
+router.get("/admin/users", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const users = await db.select().from(usersTable).orderBy(usersTable.createdAt);
+  res.json(users.map(serializeUser));
+});
+
+router.post("/admin/users", requireRole("ceo"), async (req, res): Promise<void> => {
+  const parsed = CreateSystemUserBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const [user] = await db.insert(usersTable).values({
+    firstName: parsed.data.firstName ?? null,
+    lastName: parsed.data.lastName ?? null,
+    email: parsed.data.email ?? null,
+    role: parsed.data.role ?? "viewer",
+    status: parsed.data.status ?? "active",
+  }).returning();
+  res.status(201).json(serializeUser(user));
 });
 
 router.patch("/admin/users/:id", requireRole("ceo"), async (req, res): Promise<void> => {
@@ -20,12 +38,19 @@ router.patch("/admin/users/:id", requireRole("ceo"), async (req, res): Promise<v
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = UpdateSystemUserBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+
+  const [target] = await db.select().from(usersTable).where(eq(usersTable.id, params.data.id));
+  if (!target) { res.status(404).json({ error: "User not found" }); return; }
+
+  const updateData: Partial<typeof usersTable.$inferInsert> & { updatedAt: Date } = { updatedAt: new Date() };
+  if (parsed.data.role !== undefined) updateData.role = parsed.data.role;
+  if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
+
   const [user] = await db.update(usersTable)
-    .set({ role: parsed.data.role, updatedAt: new Date() })
+    .set(updateData)
     .where(eq(usersTable.id, params.data.id))
     .returning();
-  if (!user) { res.status(404).json({ error: "User not found" }); return; }
-  res.json({ ...user, createdAt: user.createdAt ? user.createdAt.toISOString() : new Date().toISOString(), updatedAt: user.updatedAt ? user.updatedAt.toISOString() : null });
+  res.json(serializeUser(user));
 });
 
 router.delete("/admin/users/:id", requireRole("ceo"), async (req, res): Promise<void> => {

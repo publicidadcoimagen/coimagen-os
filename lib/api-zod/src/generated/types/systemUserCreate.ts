@@ -6,7 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface SystemUserUpdate {
-  role?: string;
+export interface SystemUserCreate {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  role: string;
   status?: string;
 }

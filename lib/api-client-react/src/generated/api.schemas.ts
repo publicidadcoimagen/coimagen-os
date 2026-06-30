@@ -1283,13 +1283,25 @@ export interface SystemUser {
   /** @nullable */
   profileImageUrl?: string | null;
   role: string;
+  status: string;
+  /** @nullable */
+  lastLogin?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
 }
 
-export interface SystemUserUpdate {
+export interface SystemUserCreate {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
   role: string;
+  status?: string;
+}
+
+export interface SystemUserUpdate {
+  role?: string;
+  status?: string;
 }
 
 export interface BacklogItem {

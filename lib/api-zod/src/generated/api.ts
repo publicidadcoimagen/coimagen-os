@@ -1539,10 +1539,24 @@ export const ListSystemUsersResponseItem = zod.object({
   "lastName": zod.string().nullish(),
   "profileImageUrl": zod.string().nullish(),
   "role": zod.string(),
+  "status": zod.string(),
+  "lastLogin": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
 export const ListSystemUsersResponse = zod.array(ListSystemUsersResponseItem)
+
+
+/**
+ * @summary Create a manual user
+ */
+export const CreateSystemUserBody = zod.object({
+  "firstName": zod.string().optional(),
+  "lastName": zod.string().optional(),
+  "email": zod.string().optional(),
+  "role": zod.string(),
+  "status": zod.string().optional()
+})
 
 
 /**
@@ -1553,7 +1567,8 @@ export const UpdateSystemUserParams = zod.object({
 })
 
 export const UpdateSystemUserBody = zod.object({
-  "role": zod.string()
+  "role": zod.string().optional(),
+  "status": zod.string().optional()
 })
 
 export const UpdateSystemUserResponse = zod.object({
@@ -1563,6 +1578,8 @@ export const UpdateSystemUserResponse = zod.object({
   "lastName": zod.string().nullish(),
   "profileImageUrl": zod.string().nullish(),
   "role": zod.string(),
+  "status": zod.string(),
+  "lastLogin": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })

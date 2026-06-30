@@ -17,6 +17,9 @@ export interface SystemUser {
   /** @nullable */
   profileImageUrl?: string | null;
   role: string;
+  status: string;
+  /** @nullable */
+  lastLogin?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

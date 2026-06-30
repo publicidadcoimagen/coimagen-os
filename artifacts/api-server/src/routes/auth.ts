@@ -68,13 +68,27 @@ async function upsertUser(claims: Record<string, unknown>) {
       | null,
   };
 
+  // Auto-assign CEO role to the first user ever registered
+  const existing = await db.select({ id: usersTable.id }).from(usersTable).limit(1);
+  const isFirstUser = existing.length === 0;
+
   const [user] = await db
     .insert(usersTable)
-    .values(userData)
+    .values({
+      ...userData,
+      role: isFirstUser ? "ceo" : "viewer",
+      status: "active",
+      lastLogin: new Date(),
+    })
     .onConflictDoUpdate({
       target: usersTable.id,
       set: {
-        ...userData,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        profileImageUrl: userData.profileImageUrl,
+        status: "active",
+        lastLogin: new Date(),
         updatedAt: new Date(),
       },
     })
