@@ -68,6 +68,10 @@ import type {
   Diagnosis,
   DiagnosisInput,
   DiagnosisUpdate,
+  Director,
+  DirectorAssignClient,
+  DirectorAssignProject,
+  DirectorUpdate,
   HealthStatus,
   Idea,
   IdeaCreate,
@@ -8509,5 +8513,519 @@ export const useDeleteAutomation = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteAutomationMutationOptions(options));
+    }
+
+export const getListDirectorsUrl = () => {
+
+
+
+
+  return `/api/org/directors`
+}
+
+/**
+ * @summary List all directors
+ */
+export const listDirectors = async ( options?: RequestInit): Promise<Director[]> => {
+
+  return customFetch<Director[]>(getListDirectorsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDirectorsQueryKey = () => {
+    return [
+    `/api/org/directors`
+    ] as const;
+    }
+
+
+export const getListDirectorsQueryOptions = <TData = Awaited<ReturnType<typeof listDirectors>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDirectors>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDirectorsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDirectors>>> = ({ signal }) => listDirectors({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDirectors>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDirectorsQueryResult = NonNullable<Awaited<ReturnType<typeof listDirectors>>>
+export type ListDirectorsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all directors
+ */
+
+export function useListDirectors<TData = Awaited<ReturnType<typeof listDirectors>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDirectors>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDirectorsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetDirectorUrl = (id: number,) => {
+
+
+
+
+  return `/api/org/directors/${id}`
+}
+
+/**
+ * @summary Get director detail
+ */
+export const getDirector = async (id: number, options?: RequestInit): Promise<Director> => {
+
+  return customFetch<Director>(getGetDirectorUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDirectorQueryKey = (id: number,) => {
+    return [
+    `/api/org/directors/${id}`
+    ] as const;
+    }
+
+
+export const getGetDirectorQueryOptions = <TData = Awaited<ReturnType<typeof getDirector>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirector>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDirectorQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDirector>>> = ({ signal }) => getDirector(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDirector>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDirectorQueryResult = NonNullable<Awaited<ReturnType<typeof getDirector>>>
+export type GetDirectorQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get director detail
+ */
+
+export function useGetDirector<TData = Awaited<ReturnType<typeof getDirector>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDirector>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDirectorQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateDirectorUrl = (id: number,) => {
+
+
+
+
+  return `/api/org/directors/${id}`
+}
+
+/**
+ * @summary Update director info
+ */
+export const updateDirector = async (id: number,
+    directorUpdate: DirectorUpdate, options?: RequestInit): Promise<Director> => {
+
+  return customFetch<Director>(getUpdateDirectorUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      directorUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateDirectorMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDirector>>, TError,{id: number;data: BodyType<DirectorUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDirector>>, TError,{id: number;data: BodyType<DirectorUpdate>}, TContext> => {
+
+const mutationKey = ['updateDirector'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDirector>>, {id: number;data: BodyType<DirectorUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDirector(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDirectorMutationResult = NonNullable<Awaited<ReturnType<typeof updateDirector>>>
+    export type UpdateDirectorMutationBody = BodyType<DirectorUpdate>
+    export type UpdateDirectorMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update director info
+ */
+export const useUpdateDirector = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDirector>>, TError,{id: number;data: BodyType<DirectorUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDirector>>,
+        TError,
+        {id: number;data: BodyType<DirectorUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateDirectorMutationOptions(options));
+    }
+
+export const getAssignDirectorClientUrl = (id: number,) => {
+
+
+
+
+  return `/api/org/directors/${id}/clients`
+}
+
+/**
+ * @summary Assign client to director
+ */
+export const assignDirectorClient = async (id: number,
+    directorAssignClient: DirectorAssignClient, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAssignDirectorClientUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      directorAssignClient,)
+  }
+);}
+
+
+
+
+export const getAssignDirectorClientMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignDirectorClient>>, TError,{id: number;data: BodyType<DirectorAssignClient>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignDirectorClient>>, TError,{id: number;data: BodyType<DirectorAssignClient>}, TContext> => {
+
+const mutationKey = ['assignDirectorClient'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignDirectorClient>>, {id: number;data: BodyType<DirectorAssignClient>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  assignDirectorClient(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignDirectorClientMutationResult = NonNullable<Awaited<ReturnType<typeof assignDirectorClient>>>
+    export type AssignDirectorClientMutationBody = BodyType<DirectorAssignClient>
+    export type AssignDirectorClientMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Assign client to director
+ */
+export const useAssignDirectorClient = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignDirectorClient>>, TError,{id: number;data: BodyType<DirectorAssignClient>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignDirectorClient>>,
+        TError,
+        {id: number;data: BodyType<DirectorAssignClient>},
+        TContext
+      > => {
+      return useMutation(getAssignDirectorClientMutationOptions(options));
+    }
+
+export const getUnassignDirectorClientUrl = (id: number,
+    clientId: number,) => {
+
+
+
+
+  return `/api/org/directors/${id}/clients/${clientId}`
+}
+
+/**
+ * @summary Unassign client from director
+ */
+export const unassignDirectorClient = async (id: number,
+    clientId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getUnassignDirectorClientUrl(id,clientId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getUnassignDirectorClientMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unassignDirectorClient>>, TError,{id: number;clientId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unassignDirectorClient>>, TError,{id: number;clientId: number}, TContext> => {
+
+const mutationKey = ['unassignDirectorClient'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unassignDirectorClient>>, {id: number;clientId: number}> = (props) => {
+          const {id,clientId} = props ?? {};
+
+          return  unassignDirectorClient(id,clientId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnassignDirectorClientMutationResult = NonNullable<Awaited<ReturnType<typeof unassignDirectorClient>>>
+
+    export type UnassignDirectorClientMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Unassign client from director
+ */
+export const useUnassignDirectorClient = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unassignDirectorClient>>, TError,{id: number;clientId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unassignDirectorClient>>,
+        TError,
+        {id: number;clientId: number},
+        TContext
+      > => {
+      return useMutation(getUnassignDirectorClientMutationOptions(options));
+    }
+
+export const getAssignDirectorProjectUrl = (id: number,) => {
+
+
+
+
+  return `/api/org/directors/${id}/projects`
+}
+
+/**
+ * @summary Assign project to director
+ */
+export const assignDirectorProject = async (id: number,
+    directorAssignProject: DirectorAssignProject, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAssignDirectorProjectUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      directorAssignProject,)
+  }
+);}
+
+
+
+
+export const getAssignDirectorProjectMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignDirectorProject>>, TError,{id: number;data: BodyType<DirectorAssignProject>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof assignDirectorProject>>, TError,{id: number;data: BodyType<DirectorAssignProject>}, TContext> => {
+
+const mutationKey = ['assignDirectorProject'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignDirectorProject>>, {id: number;data: BodyType<DirectorAssignProject>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  assignDirectorProject(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AssignDirectorProjectMutationResult = NonNullable<Awaited<ReturnType<typeof assignDirectorProject>>>
+    export type AssignDirectorProjectMutationBody = BodyType<DirectorAssignProject>
+    export type AssignDirectorProjectMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Assign project to director
+ */
+export const useAssignDirectorProject = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof assignDirectorProject>>, TError,{id: number;data: BodyType<DirectorAssignProject>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof assignDirectorProject>>,
+        TError,
+        {id: number;data: BodyType<DirectorAssignProject>},
+        TContext
+      > => {
+      return useMutation(getAssignDirectorProjectMutationOptions(options));
+    }
+
+export const getUnassignDirectorProjectUrl = (id: number,
+    projectId: number,) => {
+
+
+
+
+  return `/api/org/directors/${id}/projects/${projectId}`
+}
+
+/**
+ * @summary Unassign project from director
+ */
+export const unassignDirectorProject = async (id: number,
+    projectId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getUnassignDirectorProjectUrl(id,projectId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getUnassignDirectorProjectMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unassignDirectorProject>>, TError,{id: number;projectId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unassignDirectorProject>>, TError,{id: number;projectId: number}, TContext> => {
+
+const mutationKey = ['unassignDirectorProject'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unassignDirectorProject>>, {id: number;projectId: number}> = (props) => {
+          const {id,projectId} = props ?? {};
+
+          return  unassignDirectorProject(id,projectId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnassignDirectorProjectMutationResult = NonNullable<Awaited<ReturnType<typeof unassignDirectorProject>>>
+
+    export type UnassignDirectorProjectMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Unassign project from director
+ */
+export const useUnassignDirectorProject = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unassignDirectorProject>>, TError,{id: number;projectId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unassignDirectorProject>>,
+        TError,
+        {id: number;projectId: number},
+        TContext
+      > => {
+      return useMutation(getUnassignDirectorProjectMutationOptions(options));
     }
 

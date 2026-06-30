@@ -40,6 +40,7 @@ import { Bugs } from "@/pages/bugs/index";
 import { Ideas } from "@/pages/ideas/index";
 import { KPIs } from "@/pages/kpis/index";
 import { Automations } from "@/pages/automations/index";
+import { Organizacion } from "@/pages/org/index";
 
 import { ComingSoon } from "@/pages/coming-soon";
 import { Bot, Users, Factory, Stethoscope, Layers, Cloud } from "lucide-react";
@@ -120,6 +121,7 @@ function Router() {
         <Route path="/ideas" component={Ideas} />
         <Route path="/kpis" component={KPIs} />
         <Route path="/automations" component={Automations} />
+        <Route path="/org" component={Organizacion} />
 
         <Route path="/coming-soon/ai-agents-pro">
           {() => <ComingSoon title="AI Agents Pro" description="Agentes de IA especializados con capacidades avanzadas de razonamiento, memoria y ejecución autónoma." Icon={Bot} />}

@@ -1602,6 +1602,53 @@ export interface AutomationUpdate {
   notes?: string;
 }
 
+export interface DirectorClient {
+  id: number;
+  name: string;
+}
+
+export interface DirectorProject {
+  id: number;
+  name: string;
+}
+
+export interface Director {
+  id: number;
+  key: string;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  objetivo?: string | null;
+  responsabilidades?: string[];
+  kpis?: string[];
+  status: string;
+  sortOrder: number;
+  agentCount?: number;
+  automationCount?: number;
+  assignedClients?: DirectorClient[];
+  assignedProjects?: DirectorProject[];
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface DirectorUpdate {
+  description?: string;
+  objetivo?: string;
+  responsabilidades?: string[];
+  kpis?: string[];
+  status?: string;
+}
+
+export interface DirectorAssignClient {
+  clientId: number;
+}
+
+export interface DirectorAssignProject {
+  projectId: number;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */

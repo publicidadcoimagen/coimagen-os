@@ -23,3 +23,4 @@ export * from "./roadmap-items";
 export * from "./bugs";
 export * from "./ideas";
 export * from "./automations";
+export * from "./directors";

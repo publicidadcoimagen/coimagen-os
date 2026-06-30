@@ -1887,6 +1887,128 @@ paths:
         "204":
           description: Deleted
 
+  # ─── ORGANIZACIÓN ────────────────────────────────────────────────────────────
+  /org/directors:
+    get:
+      operationId: listDirectors
+      tags: [org]
+      summary: List all directors
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Director"
+  /org/directors/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      operationId: getDirector
+      tags: [org]
+      summary: Get director detail
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Director"
+    patch:
+      operationId: updateDirector
+      tags: [org]
+      summary: Update director info
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectorUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Director"
+  /org/directors/{id}/clients:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      operationId: assignDirectorClient
+      tags: [org]
+      summary: Assign client to director
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectorAssignClient"
+      responses:
+        "204":
+          description: Assigned
+  /org/directors/{id}/clients/{clientId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+      - name: clientId
+        in: path
+        required: true
+        schema: { type: integer }
+    delete:
+      operationId: unassignDirectorClient
+      tags: [org]
+      summary: Unassign client from director
+      responses:
+        "204":
+          description: Unassigned
+  /org/directors/{id}/projects:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      operationId: assignDirectorProject
+      tags: [org]
+      summary: Assign project to director
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectorAssignProject"
+      responses:
+        "204":
+          description: Assigned
+  /org/directors/{id}/projects/{projectId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+      - name: projectId
+        in: path
+        required: true
+        schema: { type: integer }
+    delete:
+      operationId: unassignDirectorProject
+      tags: [org]
+      summary: Unassign project from director
+      responses:
+        "204":
+          description: Unassigned
+
 
 components:
   parameters:
@@ -2952,3 +3074,68 @@ components:
         lastRun: { type: string }
         result: { type: string }
         notes: { type: string }
+
+    # ─── ORGANIZACIÓN ──────────────────────────────────────────────────────────
+    DirectorClient:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    DirectorProject:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+    Director:
+      type: object
+      required: [id, key, name, status, sortOrder, createdAt]
+      properties:
+        id: { type: integer }
+        key: { type: string }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        objetivo: { type: ["string", "null"] }
+        responsabilidades:
+          type: array
+          items: { type: string }
+        kpis:
+          type: array
+          items: { type: string }
+        status: { type: string }
+        sortOrder: { type: integer }
+        agentCount: { type: integer }
+        automationCount: { type: integer }
+        assignedClients:
+          type: array
+          items:
+            $ref: "#/components/schemas/DirectorClient"
+        assignedProjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/DirectorProject"
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    DirectorUpdate:
+      type: object
+      properties:
+        description: { type: string }
+        objetivo: { type: string }
+        responsabilidades:
+          type: array
+          items: { type: string }
+        kpis:
+          type: array
+          items: { type: string }
+        status: { type: string }
+    DirectorAssignClient:
+      type: object
+      required: [clientId]
+      properties:
+        clientId: { type: integer }
+    DirectorAssignProject:
+      type: object
+      required: [projectId]
+      properties:
+        projectId: { type: integer }

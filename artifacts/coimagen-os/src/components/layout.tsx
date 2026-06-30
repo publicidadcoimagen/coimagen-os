@@ -5,7 +5,7 @@ import {
   UserSearch, TrendingUp, Stethoscope, FileText, Receipt,
   RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
   Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
-  Lightbulb, Zap, UserCog,
+  Lightbulb, Zap, UserCog, Network,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -48,6 +48,12 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/approvals", label: "Centro de Aprobaciones", icon: ShieldCheck },
       { href: "/revenue", label: "Motor de Ingresos", icon: TrendingUp },
       { href: "/costs", label: "Motor de Costos", icon: BarChart3 },
+    ],
+  },
+  {
+    label: "Organización",
+    items: [
+      { href: "/org", label: "Organigrama", icon: Network },
     ],
   },
   {

@@ -2138,3 +2138,146 @@ export const DeleteAutomationParams = zod.object({
 })
 
 
+/**
+ * @summary List all directors
+ */
+export const ListDirectorsResponseItem = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "responsabilidades": zod.array(zod.string()).optional(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string(),
+  "sortOrder": zod.number(),
+  "agentCount": zod.number().optional(),
+  "automationCount": zod.number().optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListDirectorsResponse = zod.array(ListDirectorsResponseItem)
+
+
+/**
+ * @summary Get director detail
+ */
+export const GetDirectorParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetDirectorResponse = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "responsabilidades": zod.array(zod.string()).optional(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string(),
+  "sortOrder": zod.number(),
+  "agentCount": zod.number().optional(),
+  "automationCount": zod.number().optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update director info
+ */
+export const UpdateDirectorParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateDirectorBody = zod.object({
+  "description": zod.string().optional(),
+  "objetivo": zod.string().optional(),
+  "responsabilidades": zod.array(zod.string()).optional(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string().optional()
+})
+
+export const UpdateDirectorResponse = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "responsabilidades": zod.array(zod.string()).optional(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string(),
+  "sortOrder": zod.number(),
+  "agentCount": zod.number().optional(),
+  "automationCount": zod.number().optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Assign client to director
+ */
+export const AssignDirectorClientParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AssignDirectorClientBody = zod.object({
+  "clientId": zod.number()
+})
+
+
+/**
+ * @summary Unassign client from director
+ */
+export const UnassignDirectorClientParams = zod.object({
+  "id": zod.coerce.number(),
+  "clientId": zod.coerce.number()
+})
+
+
+/**
+ * @summary Assign project to director
+ */
+export const AssignDirectorProjectParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AssignDirectorProjectBody = zod.object({
+  "projectId": zod.number()
+})
+
+
+/**
+ * @summary Unassign project from director
+ */
+export const UnassignDirectorProjectParams = zod.object({
+  "id": zod.coerce.number(),
+  "projectId": zod.coerce.number()
+})
+
+
