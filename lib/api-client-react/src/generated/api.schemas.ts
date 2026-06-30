@@ -1649,6 +1649,50 @@ export interface DirectorAssignProject {
   projectId: number;
 }
 
+export interface MundoDirectorSummary {
+  id: number;
+  key?: string;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  objetivo?: string | null;
+  responsabilidades?: string[];
+}
+
+export interface Mundo {
+  id: number;
+  key: string;
+  name: string;
+  emoji: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  objetivo?: string | null;
+  kpis?: string[];
+  status: string;
+  /** @nullable */
+  directorId?: number | null;
+  director?: MundoDirectorSummary;
+  agentCount?: number;
+  automationCount?: number;
+  taskCount?: number;
+  assignedClients?: DirectorClient[];
+  assignedProjects?: DirectorProject[];
+  sortOrder: number;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface MundoUpdate {
+  description?: string;
+  objetivo?: string;
+  kpis?: string[];
+  status?: string;
+  directorId?: number;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */

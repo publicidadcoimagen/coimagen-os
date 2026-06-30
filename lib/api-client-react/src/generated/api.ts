@@ -93,6 +93,8 @@ import type {
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
   MrrDataPoint,
+  Mundo,
+  MundoUpdate,
   Project,
   ProjectInput,
   ProjectUpdate,
@@ -9027,5 +9029,231 @@ export const useUnassignDirectorProject = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUnassignDirectorProjectMutationOptions(options));
+    }
+
+export const getListMundosUrl = () => {
+
+
+
+
+  return `/api/mundos`
+}
+
+/**
+ * @summary List all mundos
+ */
+export const listMundos = async ( options?: RequestInit): Promise<Mundo[]> => {
+
+  return customFetch<Mundo[]>(getListMundosUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMundosQueryKey = () => {
+    return [
+    `/api/mundos`
+    ] as const;
+    }
+
+
+export const getListMundosQueryOptions = <TData = Awaited<ReturnType<typeof listMundos>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMundos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMundosQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMundos>>> = ({ signal }) => listMundos({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMundos>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMundosQueryResult = NonNullable<Awaited<ReturnType<typeof listMundos>>>
+export type ListMundosQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all mundos
+ */
+
+export function useListMundos<TData = Awaited<ReturnType<typeof listMundos>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMundos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMundosQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetMundoUrl = (id: number,) => {
+
+
+
+
+  return `/api/mundos/${id}`
+}
+
+/**
+ * @summary Get mundo detail
+ */
+export const getMundo = async (id: number, options?: RequestInit): Promise<Mundo> => {
+
+  return customFetch<Mundo>(getGetMundoUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMundoQueryKey = (id: number,) => {
+    return [
+    `/api/mundos/${id}`
+    ] as const;
+    }
+
+
+export const getGetMundoQueryOptions = <TData = Awaited<ReturnType<typeof getMundo>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMundo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMundoQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMundo>>> = ({ signal }) => getMundo(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMundo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMundoQueryResult = NonNullable<Awaited<ReturnType<typeof getMundo>>>
+export type GetMundoQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get mundo detail
+ */
+
+export function useGetMundo<TData = Awaited<ReturnType<typeof getMundo>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMundo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMundoQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateMundoUrl = (id: number,) => {
+
+
+
+
+  return `/api/mundos/${id}`
+}
+
+/**
+ * @summary Update mundo info
+ */
+export const updateMundo = async (id: number,
+    mundoUpdate: MundoUpdate, options?: RequestInit): Promise<Mundo> => {
+
+  return customFetch<Mundo>(getUpdateMundoUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      mundoUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateMundoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMundo>>, TError,{id: number;data: BodyType<MundoUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMundo>>, TError,{id: number;data: BodyType<MundoUpdate>}, TContext> => {
+
+const mutationKey = ['updateMundo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMundo>>, {id: number;data: BodyType<MundoUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateMundo(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMundoMutationResult = NonNullable<Awaited<ReturnType<typeof updateMundo>>>
+    export type UpdateMundoMutationBody = BodyType<MundoUpdate>
+    export type UpdateMundoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update mundo info
+ */
+export const useUpdateMundo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMundo>>, TError,{id: number;data: BodyType<MundoUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateMundo>>,
+        TError,
+        {id: number;data: BodyType<MundoUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateMundoMutationOptions(options));
     }
 

@@ -2281,3 +2281,134 @@ export const UnassignDirectorProjectParams = zod.object({
 })
 
 
+/**
+ * @summary List all mundos
+ */
+export const ListMundosResponseItem = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "name": zod.string(),
+  "emoji": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string(),
+  "directorId": zod.number().nullish(),
+  "director": zod.object({
+  "id": zod.number(),
+  "key": zod.string().optional(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "responsabilidades": zod.array(zod.string()).optional()
+}).optional(),
+  "agentCount": zod.number().optional(),
+  "automationCount": zod.number().optional(),
+  "taskCount": zod.number().optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListMundosResponse = zod.array(ListMundosResponseItem)
+
+
+/**
+ * @summary Get mundo detail
+ */
+export const GetMundoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetMundoResponse = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "name": zod.string(),
+  "emoji": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string(),
+  "directorId": zod.number().nullish(),
+  "director": zod.object({
+  "id": zod.number(),
+  "key": zod.string().optional(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "responsabilidades": zod.array(zod.string()).optional()
+}).optional(),
+  "agentCount": zod.number().optional(),
+  "automationCount": zod.number().optional(),
+  "taskCount": zod.number().optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update mundo info
+ */
+export const UpdateMundoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateMundoBody = zod.object({
+  "description": zod.string().optional(),
+  "objetivo": zod.string().optional(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string().optional(),
+  "directorId": zod.number().optional()
+})
+
+export const UpdateMundoResponse = zod.object({
+  "id": zod.number(),
+  "key": zod.string(),
+  "name": zod.string(),
+  "emoji": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string(),
+  "directorId": zod.number().nullish(),
+  "director": zod.object({
+  "id": zod.number(),
+  "key": zod.string().optional(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "objetivo": zod.string().nullish(),
+  "responsabilidades": zod.array(zod.string()).optional()
+}).optional(),
+  "agentCount": zod.number().optional(),
+  "automationCount": zod.number().optional(),
+  "taskCount": zod.number().optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "sortOrder": zod.number(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+

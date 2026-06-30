@@ -24,3 +24,4 @@ export * from "./bugs";
 export * from "./ideas";
 export * from "./automations";
 export * from "./directors";
+export * from "./mundos";

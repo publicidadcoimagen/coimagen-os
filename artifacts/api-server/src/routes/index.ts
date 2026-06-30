@@ -29,6 +29,7 @@ import bugsRouter from "./bugs";
 import ideasRouter from "./ideas";
 import automationsRouter from "./automations";
 import orgRouter from "./org";
+import mundosRouter from "./mundos";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 
@@ -69,5 +70,6 @@ router.use(bugsRouter);
 router.use(ideasRouter);
 router.use(automationsRouter);
 router.use(orgRouter);
+router.use(mundosRouter);
 
 export default router;

@@ -2009,6 +2009,56 @@ paths:
         "204":
           description: Unassigned
 
+  # ─── MUNDOS ──────────────────────────────────────────────────────────────────
+  /mundos:
+    get:
+      operationId: listMundos
+      tags: [mundos]
+      summary: List all mundos
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Mundo"
+  /mundos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      operationId: getMundo
+      tags: [mundos]
+      summary: Get mundo detail
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mundo"
+    patch:
+      operationId: updateMundo
+      tags: [mundos]
+      summary: Update mundo info
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MundoUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mundo"
+
 
 components:
   parameters:
@@ -3139,3 +3189,58 @@ components:
       required: [projectId]
       properties:
         projectId: { type: integer }
+
+    # ─── MUNDOS ────────────────────────────────────────────────────────────────
+    MundoDirectorSummary:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: integer }
+        key: { type: string }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        objetivo: { type: ["string", "null"] }
+        responsabilidades:
+          type: array
+          items: { type: string }
+    Mundo:
+      type: object
+      required: [id, key, name, emoji, status, sortOrder, createdAt]
+      properties:
+        id: { type: integer }
+        key: { type: string }
+        name: { type: string }
+        emoji: { type: string }
+        description: { type: ["string", "null"] }
+        objetivo: { type: ["string", "null"] }
+        kpis:
+          type: array
+          items: { type: string }
+        status: { type: string }
+        directorId: { type: ["integer", "null"] }
+        director:
+          $ref: "#/components/schemas/MundoDirectorSummary"
+        agentCount: { type: integer }
+        automationCount: { type: integer }
+        taskCount: { type: integer }
+        assignedClients:
+          type: array
+          items:
+            $ref: "#/components/schemas/DirectorClient"
+        assignedProjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/DirectorProject"
+        sortOrder: { type: integer }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    MundoUpdate:
+      type: object
+      properties:
+        description: { type: string }
+        objetivo: { type: string }
+        kpis:
+          type: array
+          items: { type: string }
+        status: { type: string }
+        directorId: { type: integer }
