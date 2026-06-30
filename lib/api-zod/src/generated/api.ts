@@ -3667,3 +3667,214 @@ export const DeleteClientApprovalParams = zod.object({
 })
 
 
+/**
+ * @summary List orchestration events
+ */
+export const ListOrchestrationEventsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "source": zod.coerce.string().optional(),
+  "eventType": zod.coerce.string().optional(),
+  "clientId": zod.coerce.number().optional(),
+  "priority": zod.coerce.string().optional()
+})
+
+export const ListOrchestrationEventsResponseItem = zod.object({
+  "id": zod.number(),
+  "eventType": zod.string(),
+  "source": zod.string(),
+  "destination": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "userId": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "payload": zod.unknown().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListOrchestrationEventsResponse = zod.array(ListOrchestrationEventsResponseItem)
+
+
+/**
+ * @summary Create orchestration event
+ */
+export const CreateOrchestrationEventBody = zod.object({
+  "eventType": zod.string(),
+  "source": zod.string(),
+  "destination": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "status": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "userId": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Get orchestration event by id
+ */
+export const GetOrchestrationEventParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetOrchestrationEventResponse = zod.object({
+  "id": zod.number(),
+  "eventType": zod.string(),
+  "source": zod.string(),
+  "destination": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "userId": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "payload": zod.unknown().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update orchestration event
+ */
+export const UpdateOrchestrationEventParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateOrchestrationEventBody = zod.object({
+  "eventType": zod.string().optional(),
+  "source": zod.string().optional(),
+  "destination": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "status": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "userId": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateOrchestrationEventResponse = zod.object({
+  "id": zod.number(),
+  "eventType": zod.string(),
+  "source": zod.string(),
+  "destination": zod.string().nullish(),
+  "priority": zod.string(),
+  "status": zod.string(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "userId": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "payload": zod.unknown().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete orchestration event
+ */
+export const DeleteOrchestrationEventParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List orchestration rules
+ */
+export const ListOrchestrationRulesQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "triggerEvent": zod.coerce.string().optional()
+})
+
+export const ListOrchestrationRulesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "triggerEvent": zod.string(),
+  "condition": zod.string().nullish(),
+  "actions": zod.string().nullish(),
+  "status": zod.string(),
+  "executionCount": zod.number(),
+  "lastExecutedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListOrchestrationRulesResponse = zod.array(ListOrchestrationRulesResponseItem)
+
+
+/**
+ * @summary Create orchestration rule
+ */
+export const CreateOrchestrationRuleBody = zod.object({
+  "name": zod.string(),
+  "description": zod.string().optional(),
+  "triggerEvent": zod.string(),
+  "condition": zod.string().optional(),
+  "actions": zod.string().optional(),
+  "status": zod.string().optional()
+})
+
+
+/**
+ * @summary Get orchestration rule by id
+ */
+export const GetOrchestrationRuleParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetOrchestrationRuleResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "triggerEvent": zod.string(),
+  "condition": zod.string().nullish(),
+  "actions": zod.string().nullish(),
+  "status": zod.string(),
+  "executionCount": zod.number(),
+  "lastExecutedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update orchestration rule
+ */
+export const UpdateOrchestrationRuleParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateOrchestrationRuleBody = zod.object({
+  "name": zod.string().optional(),
+  "description": zod.string().optional(),
+  "triggerEvent": zod.string().optional(),
+  "condition": zod.string().optional(),
+  "actions": zod.string().optional(),
+  "status": zod.string().optional()
+})
+
+export const UpdateOrchestrationRuleResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "triggerEvent": zod.string(),
+  "condition": zod.string().nullish(),
+  "actions": zod.string().nullish(),
+  "status": zod.string(),
+  "executionCount": zod.number(),
+  "lastExecutedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete orchestration rule
+ */
+export const DeleteOrchestrationRuleParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+

@@ -2838,6 +2838,174 @@ paths:
       responses:
         "204":
           description: No Content
+  /orchestration-events:
+    get:
+      operationId: listOrchestrationEvents
+      summary: List orchestration events
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: source
+          schema: { type: string }
+        - in: query
+          name: eventType
+          schema: { type: string }
+        - in: query
+          name: clientId
+          schema: { type: integer }
+        - in: query
+          name: priority
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OrchestrationEvent" }
+    post:
+      operationId: createOrchestrationEvent
+      summary: Create orchestration event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrchestrationEventCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrchestrationEvent" }
+
+  /orchestration-events/{id}:
+    get:
+      operationId: getOrchestrationEvent
+      summary: Get orchestration event by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrchestrationEvent" }
+    patch:
+      operationId: updateOrchestrationEvent
+      summary: Update orchestration event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrchestrationEventUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrchestrationEvent" }
+    delete:
+      operationId: deleteOrchestrationEvent
+      summary: Delete orchestration event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: No Content
+
+  /orchestration-rules:
+    get:
+      operationId: listOrchestrationRules
+      summary: List orchestration rules
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: triggerEvent
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/OrchestrationRule" }
+    post:
+      operationId: createOrchestrationRule
+      summary: Create orchestration rule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrchestrationRuleCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrchestrationRule" }
+
+  /orchestration-rules/{id}:
+    get:
+      operationId: getOrchestrationRule
+      summary: Get orchestration rule by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrchestrationRule" }
+    patch:
+      operationId: updateOrchestrationRule
+      summary: Update orchestration rule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrchestrationRuleUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OrchestrationRule" }
+    delete:
+      operationId: deleteOrchestrationRule
+      summary: Delete orchestration rule
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: No Content
 
 components:
   parameters:
@@ -4579,3 +4747,80 @@ components:
         fileUrl: { type: string }
         comments: { type: string }
         reviewedBy: { type: string }
+
+    OrchestrationEvent:
+      type: object
+      required: [id, eventType, source, priority, status, createdAt]
+      properties:
+        id: { type: integer }
+        eventType: { type: string }
+        source: { type: string }
+        destination: { type: ["string", "null"] }
+        priority: { type: string }
+        status: { type: string }
+        clientId: { type: ["integer", "null"] }
+        projectId: { type: ["integer", "null"] }
+        userId: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        payload: {}
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    OrchestrationEventCreate:
+      type: object
+      required: [eventType, source]
+      properties:
+        eventType: { type: string }
+        source: { type: string }
+        destination: { type: string }
+        priority: { type: string }
+        status: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        userId: { type: string }
+        notes: { type: string }
+    OrchestrationEventUpdate:
+      type: object
+      properties:
+        eventType: { type: string }
+        source: { type: string }
+        destination: { type: string }
+        priority: { type: string }
+        status: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        userId: { type: string }
+        notes: { type: string }
+    OrchestrationRule:
+      type: object
+      required: [id, name, triggerEvent, status, executionCount, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        triggerEvent: { type: string }
+        condition: { type: ["string", "null"] }
+        actions: { type: ["string", "null"] }
+        status: { type: string }
+        executionCount: { type: integer }
+        lastExecutedAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    OrchestrationRuleCreate:
+      type: object
+      required: [name, triggerEvent]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        triggerEvent: { type: string }
+        condition: { type: string }
+        actions: { type: string }
+        status: { type: string }
+    OrchestrationRuleUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        triggerEvent: { type: string }
+        condition: { type: string }
+        actions: { type: string }
+        status: { type: string }

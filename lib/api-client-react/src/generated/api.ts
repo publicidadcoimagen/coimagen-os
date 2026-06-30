@@ -99,6 +99,8 @@ import type {
   ListDiagnosesParams,
   ListIncidentsParams,
   ListInvoicesParams,
+  ListOrchestrationEventsParams,
+  ListOrchestrationRulesParams,
   ListProjectsParams,
   ListProposalsParams,
   ListProspectsParams,
@@ -112,6 +114,12 @@ import type {
   MrrDataPoint,
   Mundo,
   MundoUpdate,
+  OrchestrationEvent,
+  OrchestrationEventCreate,
+  OrchestrationEventUpdate,
+  OrchestrationRule,
+  OrchestrationRuleCreate,
+  OrchestrationRuleUpdate,
   Organization,
   OrganizationCreate,
   OrganizationUpdate,
@@ -12914,5 +12922,753 @@ export const useDeleteClientApproval = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteClientApprovalMutationOptions(options));
+    }
+
+export const getListOrchestrationEventsUrl = (params?: ListOrchestrationEventsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/orchestration-events?${stringifiedParams}` : `/api/orchestration-events`
+}
+
+/**
+ * @summary List orchestration events
+ */
+export const listOrchestrationEvents = async (params?: ListOrchestrationEventsParams, options?: RequestInit): Promise<OrchestrationEvent[]> => {
+
+  return customFetch<OrchestrationEvent[]>(getListOrchestrationEventsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListOrchestrationEventsQueryKey = (params?: ListOrchestrationEventsParams,) => {
+    return [
+    `/api/orchestration-events`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListOrchestrationEventsQueryOptions = <TData = Awaited<ReturnType<typeof listOrchestrationEvents>>, TError = ErrorType<unknown>>(params?: ListOrchestrationEventsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOrchestrationEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOrchestrationEventsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrchestrationEvents>>> = ({ signal }) => listOrchestrationEvents(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrchestrationEvents>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListOrchestrationEventsQueryResult = NonNullable<Awaited<ReturnType<typeof listOrchestrationEvents>>>
+export type ListOrchestrationEventsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List orchestration events
+ */
+
+export function useListOrchestrationEvents<TData = Awaited<ReturnType<typeof listOrchestrationEvents>>, TError = ErrorType<unknown>>(
+ params?: ListOrchestrationEventsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOrchestrationEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListOrchestrationEventsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateOrchestrationEventUrl = () => {
+
+
+
+
+  return `/api/orchestration-events`
+}
+
+/**
+ * @summary Create orchestration event
+ */
+export const createOrchestrationEvent = async (orchestrationEventCreate: OrchestrationEventCreate, options?: RequestInit): Promise<OrchestrationEvent> => {
+
+  return customFetch<OrchestrationEvent>(getCreateOrchestrationEventUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      orchestrationEventCreate,)
+  }
+);}
+
+
+
+
+export const getCreateOrchestrationEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrchestrationEvent>>, TError,{data: BodyType<OrchestrationEventCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createOrchestrationEvent>>, TError,{data: BodyType<OrchestrationEventCreate>}, TContext> => {
+
+const mutationKey = ['createOrchestrationEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrchestrationEvent>>, {data: BodyType<OrchestrationEventCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createOrchestrationEvent(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOrchestrationEventMutationResult = NonNullable<Awaited<ReturnType<typeof createOrchestrationEvent>>>
+    export type CreateOrchestrationEventMutationBody = BodyType<OrchestrationEventCreate>
+    export type CreateOrchestrationEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create orchestration event
+ */
+export const useCreateOrchestrationEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrchestrationEvent>>, TError,{data: BodyType<OrchestrationEventCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createOrchestrationEvent>>,
+        TError,
+        {data: BodyType<OrchestrationEventCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateOrchestrationEventMutationOptions(options));
+    }
+
+export const getGetOrchestrationEventUrl = (id: number,) => {
+
+
+
+
+  return `/api/orchestration-events/${id}`
+}
+
+/**
+ * @summary Get orchestration event by id
+ */
+export const getOrchestrationEvent = async (id: number, options?: RequestInit): Promise<OrchestrationEvent> => {
+
+  return customFetch<OrchestrationEvent>(getGetOrchestrationEventUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOrchestrationEventQueryKey = (id: number,) => {
+    return [
+    `/api/orchestration-events/${id}`
+    ] as const;
+    }
+
+
+export const getGetOrchestrationEventQueryOptions = <TData = Awaited<ReturnType<typeof getOrchestrationEvent>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrchestrationEvent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOrchestrationEventQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrchestrationEvent>>> = ({ signal }) => getOrchestrationEvent(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrchestrationEvent>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOrchestrationEventQueryResult = NonNullable<Awaited<ReturnType<typeof getOrchestrationEvent>>>
+export type GetOrchestrationEventQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get orchestration event by id
+ */
+
+export function useGetOrchestrationEvent<TData = Awaited<ReturnType<typeof getOrchestrationEvent>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrchestrationEvent>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOrchestrationEventQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateOrchestrationEventUrl = (id: number,) => {
+
+
+
+
+  return `/api/orchestration-events/${id}`
+}
+
+/**
+ * @summary Update orchestration event
+ */
+export const updateOrchestrationEvent = async (id: number,
+    orchestrationEventUpdate: OrchestrationEventUpdate, options?: RequestInit): Promise<OrchestrationEvent> => {
+
+  return customFetch<OrchestrationEvent>(getUpdateOrchestrationEventUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      orchestrationEventUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateOrchestrationEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrchestrationEvent>>, TError,{id: number;data: BodyType<OrchestrationEventUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateOrchestrationEvent>>, TError,{id: number;data: BodyType<OrchestrationEventUpdate>}, TContext> => {
+
+const mutationKey = ['updateOrchestrationEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateOrchestrationEvent>>, {id: number;data: BodyType<OrchestrationEventUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateOrchestrationEvent(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateOrchestrationEventMutationResult = NonNullable<Awaited<ReturnType<typeof updateOrchestrationEvent>>>
+    export type UpdateOrchestrationEventMutationBody = BodyType<OrchestrationEventUpdate>
+    export type UpdateOrchestrationEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update orchestration event
+ */
+export const useUpdateOrchestrationEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrchestrationEvent>>, TError,{id: number;data: BodyType<OrchestrationEventUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateOrchestrationEvent>>,
+        TError,
+        {id: number;data: BodyType<OrchestrationEventUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateOrchestrationEventMutationOptions(options));
+    }
+
+export const getDeleteOrchestrationEventUrl = (id: number,) => {
+
+
+
+
+  return `/api/orchestration-events/${id}`
+}
+
+/**
+ * @summary Delete orchestration event
+ */
+export const deleteOrchestrationEvent = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteOrchestrationEventUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteOrchestrationEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrchestrationEvent>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteOrchestrationEvent>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteOrchestrationEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteOrchestrationEvent>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteOrchestrationEvent(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteOrchestrationEventMutationResult = NonNullable<Awaited<ReturnType<typeof deleteOrchestrationEvent>>>
+
+    export type DeleteOrchestrationEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete orchestration event
+ */
+export const useDeleteOrchestrationEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrchestrationEvent>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteOrchestrationEvent>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteOrchestrationEventMutationOptions(options));
+    }
+
+export const getListOrchestrationRulesUrl = (params?: ListOrchestrationRulesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/orchestration-rules?${stringifiedParams}` : `/api/orchestration-rules`
+}
+
+/**
+ * @summary List orchestration rules
+ */
+export const listOrchestrationRules = async (params?: ListOrchestrationRulesParams, options?: RequestInit): Promise<OrchestrationRule[]> => {
+
+  return customFetch<OrchestrationRule[]>(getListOrchestrationRulesUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListOrchestrationRulesQueryKey = (params?: ListOrchestrationRulesParams,) => {
+    return [
+    `/api/orchestration-rules`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListOrchestrationRulesQueryOptions = <TData = Awaited<ReturnType<typeof listOrchestrationRules>>, TError = ErrorType<unknown>>(params?: ListOrchestrationRulesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOrchestrationRules>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOrchestrationRulesQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrchestrationRules>>> = ({ signal }) => listOrchestrationRules(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrchestrationRules>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListOrchestrationRulesQueryResult = NonNullable<Awaited<ReturnType<typeof listOrchestrationRules>>>
+export type ListOrchestrationRulesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List orchestration rules
+ */
+
+export function useListOrchestrationRules<TData = Awaited<ReturnType<typeof listOrchestrationRules>>, TError = ErrorType<unknown>>(
+ params?: ListOrchestrationRulesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOrchestrationRules>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListOrchestrationRulesQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateOrchestrationRuleUrl = () => {
+
+
+
+
+  return `/api/orchestration-rules`
+}
+
+/**
+ * @summary Create orchestration rule
+ */
+export const createOrchestrationRule = async (orchestrationRuleCreate: OrchestrationRuleCreate, options?: RequestInit): Promise<OrchestrationRule> => {
+
+  return customFetch<OrchestrationRule>(getCreateOrchestrationRuleUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      orchestrationRuleCreate,)
+  }
+);}
+
+
+
+
+export const getCreateOrchestrationRuleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrchestrationRule>>, TError,{data: BodyType<OrchestrationRuleCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createOrchestrationRule>>, TError,{data: BodyType<OrchestrationRuleCreate>}, TContext> => {
+
+const mutationKey = ['createOrchestrationRule'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createOrchestrationRule>>, {data: BodyType<OrchestrationRuleCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createOrchestrationRule(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateOrchestrationRuleMutationResult = NonNullable<Awaited<ReturnType<typeof createOrchestrationRule>>>
+    export type CreateOrchestrationRuleMutationBody = BodyType<OrchestrationRuleCreate>
+    export type CreateOrchestrationRuleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create orchestration rule
+ */
+export const useCreateOrchestrationRule = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrchestrationRule>>, TError,{data: BodyType<OrchestrationRuleCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createOrchestrationRule>>,
+        TError,
+        {data: BodyType<OrchestrationRuleCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateOrchestrationRuleMutationOptions(options));
+    }
+
+export const getGetOrchestrationRuleUrl = (id: number,) => {
+
+
+
+
+  return `/api/orchestration-rules/${id}`
+}
+
+/**
+ * @summary Get orchestration rule by id
+ */
+export const getOrchestrationRule = async (id: number, options?: RequestInit): Promise<OrchestrationRule> => {
+
+  return customFetch<OrchestrationRule>(getGetOrchestrationRuleUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOrchestrationRuleQueryKey = (id: number,) => {
+    return [
+    `/api/orchestration-rules/${id}`
+    ] as const;
+    }
+
+
+export const getGetOrchestrationRuleQueryOptions = <TData = Awaited<ReturnType<typeof getOrchestrationRule>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrchestrationRule>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOrchestrationRuleQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrchestrationRule>>> = ({ signal }) => getOrchestrationRule(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrchestrationRule>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOrchestrationRuleQueryResult = NonNullable<Awaited<ReturnType<typeof getOrchestrationRule>>>
+export type GetOrchestrationRuleQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get orchestration rule by id
+ */
+
+export function useGetOrchestrationRule<TData = Awaited<ReturnType<typeof getOrchestrationRule>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrchestrationRule>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOrchestrationRuleQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateOrchestrationRuleUrl = (id: number,) => {
+
+
+
+
+  return `/api/orchestration-rules/${id}`
+}
+
+/**
+ * @summary Update orchestration rule
+ */
+export const updateOrchestrationRule = async (id: number,
+    orchestrationRuleUpdate: OrchestrationRuleUpdate, options?: RequestInit): Promise<OrchestrationRule> => {
+
+  return customFetch<OrchestrationRule>(getUpdateOrchestrationRuleUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      orchestrationRuleUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateOrchestrationRuleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrchestrationRule>>, TError,{id: number;data: BodyType<OrchestrationRuleUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateOrchestrationRule>>, TError,{id: number;data: BodyType<OrchestrationRuleUpdate>}, TContext> => {
+
+const mutationKey = ['updateOrchestrationRule'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateOrchestrationRule>>, {id: number;data: BodyType<OrchestrationRuleUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateOrchestrationRule(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateOrchestrationRuleMutationResult = NonNullable<Awaited<ReturnType<typeof updateOrchestrationRule>>>
+    export type UpdateOrchestrationRuleMutationBody = BodyType<OrchestrationRuleUpdate>
+    export type UpdateOrchestrationRuleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update orchestration rule
+ */
+export const useUpdateOrchestrationRule = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateOrchestrationRule>>, TError,{id: number;data: BodyType<OrchestrationRuleUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateOrchestrationRule>>,
+        TError,
+        {id: number;data: BodyType<OrchestrationRuleUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateOrchestrationRuleMutationOptions(options));
+    }
+
+export const getDeleteOrchestrationRuleUrl = (id: number,) => {
+
+
+
+
+  return `/api/orchestration-rules/${id}`
+}
+
+/**
+ * @summary Delete orchestration rule
+ */
+export const deleteOrchestrationRule = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteOrchestrationRuleUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteOrchestrationRuleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrchestrationRule>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteOrchestrationRule>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteOrchestrationRule'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteOrchestrationRule>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteOrchestrationRule(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteOrchestrationRuleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteOrchestrationRule>>>
+
+    export type DeleteOrchestrationRuleMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete orchestration rule
+ */
+export const useDeleteOrchestrationRule = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOrchestrationRule>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteOrchestrationRule>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteOrchestrationRuleMutationOptions(options));
     }
 

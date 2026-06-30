@@ -7,6 +7,7 @@ import {
   Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
   Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
   Code2, TestTube2, Gauge, HeartPulse, FileSignature,
+  Cpu, Activity, BookOpen,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -64,6 +65,16 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Digital Contract Engine",
     items: [
       { href: "/contracts", label: "Contratos", icon: FileSignature },
+    ],
+  },
+  {
+    label: "Orchestration Engine",
+    items: [
+      { href: "/orchestration",          label: "Hub Principal",  icon: Cpu },
+      { href: "/orchestration/events",   label: "Event Monitor",  icon: Activity },
+      { href: "/orchestration/rules",    label: "Rule Engine",    icon: GitBranch },
+      { href: "/orchestration/timeline", label: "Timeline Global",icon: ScrollText },
+      { href: "/orchestration/catalog",  label: "Catálogo",       icon: BookOpen },
     ],
   },
   {

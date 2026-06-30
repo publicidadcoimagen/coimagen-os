@@ -38,3 +38,6 @@ export * from "./contracts";
 
 export * from "./organizations";
 export * from "./client-approvals";
+
+export * from "./orchestration-events";
+export * from "./orchestration-rules";

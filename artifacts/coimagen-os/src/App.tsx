@@ -59,6 +59,13 @@ import {
   HealthCheck, TechnicalDebt, Recommendations,
 } from "@/pages/quality-center/submodules";
 
+// Orchestration Engine
+import { OrchestrationHub } from "@/pages/orchestration/index";
+import { EventMonitor } from "@/pages/orchestration/events";
+import { RuleEngine } from "@/pages/orchestration/rules";
+import { GlobalTimeline } from "@/pages/orchestration/timeline";
+import { EventCatalogPage } from "@/pages/orchestration/catalog-page";
+
 // Client Room
 import { ClientRoomAdmin } from "@/pages/client-room/admin";
 import { ClientDashboard } from "@/pages/client-room/dashboard";
@@ -190,6 +197,13 @@ function Router() {
             <Route path="/quality-center/health-check" component={HealthCheck} />
             <Route path="/quality-center/technical-debt" component={TechnicalDebt} />
             <Route path="/quality-center/recommendations" component={Recommendations} />
+
+            {/* Orchestration Engine */}
+            <Route path="/orchestration/events"   component={EventMonitor} />
+            <Route path="/orchestration/rules"    component={RuleEngine} />
+            <Route path="/orchestration/timeline" component={GlobalTimeline} />
+            <Route path="/orchestration/catalog"  component={EventCatalogPage} />
+            <Route path="/orchestration"          component={OrchestrationHub} />
 
             {/* Client Room admin (list of orgs) — inside AppLayout */}
             <Route path="/client" component={ClientRoomAdmin} />

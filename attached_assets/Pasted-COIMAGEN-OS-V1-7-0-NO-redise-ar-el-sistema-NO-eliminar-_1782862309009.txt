@@ -1,0 +1,249 @@
+COIMAGEN OS V1.7.0
+
+NO rediseñar el sistema.
+
+NO eliminar módulos existentes.
+
+NO modificar Workflow Engine.
+
+NO modificar AI Agents.
+
+NO modificar Client Room.
+
+NO modificar Quality Center.
+
+NO modificar Smart Client Onboarding.
+
+NO modificar Contratos.
+
+====================================================
+
+OBJETIVO
+
+Construir ORCHESTRATION ENGINE.
+
+Será el cerebro de todo COIMAGEN OS.
+
+No ejecutará automatizaciones.
+
+Tomará decisiones.
+
+====================================================
+
+Crear módulo:
+
+ORCHESTRATION ENGINE
+
+====================================================
+
+El motor deberá ser capaz de escuchar eventos generados por cualquier módulo.
+
+Ejemplos.
+
+Nuevo Lead
+
+↓
+
+Nuevo Cliente
+
+↓
+
+Contrato firmado
+
+↓
+
+Pago recibido
+
+↓
+
+Workflow iniciado
+
+↓
+
+Workflow detenido
+
+↓
+
+Nueva tarea
+
+↓
+
+Bug crítico
+
+↓
+
+Factura vencida
+
+↓
+
+Aprobación cliente
+
+↓
+
+Nueva automatización
+
+↓
+
+Error IA
+
+↓
+
+Cliente inactivo
+
+====================================================
+
+Cada evento podrá generar una o varias acciones.
+
+Ejemplo.
+
+Contrato firmado
+
+↓
+
+Crear proyecto
+
+↓
+
+Crear backlog
+
+↓
+
+Crear workflow
+
+↓
+
+Asignar director
+
+↓
+
+Asignar agentes
+
+↓
+
+Crear checklist
+
+↓
+
+Crear Client Room
+
+↓
+
+Crear carpeta documental
+
+↓
+
+Enviar bienvenida (futuro)
+
+====================================================
+
+Crear un Event Bus interno.
+
+Cada evento tendrá.
+
+ID
+
+Origen
+
+Destino
+
+Prioridad
+
+Estado
+
+Fecha
+
+Usuario
+
+Cliente
+
+Proyecto
+
+Notas
+
+====================================================
+
+Crear Rule Engine.
+
+Cada regla tendrá.
+
+Nombre
+
+Evento
+
+Condición
+
+Acción
+
+Estado
+
+====================================================
+
+Crear catálogo de eventos.
+
+====================================================
+
+Preparar para integraciones futuras.
+
+n8n
+
+Gmail
+
+Calendar
+
+WhatsApp
+
+Drive
+
+Analytics
+
+Search Console
+
+====================================================
+
+NO ejecutar todavía acciones externas.
+
+Solo registrar el flujo.
+
+====================================================
+
+Agregar Timeline global.
+
+Debe mostrar todo lo que ocurre en COIMAGEN OS.
+
+====================================================
+
+Agregar Monitor de Eventos.
+
+Ver:
+
+Eventos activos
+
+Eventos fallidos
+
+Eventos completados
+
+Eventos pendientes
+
+====================================================
+
+Agregar Dashboard.
+
+Mostrar.
+
+Eventos por día
+
+Eventos por cliente
+
+Eventos por módulo
+
+Eventos por agente
+
+====================================================
+
+Mantener TypeScript en cero errores.
+
+Mantener autenticación.
+
+Mantener QA.
+
+Entregar reporte completo.

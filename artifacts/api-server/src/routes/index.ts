@@ -38,6 +38,8 @@ import orgRouter from "./org";
 import mundosRouter from "./mundos";
 import organizationsRouter from "./organizations";
 import clientApprovalsRouter from "./client-approvals";
+import orchestrationEventsRouter from "./orchestration-events";
+import orchestrationRulesRouter from "./orchestration-rules";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 
@@ -87,5 +89,7 @@ router.use(qualityTicketsRouter);
 router.use(contractsRouter);
 router.use(organizationsRouter);
 router.use(clientApprovalsRouter);
+router.use(orchestrationEventsRouter);
+router.use(orchestrationRulesRouter);
 
 export default router;

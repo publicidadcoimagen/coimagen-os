@@ -2286,6 +2286,89 @@ export interface ClientApprovalUpdate {
   reviewedBy?: string;
 }
 
+export interface OrchestrationEvent {
+  id: number;
+  eventType: string;
+  source: string;
+  /** @nullable */
+  destination?: string | null;
+  priority: string;
+  status: string;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  userId?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  payload?: unknown;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface OrchestrationEventCreate {
+  eventType: string;
+  source: string;
+  destination?: string;
+  priority?: string;
+  status?: string;
+  clientId?: number;
+  projectId?: number;
+  userId?: string;
+  notes?: string;
+}
+
+export interface OrchestrationEventUpdate {
+  eventType?: string;
+  source?: string;
+  destination?: string;
+  priority?: string;
+  status?: string;
+  clientId?: number;
+  projectId?: number;
+  userId?: string;
+  notes?: string;
+}
+
+export interface OrchestrationRule {
+  id: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  triggerEvent: string;
+  /** @nullable */
+  condition?: string | null;
+  /** @nullable */
+  actions?: string | null;
+  status: string;
+  executionCount: number;
+  /** @nullable */
+  lastExecutedAt?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface OrchestrationRuleCreate {
+  name: string;
+  description?: string;
+  triggerEvent: string;
+  condition?: string;
+  actions?: string;
+  status?: string;
+}
+
+export interface OrchestrationRuleUpdate {
+  name?: string;
+  description?: string;
+  triggerEvent?: string;
+  condition?: string;
+  actions?: string;
+  status?: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
@@ -2379,5 +2462,18 @@ export type ListClientApprovalsParams = {
 orgId?: number;
 status?: string;
 type?: string;
+};
+
+export type ListOrchestrationEventsParams = {
+status?: string;
+source?: string;
+eventType?: string;
+clientId?: number;
+priority?: string;
+};
+
+export type ListOrchestrationRulesParams = {
+status?: string;
+triggerEvent?: string;
 };
 
