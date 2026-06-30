@@ -5,7 +5,7 @@ import {
   UserSearch, TrendingUp, Stethoscope, FileText, Receipt,
   RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
   Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
-  Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList,
+  Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -23,6 +23,7 @@ const CORE_ITEMS: NavItem[] = [
   { href: "/tasks", label: "Tareas", icon: CheckSquare },
   { href: "/agents", label: "Agentes IA", icon: Bot },
   { href: "/onboarding", label: "Onboarding", icon: ClipboardList },
+  { href: "/workflow-engine", label: "Workflow Engine", icon: GitBranch },
 ];
 
 const NAV_GROUPS: NavGroup[] = [

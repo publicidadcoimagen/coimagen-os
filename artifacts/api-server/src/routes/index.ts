@@ -29,6 +29,8 @@ import bugsRouter from "./bugs";
 import ideasRouter from "./ideas";
 import automationsRouter from "./automations";
 import smartOnboardingRouter from "./smart-onboarding";
+import workflowsRouter from "./workflows";
+import workflowTemplatesRouter from "./workflow-templates";
 import orgRouter from "./org";
 import mundosRouter from "./mundos";
 import { requireAuth } from "../middlewares/requireAuth";
@@ -73,5 +75,7 @@ router.use(automationsRouter);
 router.use(orgRouter);
 router.use(mundosRouter);
 router.use(smartOnboardingRouter);
+router.use(workflowsRouter);
+router.use(workflowTemplatesRouter);
 
 export default router;

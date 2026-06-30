@@ -1003,6 +1003,288 @@ export const CompleteSmartOnboardingResponse = zod.object({
 })
 
 
+/**
+ * @summary List all workflows
+ */
+export const ListWorkflowsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "clientId": zod.coerce.number().optional(),
+  "product": zod.coerce.string().optional(),
+  "stage": zod.coerce.string().optional()
+})
+
+export const ListWorkflowsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "product": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "status": zod.string(),
+  "currentStage": zod.string(),
+  "progress": zod.number(),
+  "priority": zod.string(),
+  "responsibleId": zod.string().nullish(),
+  "agentIds": zod.array(zod.number()).nullish(),
+  "startDate": zod.string().nullish(),
+  "targetDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "blockers": zod.string().nullish(),
+  "templateId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListWorkflowsResponse = zod.array(ListWorkflowsResponseItem)
+
+
+/**
+ * @summary Create a workflow
+ */
+export const CreateWorkflowBody = zod.object({
+  "name": zod.string(),
+  "description": zod.string().optional(),
+  "product": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "priority": zod.string().optional(),
+  "currentStage": zod.string().optional(),
+  "responsibleId": zod.string().optional(),
+  "startDate": zod.string().optional(),
+  "targetDate": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "templateId": zod.number().optional(),
+  "agentIds": zod.array(zod.number()).optional()
+})
+
+
+/**
+ * @summary Get workflow by id
+ */
+export const GetWorkflowParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetWorkflowResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "product": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "status": zod.string(),
+  "currentStage": zod.string(),
+  "progress": zod.number(),
+  "priority": zod.string(),
+  "responsibleId": zod.string().nullish(),
+  "agentIds": zod.array(zod.number()).nullish(),
+  "startDate": zod.string().nullish(),
+  "targetDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "blockers": zod.string().nullish(),
+  "templateId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update a workflow
+ */
+export const UpdateWorkflowParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateWorkflowBody = zod.object({
+  "name": zod.string().optional(),
+  "description": zod.string().optional(),
+  "product": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "status": zod.string().optional(),
+  "currentStage": zod.string().optional(),
+  "progress": zod.number().optional(),
+  "priority": zod.string().optional(),
+  "responsibleId": zod.string().optional(),
+  "startDate": zod.string().optional(),
+  "targetDate": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "blockers": zod.string().optional(),
+  "templateId": zod.number().optional(),
+  "agentIds": zod.array(zod.number()).optional()
+})
+
+export const UpdateWorkflowResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "product": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "status": zod.string(),
+  "currentStage": zod.string(),
+  "progress": zod.number(),
+  "priority": zod.string(),
+  "responsibleId": zod.string().nullish(),
+  "agentIds": zod.array(zod.number()).nullish(),
+  "startDate": zod.string().nullish(),
+  "targetDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "blockers": zod.string().nullish(),
+  "templateId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete a workflow
+ */
+export const DeleteWorkflowParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Advance workflow to next or specific stage
+ */
+export const AdvanceWorkflowParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AdvanceWorkflowBody = zod.object({
+  "stage": zod.string().optional(),
+  "note": zod.string().optional()
+})
+
+export const AdvanceWorkflowResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "product": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "status": zod.string(),
+  "currentStage": zod.string(),
+  "progress": zod.number(),
+  "priority": zod.string(),
+  "responsibleId": zod.string().nullish(),
+  "agentIds": zod.array(zod.number()).nullish(),
+  "startDate": zod.string().nullish(),
+  "targetDate": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "blockers": zod.string().nullish(),
+  "templateId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get stage change history for a workflow
+ */
+export const GetWorkflowStageLogsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetWorkflowStageLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "workflowId": zod.number(),
+  "fromStage": zod.string().nullish(),
+  "toStage": zod.string(),
+  "note": zod.string().nullish(),
+  "userId": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const GetWorkflowStageLogsResponse = zod.array(GetWorkflowStageLogsResponseItem)
+
+
+/**
+ * @summary List all workflow templates
+ */
+export const ListWorkflowTemplatesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "product": zod.string().nullish(),
+  "stages": zod.array(zod.string()),
+  "defaultPriority": zod.string().optional(),
+  "isDefault": zod.boolean().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListWorkflowTemplatesResponse = zod.array(ListWorkflowTemplatesResponseItem)
+
+
+/**
+ * @summary Create a workflow template
+ */
+export const CreateWorkflowTemplateBody = zod.object({
+  "name": zod.string(),
+  "description": zod.string().optional(),
+  "product": zod.string().optional(),
+  "stages": zod.array(zod.string()),
+  "defaultPriority": zod.string().optional(),
+  "isDefault": zod.boolean().optional()
+})
+
+
+/**
+ * @summary Get template by id
+ */
+export const GetWorkflowTemplateParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetWorkflowTemplateResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "product": zod.string().nullish(),
+  "stages": zod.array(zod.string()),
+  "defaultPriority": zod.string().optional(),
+  "isDefault": zod.boolean().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update a workflow template
+ */
+export const UpdateWorkflowTemplateParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateWorkflowTemplateBody = zod.object({
+  "name": zod.string().optional(),
+  "description": zod.string().optional(),
+  "product": zod.string().optional(),
+  "stages": zod.array(zod.string()).optional(),
+  "defaultPriority": zod.string().optional(),
+  "isDefault": zod.boolean().optional()
+})
+
+export const UpdateWorkflowTemplateResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "product": zod.string().nullish(),
+  "stages": zod.array(zod.string()),
+  "defaultPriority": zod.string().optional(),
+  "isDefault": zod.boolean().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete a template
+ */
+export const DeleteWorkflowTemplateParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
 export const ListTasksQueryParams = zod.object({
   "projectId": zod.coerce.number().optional(),
   "agentId": zod.coerce.number().optional(),

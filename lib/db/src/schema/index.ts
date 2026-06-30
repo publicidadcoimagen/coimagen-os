@@ -29,3 +29,6 @@ export * from "./agent-prompt-versions";
 export * from "./agent-clients";
 export * from "./agent-projects";
 export * from "./smart-onboarding";
+export * from "./workflows";
+export * from "./workflow-templates";
+export * from "./workflow-stage-logs";

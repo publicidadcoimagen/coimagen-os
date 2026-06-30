@@ -800,6 +800,191 @@ paths:
         "404":
           description: Not found
 
+  # ─── WORKFLOW ENGINE ────────────────────────────────────────────────────────
+  /workflows:
+    get:
+      operationId: listWorkflows
+      tags: [workflows]
+      summary: List all workflows
+      parameters:
+        - { name: status, in: query, schema: { type: string } }
+        - { name: clientId, in: query, schema: { type: integer } }
+        - { name: product, in: query, schema: { type: string } }
+        - { name: stage, in: query, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Workflow"
+    post:
+      operationId: createWorkflow
+      tags: [workflows]
+      summary: Create a workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+  /workflows/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: getWorkflow
+      tags: [workflows]
+      summary: Get workflow by id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateWorkflow
+      tags: [workflows]
+      summary: Update a workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+    delete:
+      operationId: deleteWorkflow
+      tags: [workflows]
+      summary: Delete a workflow
+      responses:
+        "204":
+          description: Deleted
+  /workflows/{id}/advance:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    post:
+      operationId: advanceWorkflow
+      tags: [workflows]
+      summary: Advance workflow to next or specific stage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowAdvanceBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Workflow"
+  /workflows/{id}/stage-logs:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: getWorkflowStageLogs
+      tags: [workflows]
+      summary: Get stage change history for a workflow
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkflowStageLog"
+  /workflow-templates:
+    get:
+      operationId: listWorkflowTemplates
+      tags: [workflow-templates]
+      summary: List all workflow templates
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WorkflowTemplate"
+    post:
+      operationId: createWorkflowTemplate
+      tags: [workflow-templates]
+      summary: Create a workflow template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowTemplateCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowTemplate"
+  /workflow-templates/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: getWorkflowTemplate
+      tags: [workflow-templates]
+      summary: Get template by id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowTemplate"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateWorkflowTemplate
+      tags: [workflow-templates]
+      summary: Update a workflow template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowTemplateUpdate"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowTemplate"
+    delete:
+      operationId: deleteWorkflowTemplate
+      tags: [workflow-templates]
+      summary: Delete a template
+      responses:
+        "204":
+          description: Deleted
+
   # ─── TASKS ─────────────────────────────────────────────────────────────────
   /tasks:
     get:
@@ -3192,6 +3377,127 @@ components:
         step7:
           type: object
           additionalProperties: true
+
+    Workflow:
+      type: object
+      required: [id, name, status, currentStage, progress, priority, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        product: { type: string, nullable: true }
+        clientId: { type: integer, nullable: true }
+        projectId: { type: integer, nullable: true }
+        status: { type: string }
+        currentStage: { type: string }
+        progress: { type: integer }
+        priority: { type: string }
+        responsibleId: { type: string, nullable: true }
+        agentIds:
+          type: array
+          items: { type: integer }
+          nullable: true
+        startDate: { type: string, nullable: true }
+        targetDate: { type: string, nullable: true }
+        notes: { type: string, nullable: true }
+        blockers: { type: string, nullable: true }
+        templateId: { type: integer, nullable: true }
+        createdAt: { type: string }
+        updatedAt: { type: string, nullable: true }
+    WorkflowCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        product: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        priority: { type: string }
+        currentStage: { type: string }
+        responsibleId: { type: string }
+        startDate: { type: string }
+        targetDate: { type: string }
+        notes: { type: string }
+        templateId: { type: integer }
+        agentIds:
+          type: array
+          items: { type: integer }
+    WorkflowUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        product: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        status: { type: string }
+        currentStage: { type: string }
+        progress: { type: integer }
+        priority: { type: string }
+        responsibleId: { type: string }
+        startDate: { type: string }
+        targetDate: { type: string }
+        notes: { type: string }
+        blockers: { type: string }
+        templateId: { type: integer }
+        agentIds:
+          type: array
+          items: { type: integer }
+    WorkflowAdvanceBody:
+      type: object
+      properties:
+        stage: { type: string }
+        note: { type: string }
+    WorkflowStageLog:
+      type: object
+      required: [id, workflowId, toStage, createdAt]
+      properties:
+        id: { type: integer }
+        workflowId: { type: integer }
+        fromStage: { type: string, nullable: true }
+        toStage: { type: string }
+        note: { type: string, nullable: true }
+        userId: { type: string, nullable: true }
+        createdAt: { type: string }
+    WorkflowTemplate:
+      type: object
+      required: [id, name, stages, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        product: { type: string, nullable: true }
+        stages:
+          type: array
+          items: { type: string }
+        defaultPriority: { type: string }
+        isDefault: { type: boolean }
+        createdAt: { type: string }
+        updatedAt: { type: string, nullable: true }
+    WorkflowTemplateCreate:
+      type: object
+      required: [name, stages]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        product: { type: string }
+        stages:
+          type: array
+          items: { type: string }
+        defaultPriority: { type: string }
+        isDefault: { type: boolean }
+    WorkflowTemplateUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        product: { type: string }
+        stages:
+          type: array
+          items: { type: string }
+        defaultPriority: { type: string }
+        isDefault: { type: boolean }
 
     BacklogItem:
       type: object

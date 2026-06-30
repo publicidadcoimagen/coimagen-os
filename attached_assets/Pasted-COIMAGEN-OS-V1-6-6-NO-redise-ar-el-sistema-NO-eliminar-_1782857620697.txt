@@ -1,0 +1,339 @@
+COIMAGEN OS V1.6.6
+
+NO rediseñar el sistema.
+NO eliminar módulos existentes.
+NO romper HQ Operations.
+NO romper AI Agents Pro.
+NO romper Smart Client Onboarding.
+NO modificar autenticación.
+NO modificar clientes existentes.
+
+====================================================
+
+OBJETIVO
+
+Construir el WORKFLOW ENGINE de COIMAGEN OS.
+
+Este será el motor que conecte todo el proceso operativo:
+
+Lead
+↓
+Diagnóstico
+↓
+Propuesta
+↓
+Contrato
+↓
+Pago
+↓
+Onboarding
+↓
+Producción
+↓
+QA
+↓
+Aprobación Cliente
+↓
+Entrega
+↓
+Soporte
+↓
+Mensualidad
+↓
+Customer Success
+
+====================================================
+
+CREAR NUEVO MÓDULO:
+
+WORKFLOW ENGINE
+
+Agregarlo al menú lateral.
+
+====================================================
+
+FUNCIONES PRINCIPALES
+
+1. Crear flujos de trabajo reutilizables.
+
+2. Crear plantillas de workflow por producto.
+
+3. Asignar workflow a clientes.
+
+4. Asignar workflow a proyectos.
+
+5. Ver etapa actual de cada cliente.
+
+6. Ver porcentaje de avance.
+
+7. Detectar bloqueos.
+
+8. Asignar responsables.
+
+9. Asignar agentes.
+
+10. Crear tareas automáticas por etapa.
+
+====================================================
+
+PLANTILLAS INICIALES
+
+Crear plantillas para:
+
+AI Website
+
+SEO Growth
+
+Google Business
+
+AI Automation
+
+Camila AI
+
+COIMAGEN OS
+
+Medical OS
+
+Restaurant OS
+
+Law OS
+
+Real Estate OS
+
+Cloud Systems
+
+Consultoría
+
+====================================================
+
+CADA WORKFLOW DEBE TENER
+
+• Nombre
+
+• Descripción
+
+• Producto asociado
+
+• Cliente
+
+• Proyecto
+
+• Estado
+
+• Etapa actual
+
+• Porcentaje
+
+• Prioridad
+
+• Responsable
+
+• Agentes asignados
+
+• Fecha inicio
+
+• Fecha objetivo
+
+• Notas
+
+• Bloqueos
+
+====================================================
+
+ETAPAS BASE
+
+Crear estas etapas reutilizables:
+
+Lead recibido
+
+Diagnóstico iniciado
+
+Diagnóstico completado
+
+Propuesta enviada
+
+Propuesta aprobada
+
+Contrato enviado
+
+Contrato firmado
+
+Pago inicial recibido
+
+Onboarding iniciado
+
+Onboarding completado
+
+Producción iniciada
+
+Diseño en revisión
+
+Desarrollo en revisión
+
+QA interno
+
+Cambios solicitados
+
+Aprobación cliente
+
+Entrega final
+
+Mensualidad activa
+
+Soporte activo
+
+Customer Success
+
+====================================================
+
+TAREAS AUTOMÁTICAS
+
+Cada etapa deberá poder generar tareas.
+
+Ejemplo:
+
+Contrato enviado
+→ tarea para Contract Agent
+
+Pago inicial recibido
+→ tarea para Finance Agent
+
+Onboarding iniciado
+→ tarea para Client Success Agent
+
+Producción iniciada
+→ tarea para Website Agent / Automation Agent
+
+QA interno
+→ tarea para QA Agent
+
+Aprobación cliente
+→ tarea para Client Success Agent
+
+====================================================
+
+VISTAS
+
+Crear vistas:
+
+1. Workflows Activos
+
+2. Workflows por Cliente
+
+3. Workflows por Producto
+
+4. Workflows por Etapa
+
+5. Bloqueos
+
+6. Próximas Acciones
+
+7. Historial
+
+====================================================
+
+RELACIONES
+
+Conectar Workflow Engine con:
+
+Clientes
+
+Proyectos
+
+Tareas
+
+Agentes
+
+Backlog
+
+Daily Sprint
+
+Aprobaciones
+
+Facturas
+
+Onboarding
+
+Automatizaciones
+
+====================================================
+
+NO CONECTAR APIs EXTERNAS TODAVÍA
+
+No n8n.
+No Gmail.
+No Calendar.
+No WhatsApp.
+No Jotform real todavía.
+
+Solo dejar la estructura lista.
+
+====================================================
+
+AUDITORÍA
+
+Cada cambio de etapa debe registrarse en Audit Log.
+
+Registrar:
+
+• workflow
+• cliente
+• proyecto
+• etapa anterior
+• etapa nueva
+• usuario
+• fecha
+• nota
+
+====================================================
+
+UX
+
+Mantener el mismo diseño visual de COIMAGEN OS.
+
+Agregar:
+
+• timeline visual
+• barra de progreso
+• badges de estado
+• cards por etapa
+• vista tabla
+• vista kanban si es posible
+
+====================================================
+
+SEGURIDAD
+
+Mantener roles:
+
+CEO/Admin pueden crear y editar workflows.
+Viewer solo puede ver.
+Cliente no puede acceder todavía.
+
+====================================================
+
+QA
+
+Antes de terminar verificar:
+
+• TypeScript 0 errores
+• rutas cargan
+• CRUD funciona
+• auth protegida
+• audit log registra cambios
+• no se rompieron módulos existentes
+
+====================================================
+
+ENTREGA
+
+Al finalizar entregar reporte con:
+
+• rutas creadas
+• tablas creadas
+• endpoints creados
+• componentes creados
+• relaciones implementadas
+• pruebas realizadas
+• errores encontrados
+• recomendaciones V1.6.7

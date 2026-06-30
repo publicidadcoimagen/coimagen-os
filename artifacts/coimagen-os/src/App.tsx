@@ -46,6 +46,9 @@ import { Mundos } from "@/pages/mundos/index";
 import { MundoDetail } from "@/pages/mundos/[id]";
 import { SmartOnboardingList } from "@/pages/onboarding/index";
 import { SmartOnboardingWizard } from "@/pages/onboarding/[id]";
+import { WorkflowEngine } from "@/pages/workflow-engine/index";
+import { WorkflowDetail } from "@/pages/workflow-engine/[id]";
+import { WorkflowTemplates } from "@/pages/workflow-engine/templates";
 
 import { ComingSoon } from "@/pages/coming-soon";
 import { Bot, Users, Factory, Stethoscope, Layers, Cloud } from "lucide-react";
@@ -132,6 +135,9 @@ function Router() {
         <Route path="/mundos/:id" component={MundoDetail} />
         <Route path="/onboarding" component={SmartOnboardingList} />
         <Route path="/onboarding/:id" component={SmartOnboardingWizard} />
+        <Route path="/workflow-engine" component={WorkflowEngine} />
+        <Route path="/workflow-engine/templates" component={WorkflowTemplates} />
+        <Route path="/workflow-engine/:id" component={WorkflowDetail} />
 
         <Route path="/coming-soon/ai-agents-pro">
           {() => <ComingSoon title="AI Agents Pro" description="Agentes de IA especializados con capacidades avanzadas de razonamiento, memoria y ejecución autónoma." Icon={Bot} />}

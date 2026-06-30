@@ -1484,6 +1484,108 @@ export interface SmartOnboardingUpdate {
   step7?: SmartOnboardingUpdateStep7;
 }
 
+export interface Workflow {
+  id: number;
+  name: string;
+  description?: string | null;
+  product?: string | null;
+  clientId?: number | null;
+  projectId?: number | null;
+  status: string;
+  currentStage: string;
+  progress: number;
+  priority: string;
+  responsibleId?: string | null;
+  agentIds?: number[] | null;
+  startDate?: string | null;
+  targetDate?: string | null;
+  notes?: string | null;
+  blockers?: string | null;
+  templateId?: number | null;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface WorkflowCreate {
+  name: string;
+  description?: string;
+  product?: string;
+  clientId?: number;
+  projectId?: number;
+  priority?: string;
+  currentStage?: string;
+  responsibleId?: string;
+  startDate?: string;
+  targetDate?: string;
+  notes?: string;
+  templateId?: number;
+  agentIds?: number[];
+}
+
+export interface WorkflowUpdate {
+  name?: string;
+  description?: string;
+  product?: string;
+  clientId?: number;
+  projectId?: number;
+  status?: string;
+  currentStage?: string;
+  progress?: number;
+  priority?: string;
+  responsibleId?: string;
+  startDate?: string;
+  targetDate?: string;
+  notes?: string;
+  blockers?: string;
+  templateId?: number;
+  agentIds?: number[];
+}
+
+export interface WorkflowAdvanceBody {
+  stage?: string;
+  note?: string;
+}
+
+export interface WorkflowStageLog {
+  id: number;
+  workflowId: number;
+  fromStage?: string | null;
+  toStage: string;
+  note?: string | null;
+  userId?: string | null;
+  createdAt: string;
+}
+
+export interface WorkflowTemplate {
+  id: number;
+  name: string;
+  description?: string | null;
+  product?: string | null;
+  stages: string[];
+  defaultPriority?: string;
+  isDefault?: boolean;
+  createdAt: string;
+  updatedAt?: string | null;
+}
+
+export interface WorkflowTemplateCreate {
+  name: string;
+  description?: string;
+  product?: string;
+  stages: string[];
+  defaultPriority?: string;
+  isDefault?: boolean;
+}
+
+export interface WorkflowTemplateUpdate {
+  name?: string;
+  description?: string;
+  product?: string;
+  stages?: string[];
+  defaultPriority?: string;
+  isDefault?: boolean;
+}
+
 export interface BacklogItem {
   id: number;
   title: string;
@@ -1885,6 +1987,13 @@ returnTo?: string;
 export type ListProjectsParams = {
 clientId?: number;
 status?: string;
+};
+
+export type ListWorkflowsParams = {
+status?: string;
+clientId?: number;
+product?: string;
+stage?: string;
 };
 
 export type ListTasksParams = {
