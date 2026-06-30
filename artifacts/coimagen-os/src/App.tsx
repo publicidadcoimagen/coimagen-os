@@ -59,6 +59,9 @@ import {
   HealthCheck, TechnicalDebt, Recommendations,
 } from "@/pages/quality-center/submodules";
 
+// COIMAGEN CORE AI
+import { CoreAIDashboard } from "@/pages/core-ai/index";
+
 // Orchestration Engine
 import { OrchestrationHub } from "@/pages/orchestration/index";
 import { EventMonitor } from "@/pages/orchestration/events";
@@ -197,6 +200,9 @@ function Router() {
             <Route path="/quality-center/health-check" component={HealthCheck} />
             <Route path="/quality-center/technical-debt" component={TechnicalDebt} />
             <Route path="/quality-center/recommendations" component={Recommendations} />
+
+            {/* COIMAGEN CORE AI */}
+            <Route path="/core-ai" component={CoreAIDashboard} />
 
             {/* Orchestration Engine */}
             <Route path="/orchestration/events"   component={EventMonitor} />

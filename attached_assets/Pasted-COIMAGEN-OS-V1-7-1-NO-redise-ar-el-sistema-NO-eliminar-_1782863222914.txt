@@ -1,0 +1,227 @@
+COIMAGEN OS V1.7.1
+
+NO rediseñar el sistema.
+
+NO eliminar módulos.
+
+NO romper Workflow Engine.
+
+NO romper Client Room.
+
+NO romper Quality Center.
+
+NO romper AI Agents Pro.
+
+====================================================
+
+OBJETIVO
+
+Crear COIMAGEN CORE AI.
+
+Será el Director General Digital de COIMAGEN OS.
+
+NO será un chatbot.
+
+NO será un agente.
+
+Será el cerebro ejecutivo del sistema.
+
+====================================================
+
+Agregar un nuevo módulo:
+
+COIMAGEN CORE AI
+
+Debe aparecer arriba de HQ Operations.
+
+====================================================
+
+DASHBOARD CEO
+
+Al abrir COIMAGEN CORE mostrar:
+
+Buenos días Camila.
+
+Resumen Ejecutivo.
+
+Clientes activos
+
+Prospectos
+
+Workflows activos
+
+Proyectos activos
+
+Tareas críticas
+
+Contratos pendientes
+
+Facturas vencidas
+
+Producción
+
+Calidad
+
+Incidentes
+
+Automatizaciones
+
+Agentes activos
+
+====================================================
+
+CENTRO DE DECISIONES
+
+Crear panel:
+
+¿Qué requiere atención inmediata?
+
+Mostrar prioridades ordenadas automáticamente.
+
+====================================================
+
+RECOMENDACIONES
+
+Crear sección.
+
+Recomendaciones Inteligentes.
+
+Ejemplos.
+
+• Aprobar Landing Dr Segovia.
+
+• Renovar dominio.
+
+• Revisar contrato.
+
+• Factura próxima a vencer.
+
+• Workflow detenido.
+
+• Cliente sin actividad.
+
+====================================================
+
+MONITOR GLOBAL
+
+Mostrar estado de todos los módulos.
+
+HQ
+
+Workflow
+
+Quality
+
+Onboarding
+
+Client Room
+
+Contracts
+
+Automation
+
+AI Agents
+
+Cada módulo deberá mostrar.
+
+Salud
+
+Estado
+
+Errores
+
+Advertencias
+
+====================================================
+
+AGENDA DEL CEO
+
+Mostrar.
+
+Reuniones
+
+Pendientes
+
+Vencimientos
+
+Recordatorios
+
+====================================================
+
+RESUMEN FINANCIERO
+
+MRR
+
+ARR
+
+Facturación
+
+Cobrado
+
+Pendiente
+
+====================================================
+
+RESUMEN OPERATIVO
+
+Clientes
+
+Proyectos
+
+Workflow
+
+QA
+
+Tickets
+
+====================================================
+
+RESUMEN IA
+
+Agentes activos
+
+Agentes pausados
+
+Agentes en pruebas
+
+====================================================
+
+EVENTOS
+
+Mostrar los últimos eventos generados por Workflow Engine.
+
+====================================================
+
+NO conectar IA todavía.
+
+Toda la información será obtenida de los módulos existentes.
+
+====================================================
+
+Agregar botón.
+
+"Ejecutar Revisión General"
+
+Por ahora solo abrirá una pantalla resumen.
+
+Más adelante será ejecutada por IA.
+
+====================================================
+
+QA
+
+Verificar.
+
+TypeScript.
+
+Autenticación.
+
+Permisos.
+
+Carga.
+
+Performance.
+
+====================================================
+
+Entregar reporte final.
