@@ -27,6 +27,13 @@ tags:
   - name: audit
   - name: config
   - name: Auth
+  - name: admin
+  - name: backlog
+  - name: daily-sprints
+  - name: roadmap
+  - name: bugs
+  - name: ideas
+  - name: automations
 
 paths:
   # ─── AUTH ───────────────────────────────────────────────────────────────────
@@ -1417,6 +1424,453 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConfigEntry"
 
+  # ─── ADMIN / USERS ──────────────────────────────────────────────────────────
+  /admin/users:
+    get:
+      operationId: listSystemUsers
+      tags: [admin]
+      summary: List all system users
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SystemUser"
+  /admin/users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    patch:
+      operationId: updateSystemUser
+      tags: [admin]
+      summary: Update user role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SystemUserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemUser"
+    delete:
+      operationId: deleteSystemUser
+      tags: [admin]
+      summary: Remove user access
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── BACKLOG ─────────────────────────────────────────────────────────────────
+  /backlog:
+    get:
+      operationId: listBacklogItems
+      tags: [backlog]
+      summary: List backlog items
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BacklogItem"
+    post:
+      operationId: createBacklogItem
+      tags: [backlog]
+      summary: Create backlog item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BacklogItemCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BacklogItem"
+  /backlog/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      operationId: getBacklogItem
+      tags: [backlog]
+      summary: Get backlog item
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BacklogItem"
+    patch:
+      operationId: updateBacklogItem
+      tags: [backlog]
+      summary: Update backlog item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BacklogItemUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BacklogItem"
+    delete:
+      operationId: deleteBacklogItem
+      tags: [backlog]
+      summary: Delete backlog item
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── DAILY SPRINTS ───────────────────────────────────────────────────────────
+  /daily-sprints:
+    get:
+      operationId: listDailySprints
+      tags: [daily-sprints]
+      summary: List daily sprints
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailySprint"
+    post:
+      operationId: createDailySprint
+      tags: [daily-sprints]
+      summary: Create daily sprint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailySprintCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySprint"
+  /daily-sprints/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      operationId: getDailySprint
+      tags: [daily-sprints]
+      summary: Get daily sprint
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySprint"
+    patch:
+      operationId: updateDailySprint
+      tags: [daily-sprints]
+      summary: Update daily sprint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DailySprintUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailySprint"
+    delete:
+      operationId: deleteDailySprint
+      tags: [daily-sprints]
+      summary: Delete daily sprint
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── ROADMAP ─────────────────────────────────────────────────────────────────
+  /roadmap:
+    get:
+      operationId: listRoadmapItems
+      tags: [roadmap]
+      summary: List roadmap items
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RoadmapItem"
+    post:
+      operationId: createRoadmapItem
+      tags: [roadmap]
+      summary: Create roadmap item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoadmapItemCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoadmapItem"
+  /roadmap/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    patch:
+      operationId: updateRoadmapItem
+      tags: [roadmap]
+      summary: Update roadmap item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoadmapItemUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoadmapItem"
+    delete:
+      operationId: deleteRoadmapItem
+      tags: [roadmap]
+      summary: Delete roadmap item
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── BUGS ────────────────────────────────────────────────────────────────────
+  /bugs:
+    get:
+      operationId: listBugs
+      tags: [bugs]
+      summary: List bugs
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Bug"
+    post:
+      operationId: createBug
+      tags: [bugs]
+      summary: Create bug
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BugCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bug"
+  /bugs/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    patch:
+      operationId: updateBug
+      tags: [bugs]
+      summary: Update bug
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BugUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Bug"
+    delete:
+      operationId: deleteBug
+      tags: [bugs]
+      summary: Delete bug
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── IDEAS ───────────────────────────────────────────────────────────────────
+  /ideas:
+    get:
+      operationId: listIdeas
+      tags: [ideas]
+      summary: List ideas
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Idea"
+    post:
+      operationId: createIdea
+      tags: [ideas]
+      summary: Create idea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdeaCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Idea"
+  /ideas/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    patch:
+      operationId: updateIdea
+      tags: [ideas]
+      summary: Update idea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IdeaUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Idea"
+    delete:
+      operationId: deleteIdea
+      tags: [ideas]
+      summary: Delete idea
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── AUTOMATIONS ─────────────────────────────────────────────────────────────
+  /automations:
+    get:
+      operationId: listAutomations
+      tags: [automations]
+      summary: List automations
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Automation"
+    post:
+      operationId: createAutomation
+      tags: [automations]
+      summary: Create automation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutomationCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Automation"
+  /automations/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    patch:
+      operationId: updateAutomation
+      tags: [automations]
+      summary: Update automation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutomationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Automation"
+    delete:
+      operationId: deleteAutomation
+      tags: [automations]
+      summary: Delete automation
+      responses:
+        "204":
+          description: Deleted
+
+
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -2177,4 +2631,296 @@ components:
         hasWhatsappAccess: { type: boolean }
         hasBrandColors: { type: boolean }
         hasBusinessInfo: { type: boolean }
+        notes: { type: string }
+
+    # ─── ADMIN / USERS ────────────────────────────────────────────────────────
+    SystemUser:
+      type: object
+      required: [id, role, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: ["string", "null"] }
+        firstName: { type: ["string", "null"] }
+        lastName: { type: ["string", "null"] }
+        profileImageUrl: { type: ["string", "null"] }
+        role: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    SystemUserUpdate:
+      type: object
+      required: [role]
+      properties:
+        role: { type: string }
+
+    # ─── BACKLOG ──────────────────────────────────────────────────────────────
+    BacklogItem:
+      type: object
+      required: [id, title, status, priority, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        epic: { type: ["string", "null"] }
+        priority: { type: string }
+        assignee: { type: ["string", "null"] }
+        sprint: { type: ["string", "null"] }
+        status: { type: string }
+        dueDate: { type: ["string", "null"] }
+        checklist: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
+        projectId: { type: ["integer", "null"] }
+        agentId: { type: ["integer", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    BacklogItemCreate:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        epic: { type: string }
+        priority: { type: string }
+        assignee: { type: string }
+        sprint: { type: string }
+        status: { type: string }
+        dueDate: { type: string }
+        checklist: { type: string }
+        notes: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        agentId: { type: integer }
+    BacklogItemUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        epic: { type: string }
+        priority: { type: string }
+        assignee: { type: string }
+        sprint: { type: string }
+        status: { type: string }
+        dueDate: { type: string }
+        checklist: { type: string }
+        notes: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        agentId: { type: integer }
+
+    # ─── DAILY SPRINT ─────────────────────────────────────────────────────────
+    DailySprint:
+      type: object
+      required: [id, date, createdAt]
+      properties:
+        id: { type: integer }
+        date: { type: string }
+        objective: { type: ["string", "null"] }
+        doneYesterday: { type: ["string", "null"] }
+        replitWorking: { type: ["string", "null"] }
+        todayPlan: { type: ["string", "null"] }
+        blockers: { type: ["string", "null"] }
+        deliverables: { type: ["string", "null"] }
+        result: { type: ["string", "null"] }
+        tomorrowPending: { type: ["string", "null"] }
+        status: { type: string }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    DailySprintCreate:
+      type: object
+      required: [date]
+      properties:
+        date: { type: string }
+        objective: { type: string }
+        doneYesterday: { type: string }
+        replitWorking: { type: string }
+        todayPlan: { type: string }
+        blockers: { type: string }
+        deliverables: { type: string }
+        result: { type: string }
+        tomorrowPending: { type: string }
+        status: { type: string }
+    DailySprintUpdate:
+      type: object
+      properties:
+        date: { type: string }
+        objective: { type: string }
+        doneYesterday: { type: string }
+        replitWorking: { type: string }
+        todayPlan: { type: string }
+        blockers: { type: string }
+        deliverables: { type: string }
+        result: { type: string }
+        tomorrowPending: { type: string }
+        status: { type: string }
+
+    # ─── ROADMAP ──────────────────────────────────────────────────────────────
+    RoadmapItem:
+      type: object
+      required: [id, version, objective, status, createdAt]
+      properties:
+        id: { type: integer }
+        version: { type: string }
+        objective: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        estimatedDate: { type: ["string", "null"] }
+        dependencies: { type: ["string", "null"] }
+        deliverables: { type: ["string", "null"] }
+        risks: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    RoadmapItemCreate:
+      type: object
+      required: [version, objective]
+      properties:
+        version: { type: string }
+        objective: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        estimatedDate: { type: string }
+        dependencies: { type: string }
+        deliverables: { type: string }
+        risks: { type: string }
+    RoadmapItemUpdate:
+      type: object
+      properties:
+        version: { type: string }
+        objective: { type: string }
+        status: { type: string }
+        priority: { type: string }
+        estimatedDate: { type: string }
+        dependencies: { type: string }
+        deliverables: { type: string }
+        risks: { type: string }
+
+    # ─── BUGS ─────────────────────────────────────────────────────────────────
+    Bug:
+      type: object
+      required: [id, title, severity, status, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        severity: { type: string }
+        status: { type: string }
+        module: { type: ["string", "null"] }
+        detectedAt: { type: ["string", "null"] }
+        resolvedAt: { type: ["string", "null"] }
+        assignee: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    BugCreate:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        severity: { type: string }
+        status: { type: string }
+        module: { type: string }
+        detectedAt: { type: string }
+        resolvedAt: { type: string }
+        assignee: { type: string }
+        notes: { type: string }
+    BugUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        severity: { type: string }
+        status: { type: string }
+        module: { type: string }
+        detectedAt: { type: string }
+        resolvedAt: { type: string }
+        assignee: { type: string }
+        notes: { type: string }
+
+    # ─── IDEAS ────────────────────────────────────────────────────────────────
+    Idea:
+      type: object
+      required: [id, title, status, createdAt]
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        area: { type: ["string", "null"] }
+        impact: { type: ["string", "null"] }
+        complexity: { type: ["string", "null"] }
+        status: { type: string }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    IdeaCreate:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        area: { type: string }
+        impact: { type: string }
+        complexity: { type: string }
+        status: { type: string }
+        notes: { type: string }
+    IdeaUpdate:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string }
+        area: { type: string }
+        impact: { type: string }
+        complexity: { type: string }
+        status: { type: string }
+        notes: { type: string }
+
+    # ─── AUTOMATIONS ──────────────────────────────────────────────────────────
+    Automation:
+      type: object
+      required: [id, name, status, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        platform: { type: ["string", "null"] }
+        status: { type: string }
+        trigger: { type: ["string", "null"] }
+        action: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
+        projectId: { type: ["integer", "null"] }
+        agentId: { type: ["integer", "null"] }
+        lastRun: { type: ["string", "null"] }
+        result: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    AutomationCreate:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        platform: { type: string }
+        status: { type: string }
+        trigger: { type: string }
+        action: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        agentId: { type: integer }
+        lastRun: { type: string }
+        result: { type: string }
+        notes: { type: string }
+    AutomationUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        platform: { type: string }
+        status: { type: string }
+        trigger: { type: string }
+        action: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        agentId: { type: integer }
+        lastRun: { type: string }
+        result: { type: string }
         notes: { type: string }

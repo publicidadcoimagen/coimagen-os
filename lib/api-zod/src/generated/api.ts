@@ -1529,3 +1529,595 @@ export const UpsertConfigResponse = zod.object({
 })
 
 
+/**
+ * @summary List all system users
+ */
+export const ListSystemUsersResponseItem = zod.object({
+  "id": zod.string(),
+  "email": zod.string().nullish(),
+  "firstName": zod.string().nullish(),
+  "lastName": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
+  "role": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListSystemUsersResponse = zod.array(ListSystemUsersResponseItem)
+
+
+/**
+ * @summary Update user role
+ */
+export const UpdateSystemUserParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateSystemUserBody = zod.object({
+  "role": zod.string()
+})
+
+export const UpdateSystemUserResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string().nullish(),
+  "firstName": zod.string().nullish(),
+  "lastName": zod.string().nullish(),
+  "profileImageUrl": zod.string().nullish(),
+  "role": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Remove user access
+ */
+export const DeleteSystemUserParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+/**
+ * @summary List backlog items
+ */
+export const ListBacklogItemsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "epic": zod.string().nullish(),
+  "priority": zod.string(),
+  "assignee": zod.string().nullish(),
+  "sprint": zod.string().nullish(),
+  "status": zod.string(),
+  "dueDate": zod.string().nullish(),
+  "checklist": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListBacklogItemsResponse = zod.array(ListBacklogItemsResponseItem)
+
+
+/**
+ * @summary Create backlog item
+ */
+export const CreateBacklogItemBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "epic": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "assignee": zod.string().optional(),
+  "sprint": zod.string().optional(),
+  "status": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "checklist": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "agentId": zod.number().optional()
+})
+
+
+/**
+ * @summary Get backlog item
+ */
+export const GetBacklogItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetBacklogItemResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "epic": zod.string().nullish(),
+  "priority": zod.string(),
+  "assignee": zod.string().nullish(),
+  "sprint": zod.string().nullish(),
+  "status": zod.string(),
+  "dueDate": zod.string().nullish(),
+  "checklist": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update backlog item
+ */
+export const UpdateBacklogItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateBacklogItemBody = zod.object({
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "epic": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "assignee": zod.string().optional(),
+  "sprint": zod.string().optional(),
+  "status": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "checklist": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "agentId": zod.number().optional()
+})
+
+export const UpdateBacklogItemResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "epic": zod.string().nullish(),
+  "priority": zod.string(),
+  "assignee": zod.string().nullish(),
+  "sprint": zod.string().nullish(),
+  "status": zod.string(),
+  "dueDate": zod.string().nullish(),
+  "checklist": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete backlog item
+ */
+export const DeleteBacklogItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List daily sprints
+ */
+export const ListDailySprintsResponseItem = zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "objective": zod.string().nullish(),
+  "doneYesterday": zod.string().nullish(),
+  "replitWorking": zod.string().nullish(),
+  "todayPlan": zod.string().nullish(),
+  "blockers": zod.string().nullish(),
+  "deliverables": zod.string().nullish(),
+  "result": zod.string().nullish(),
+  "tomorrowPending": zod.string().nullish(),
+  "status": zod.string().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListDailySprintsResponse = zod.array(ListDailySprintsResponseItem)
+
+
+/**
+ * @summary Create daily sprint
+ */
+export const CreateDailySprintBody = zod.object({
+  "date": zod.string(),
+  "objective": zod.string().optional(),
+  "doneYesterday": zod.string().optional(),
+  "replitWorking": zod.string().optional(),
+  "todayPlan": zod.string().optional(),
+  "blockers": zod.string().optional(),
+  "deliverables": zod.string().optional(),
+  "result": zod.string().optional(),
+  "tomorrowPending": zod.string().optional(),
+  "status": zod.string().optional()
+})
+
+
+/**
+ * @summary Get daily sprint
+ */
+export const GetDailySprintParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetDailySprintResponse = zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "objective": zod.string().nullish(),
+  "doneYesterday": zod.string().nullish(),
+  "replitWorking": zod.string().nullish(),
+  "todayPlan": zod.string().nullish(),
+  "blockers": zod.string().nullish(),
+  "deliverables": zod.string().nullish(),
+  "result": zod.string().nullish(),
+  "tomorrowPending": zod.string().nullish(),
+  "status": zod.string().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update daily sprint
+ */
+export const UpdateDailySprintParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateDailySprintBody = zod.object({
+  "date": zod.string().optional(),
+  "objective": zod.string().optional(),
+  "doneYesterday": zod.string().optional(),
+  "replitWorking": zod.string().optional(),
+  "todayPlan": zod.string().optional(),
+  "blockers": zod.string().optional(),
+  "deliverables": zod.string().optional(),
+  "result": zod.string().optional(),
+  "tomorrowPending": zod.string().optional(),
+  "status": zod.string().optional()
+})
+
+export const UpdateDailySprintResponse = zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "objective": zod.string().nullish(),
+  "doneYesterday": zod.string().nullish(),
+  "replitWorking": zod.string().nullish(),
+  "todayPlan": zod.string().nullish(),
+  "blockers": zod.string().nullish(),
+  "deliverables": zod.string().nullish(),
+  "result": zod.string().nullish(),
+  "tomorrowPending": zod.string().nullish(),
+  "status": zod.string().optional(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete daily sprint
+ */
+export const DeleteDailySprintParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List roadmap items
+ */
+export const ListRoadmapItemsResponseItem = zod.object({
+  "id": zod.number(),
+  "version": zod.string(),
+  "objective": zod.string(),
+  "status": zod.string(),
+  "priority": zod.string().optional(),
+  "estimatedDate": zod.string().nullish(),
+  "dependencies": zod.string().nullish(),
+  "deliverables": zod.string().nullish(),
+  "risks": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListRoadmapItemsResponse = zod.array(ListRoadmapItemsResponseItem)
+
+
+/**
+ * @summary Create roadmap item
+ */
+export const CreateRoadmapItemBody = zod.object({
+  "version": zod.string(),
+  "objective": zod.string(),
+  "status": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "estimatedDate": zod.string().optional(),
+  "dependencies": zod.string().optional(),
+  "deliverables": zod.string().optional(),
+  "risks": zod.string().optional()
+})
+
+
+/**
+ * @summary Update roadmap item
+ */
+export const UpdateRoadmapItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateRoadmapItemBody = zod.object({
+  "version": zod.string().optional(),
+  "objective": zod.string().optional(),
+  "status": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "estimatedDate": zod.string().optional(),
+  "dependencies": zod.string().optional(),
+  "deliverables": zod.string().optional(),
+  "risks": zod.string().optional()
+})
+
+export const UpdateRoadmapItemResponse = zod.object({
+  "id": zod.number(),
+  "version": zod.string(),
+  "objective": zod.string(),
+  "status": zod.string(),
+  "priority": zod.string().optional(),
+  "estimatedDate": zod.string().nullish(),
+  "dependencies": zod.string().nullish(),
+  "deliverables": zod.string().nullish(),
+  "risks": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete roadmap item
+ */
+export const DeleteRoadmapItemParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List bugs
+ */
+export const ListBugsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "severity": zod.string(),
+  "status": zod.string(),
+  "module": zod.string().nullish(),
+  "detectedAt": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "assignee": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListBugsResponse = zod.array(ListBugsResponseItem)
+
+
+/**
+ * @summary Create bug
+ */
+export const CreateBugBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "severity": zod.string().optional(),
+  "status": zod.string().optional(),
+  "module": zod.string().optional(),
+  "detectedAt": zod.string().optional(),
+  "resolvedAt": zod.string().optional(),
+  "assignee": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update bug
+ */
+export const UpdateBugParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateBugBody = zod.object({
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "severity": zod.string().optional(),
+  "status": zod.string().optional(),
+  "module": zod.string().optional(),
+  "detectedAt": zod.string().optional(),
+  "resolvedAt": zod.string().optional(),
+  "assignee": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateBugResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "severity": zod.string(),
+  "status": zod.string(),
+  "module": zod.string().nullish(),
+  "detectedAt": zod.string().nullish(),
+  "resolvedAt": zod.string().nullish(),
+  "assignee": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete bug
+ */
+export const DeleteBugParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List ideas
+ */
+export const ListIdeasResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "area": zod.string().nullish(),
+  "impact": zod.string().nullish(),
+  "complexity": zod.string().nullish(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListIdeasResponse = zod.array(ListIdeasResponseItem)
+
+
+/**
+ * @summary Create idea
+ */
+export const CreateIdeaBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "area": zod.string().optional(),
+  "impact": zod.string().optional(),
+  "complexity": zod.string().optional(),
+  "status": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update idea
+ */
+export const UpdateIdeaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateIdeaBody = zod.object({
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "area": zod.string().optional(),
+  "impact": zod.string().optional(),
+  "complexity": zod.string().optional(),
+  "status": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateIdeaResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "area": zod.string().nullish(),
+  "impact": zod.string().nullish(),
+  "complexity": zod.string().nullish(),
+  "status": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete idea
+ */
+export const DeleteIdeaParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List automations
+ */
+export const ListAutomationsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "platform": zod.string().nullish(),
+  "status": zod.string(),
+  "trigger": zod.string().nullish(),
+  "action": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "lastRun": zod.string().nullish(),
+  "result": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListAutomationsResponse = zod.array(ListAutomationsResponseItem)
+
+
+/**
+ * @summary Create automation
+ */
+export const CreateAutomationBody = zod.object({
+  "name": zod.string(),
+  "description": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "status": zod.string().optional(),
+  "trigger": zod.string().optional(),
+  "action": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "agentId": zod.number().optional(),
+  "lastRun": zod.string().optional(),
+  "result": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update automation
+ */
+export const UpdateAutomationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateAutomationBody = zod.object({
+  "name": zod.string().optional(),
+  "description": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "status": zod.string().optional(),
+  "trigger": zod.string().optional(),
+  "action": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "agentId": zod.number().optional(),
+  "lastRun": zod.string().optional(),
+  "result": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateAutomationResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "platform": zod.string().nullish(),
+  "status": zod.string(),
+  "trigger": zod.string().nullish(),
+  "action": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "lastRun": zod.string().nullish(),
+  "result": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete automation
+ */
+export const DeleteAutomationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+

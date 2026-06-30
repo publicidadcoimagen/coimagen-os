@@ -1272,6 +1272,324 @@ export interface ClientOnboardingInput {
   notes?: string;
 }
 
+export interface SystemUser {
+  id: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  firstName?: string | null;
+  /** @nullable */
+  lastName?: string | null;
+  /** @nullable */
+  profileImageUrl?: string | null;
+  role: string;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface SystemUserUpdate {
+  role: string;
+}
+
+export interface BacklogItem {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  epic?: string | null;
+  priority: string;
+  /** @nullable */
+  assignee?: string | null;
+  /** @nullable */
+  sprint?: string | null;
+  status: string;
+  /** @nullable */
+  dueDate?: string | null;
+  /** @nullable */
+  checklist?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  agentId?: number | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface BacklogItemCreate {
+  title: string;
+  description?: string;
+  epic?: string;
+  priority?: string;
+  assignee?: string;
+  sprint?: string;
+  status?: string;
+  dueDate?: string;
+  checklist?: string;
+  notes?: string;
+  clientId?: number;
+  projectId?: number;
+  agentId?: number;
+}
+
+export interface BacklogItemUpdate {
+  title?: string;
+  description?: string;
+  epic?: string;
+  priority?: string;
+  assignee?: string;
+  sprint?: string;
+  status?: string;
+  dueDate?: string;
+  checklist?: string;
+  notes?: string;
+  clientId?: number;
+  projectId?: number;
+  agentId?: number;
+}
+
+export interface DailySprint {
+  id: number;
+  date: string;
+  /** @nullable */
+  objective?: string | null;
+  /** @nullable */
+  doneYesterday?: string | null;
+  /** @nullable */
+  replitWorking?: string | null;
+  /** @nullable */
+  todayPlan?: string | null;
+  /** @nullable */
+  blockers?: string | null;
+  /** @nullable */
+  deliverables?: string | null;
+  /** @nullable */
+  result?: string | null;
+  /** @nullable */
+  tomorrowPending?: string | null;
+  status?: string;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface DailySprintCreate {
+  date: string;
+  objective?: string;
+  doneYesterday?: string;
+  replitWorking?: string;
+  todayPlan?: string;
+  blockers?: string;
+  deliverables?: string;
+  result?: string;
+  tomorrowPending?: string;
+  status?: string;
+}
+
+export interface DailySprintUpdate {
+  date?: string;
+  objective?: string;
+  doneYesterday?: string;
+  replitWorking?: string;
+  todayPlan?: string;
+  blockers?: string;
+  deliverables?: string;
+  result?: string;
+  tomorrowPending?: string;
+  status?: string;
+}
+
+export interface RoadmapItem {
+  id: number;
+  version: string;
+  objective: string;
+  status: string;
+  priority?: string;
+  /** @nullable */
+  estimatedDate?: string | null;
+  /** @nullable */
+  dependencies?: string | null;
+  /** @nullable */
+  deliverables?: string | null;
+  /** @nullable */
+  risks?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface RoadmapItemCreate {
+  version: string;
+  objective: string;
+  status?: string;
+  priority?: string;
+  estimatedDate?: string;
+  dependencies?: string;
+  deliverables?: string;
+  risks?: string;
+}
+
+export interface RoadmapItemUpdate {
+  version?: string;
+  objective?: string;
+  status?: string;
+  priority?: string;
+  estimatedDate?: string;
+  dependencies?: string;
+  deliverables?: string;
+  risks?: string;
+}
+
+export interface Bug {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  severity: string;
+  status: string;
+  /** @nullable */
+  module?: string | null;
+  /** @nullable */
+  detectedAt?: string | null;
+  /** @nullable */
+  resolvedAt?: string | null;
+  /** @nullable */
+  assignee?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface BugCreate {
+  title: string;
+  description?: string;
+  severity?: string;
+  status?: string;
+  module?: string;
+  detectedAt?: string;
+  resolvedAt?: string;
+  assignee?: string;
+  notes?: string;
+}
+
+export interface BugUpdate {
+  title?: string;
+  description?: string;
+  severity?: string;
+  status?: string;
+  module?: string;
+  detectedAt?: string;
+  resolvedAt?: string;
+  assignee?: string;
+  notes?: string;
+}
+
+export interface Idea {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  area?: string | null;
+  /** @nullable */
+  impact?: string | null;
+  /** @nullable */
+  complexity?: string | null;
+  status: string;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface IdeaCreate {
+  title: string;
+  description?: string;
+  area?: string;
+  impact?: string;
+  complexity?: string;
+  status?: string;
+  notes?: string;
+}
+
+export interface IdeaUpdate {
+  title?: string;
+  description?: string;
+  area?: string;
+  impact?: string;
+  complexity?: string;
+  status?: string;
+  notes?: string;
+}
+
+export interface Automation {
+  id: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  platform?: string | null;
+  status: string;
+  /** @nullable */
+  trigger?: string | null;
+  /** @nullable */
+  action?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  agentId?: number | null;
+  /** @nullable */
+  lastRun?: string | null;
+  /** @nullable */
+  result?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface AutomationCreate {
+  name: string;
+  description?: string;
+  platform?: string;
+  status?: string;
+  trigger?: string;
+  action?: string;
+  clientId?: number;
+  projectId?: number;
+  agentId?: number;
+  lastRun?: string;
+  result?: string;
+  notes?: string;
+}
+
+export interface AutomationUpdate {
+  name?: string;
+  description?: string;
+  platform?: string;
+  status?: string;
+  trigger?: string;
+  action?: string;
+  clientId?: number;
+  projectId?: number;
+  agentId?: number;
+  lastRun?: string;
+  result?: string;
+  notes?: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */

@@ -1,0 +1,563 @@
+COIMAGEN OS ya existe y está funcionando en Replit.
+
+NO reconstruyas el sistema.
+
+NO rediseñes la estructura visual principal.
+
+NO elimines módulos existentes.
+
+NO cambies rutas existentes que ya funcionan.
+
+NO modifiques la autenticación recién implementada.
+
+NO elimines clientes, proyectos, finanzas, agentes, tareas, aprobaciones, dashboard, auditoría ni configuración.
+
+Objetivo:
+
+Actualizar COIMAGEN OS de V1.5 a V1.6 como centro operativo real de Coimagen Media Agency.
+
+Esta versión debe convertir COIMAGEN OS en el lugar donde Camila administra:
+
+* Product Backlog
+* Daily Sprint
+* Roadmap
+* KPIs
+* Bugs
+* Ideas
+* Agentes IA
+* Automatizaciones
+* Producción
+* Clientes
+* Finanzas
+* Proyectos
+* Tareas
+* Aprobaciones
+
+No crear otro sistema. Evolucionar el actual.
+
+====================================================
+
+1. NUEVO MÓDULO: HQ OPERATIONS
+   ====================================================
+
+Crear una nueva sección en el sidebar llamada:
+
+HQ OPERATIONS
+
+Dentro agregar estas rutas:
+
+/hq
+/backlog
+/daily-sprint
+/roadmap
+/bugs
+/ideas
+/kpis
+
+El módulo HQ será el centro diario de trabajo de Camila.
+
+La página /hq debe mostrar un resumen ejecutivo con:
+
+* Sprint actual
+* Tareas en desarrollo
+* Tareas pendientes
+* Bugs críticos
+* Leads/prospectos activos
+* Proyectos activos
+* Facturas vencidas
+* Agentes activos
+* KPIs principales
+* Próximas acciones recomendadas
+
+Debe sentirse como “Mission Control” de Coimagen.
+
+====================================================
+2. PRODUCT BACKLOG
+==================
+
+Crear módulo Product Backlog dentro de COIMAGEN OS.
+
+Debe permitir crear, editar y mover tarjetas con estos estados:
+
+* ICEBOX
+* BACKLOG
+* EN DESARROLLO
+* EN PRUEBAS
+* PRODUCCIÓN
+* TERMINADO
+
+Cada tarjeta debe tener:
+
+* Título
+* Descripción
+* Epic
+* Prioridad
+* Responsable
+* Sprint
+* Estado
+* Fecha objetivo
+* Checklist
+* Notas
+* Relación opcional con cliente
+* Relación opcional con proyecto
+* Relación opcional con agente
+
+Epics iniciales:
+
+* Sitio Web
+* COIMAGEN OS
+* Marketing
+* Productos
+* Branding
+* Automatización
+* Ventas
+* Agentes IA
+* SEO
+* Google Business
+
+Responsables iniciales:
+
+* Camila
+* Replit
+* ChatGPT CTO
+* Agente IA
+
+No usar colaboradores humanos. Coimagen opera con Camila + IA.
+
+====================================================
+3. DAILY SPRINT
+===============
+
+Crear módulo Daily Sprint.
+
+Debe permitir registrar cada día:
+
+* Fecha
+* Objetivo del día
+* Qué terminó ayer
+* Qué está trabajando Replit
+* Qué haremos hoy
+* Bloqueos
+* Entregables esperados
+* Resultado final del día
+* Pendientes para mañana
+
+Debe existir una vista de historial de Sprints.
+
+Debe existir una vista de Sprint actual.
+
+====================================================
+4. ROADMAP
+==========
+
+Crear módulo Roadmap.
+
+Debe organizar el desarrollo por versiones:
+
+* COIMAGEN OS V1.6
+* COIMAGEN OS V1.7
+* COIMAGEN OS V2.0
+* coimagenmedia.com V1.3
+* coimagenmedia.com V1.4
+* Medical OS
+* Restaurant OS
+* Lawyer OS
+* Real Estate OS
+
+Cada elemento del Roadmap debe tener:
+
+* Versión
+* Objetivo
+* Estado
+* Prioridad
+* Fecha estimada
+* Dependencias
+* Entregables
+* Riesgos
+
+====================================================
+5. BUG TRACKER
+==============
+
+Crear módulo Bugs.
+
+Cada bug debe tener:
+
+* Título
+* Descripción
+* Severidad
+* Estado
+* Módulo afectado
+* Fecha detectado
+* Fecha resuelto
+* Responsable
+* Notas
+* Captura o evidencia opcional
+
+Estados:
+
+* Nuevo
+* Confirmado
+* En revisión
+* Corregido
+* Cerrado
+
+Severidad:
+
+* Crítico
+* Alto
+* Medio
+* Bajo
+
+====================================================
+6. IDEAS
+========
+
+Crear módulo Ideas.
+
+Aquí se guardan ideas futuras antes de pasarlas al Backlog.
+
+Cada idea debe tener:
+
+* Título
+* Descripción
+* Área
+* Impacto esperado
+* Complejidad
+* Estado
+* Notas
+
+Estados:
+
+* Nueva
+* Revisar
+* Aprobada
+* Descartada
+* En Backlog
+
+====================================================
+7. KPIs
+=======
+
+Crear módulo KPIs.
+
+Debe mostrar indicadores principales de Coimagen:
+
+* Leads nuevos
+* Diagnósticos completados
+* Reuniones agendadas
+* Propuestas enviadas
+* Ventas cerradas
+* MRR
+* Facturas vencidas
+* Proyectos activos
+* Tareas abiertas
+* Tareas atrasadas
+* Agentes activos
+* Automatizaciones ejecutadas
+
+Debe conectarse con datos existentes cuando sea posible.
+
+Si no existe dato real todavía, mostrar estructura lista sin hardcodear métricas falsas.
+
+Eliminar o reemplazar cualquier dato hardcodeado que pueda causar decisiones incorrectas.
+
+====================================================
+8. AGENTES IA
+=============
+
+Mejorar el módulo Agentes IA existente.
+
+No eliminarlo.
+
+Debe organizar agentes por Mundo o Área:
+
+* Comercial
+* Marketing
+* SEO
+* Producción
+* Clientes
+* Finanzas
+* Legal
+* Cloud
+* Automatización
+* CEO
+
+Cada agente debe tener:
+
+* Nombre
+* Rol
+* Mundo
+* Especialidad
+* Estado
+* Descripción
+* Entradas
+* Salidas
+* Herramientas
+* KPIs
+* Última actividad
+* Relación con tareas
+* Relación con proyectos
+
+Crear agentes iniciales:
+
+* SEO Agent
+* Sales Agent
+* Proposal Agent
+* Contract Agent
+* Content Agent
+* Social Media Agent
+* Google Business Agent
+* Reporting Agent
+* Automation Agent
+* Website Agent
+* QA Agent
+* Billing Agent
+* Client Success Agent
+* Replit Supervisor Agent
+* CTO Assistant Agent
+
+Estos agentes todavía no necesitan ejecutar automatizaciones reales.
+
+Por ahora deben existir como estructura operativa para asignar tareas y documentar procesos.
+
+====================================================
+9. AUTOMATIZACIONES
+===================
+
+Crear módulo Automatizaciones.
+
+Cada automatización debe tener:
+
+* Nombre
+* Descripción
+* Plataforma
+* Estado
+* Trigger
+* Acción
+* Cliente relacionado opcional
+* Proyecto relacionado opcional
+* Agente responsable
+* Última ejecución
+* Resultado
+* Notas
+
+Plataformas:
+
+* n8n
+* Jotform
+* Gmail
+* Google Calendar
+* Google Sheets
+* Replit
+* WhatsApp
+* Google Business
+* Search Console
+* Analytics
+
+No implementar conexiones reales todavía si no existen credenciales.
+
+Solo dejar el módulo listo.
+
+====================================================
+10. CLIENT ROOM FUTURO
+======================
+
+NO construir portal público del cliente todavía.
+
+Pero preparar el modelo interno para futuro Client Room.
+
+Agregar en Clientes una sección llamada:
+
+Client Room Preview
+
+Debe mostrar:
+
+* Proyectos del cliente
+* Tareas abiertas
+* Aprobaciones pendientes
+* Facturas
+* Archivos pendientes
+* Notas internas
+* Estado general del cliente
+
+Esto será solo interno por ahora.
+
+No hacerlo público.
+
+====================================================
+11. APROBACIONES
+================
+
+Mejorar el Centro de Aprobaciones existente.
+
+Debe poder relacionar aprobaciones con:
+
+* Cliente
+* Proyecto
+* Propuesta
+* Diseño
+* Landing
+* Documento
+* Contrato
+* Entregable
+
+Estados:
+
+* Pendiente
+* Aprobado
+* Cambios solicitados
+* Rechazado
+
+Agregar notas de aprobación.
+
+====================================================
+12. AUDITORÍA AUTOMÁTICA
+========================
+
+Mantener el audit log automático recién implementado.
+
+Asegurarse de que los nuevos módulos también generen registros cuando se creen, editen o eliminen elementos.
+
+====================================================
+13. SEGURIDAD
+=============
+
+Mantener Replit Auth.
+
+Mantener roles:
+
+* CEO
+* Admin
+* Viewer
+
+CEO y Admin pueden editar.
+
+Viewer solo puede ver.
+
+No dejar rutas nuevas sin protección.
+
+No dejar endpoints públicos nuevos.
+
+====================================================
+14. BASE DE DATOS
+=================
+
+Agregar tablas necesarias para:
+
+* backlog_items
+* daily_sprints
+* roadmap_items
+* bugs
+* ideas
+* kpis
+* automations
+
+Usar Drizzle ORM.
+
+Agregar foreign keys donde aplique.
+
+No romper datos existentes.
+
+No borrar tablas existentes.
+
+No perder información.
+
+====================================================
+15. UX/UI
+=========
+
+Mantener la identidad visual actual de COIMAGEN OS.
+
+No rediseñar toda la interfaz.
+
+Agregar los módulos nuevos siguiendo el mismo estilo:
+
+* Sidebar
+* Cards
+* Tables
+* Badges
+* Dialogs
+* Tabs
+* Forms
+* Toasts
+
+Debe sentirse como una evolución natural del sistema actual.
+
+====================================================
+16. TESTING
+===========
+
+Antes de finalizar:
+
+* Ejecutar TypeScript
+* Verificar 0 errores
+* Verificar backend
+* Verificar frontend
+* Verificar rutas nuevas
+* Verificar auth
+* Verificar roles
+* Verificar creación/edición/eliminación en módulos nuevos
+* Verificar audit log
+* Verificar que no se rompieron módulos existentes
+
+====================================================
+17. NO HACER TODAVÍA
+====================
+
+No construir CORE AI todavía.
+
+No construir Marketplace todavía.
+
+No construir Portal Cliente público todavía.
+
+No conectar n8n todavía.
+
+No conectar APIs externas todavía.
+
+No rediseñar dashboard completo.
+
+No eliminar módulos existentes.
+
+No modificar coimagenmedia.com.
+
+Este proyecto es únicamente COIMAGEN OS.
+
+====================================================
+18. ENTREGABLE FINAL
+====================
+
+Al terminar entregar reporte con:
+
+* Archivos modificados
+* Archivos nuevos
+* Tablas nuevas
+* Endpoints nuevos
+* Rutas nuevas
+* Componentes nuevos
+* Riesgos encontrados
+* Problemas corregidos
+* Resultado de TypeScript
+* Estado de autenticación
+* Estado de QA
+* Próximas recomendaciones para V1.7
+
+Objetivo final:
+
+COIMAGEN OS V1.6 debe convertirse en el centro operativo diario de Coimagen Media Agency.
+
+Camila debe poder entrar todos los días y ver:
+
+* Qué está pasando
+* Qué está pendiente
+* Qué está trabajando Replit
+* Qué tareas deben avanzar
+* Qué clientes requieren atención
+* Qué agentes están asignados
+* Qué bugs existen
+* Qué versión sigue
+* Qué se terminó
+
+Este sistema debe reemplazar Notion como centro operativo.
+
+Notion queda únicamente para documentación estratégica.

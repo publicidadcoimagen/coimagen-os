@@ -1,2 +1,2 @@
-- [Generated hook call pattern](hook-call-pattern.md) — useListX(params, options): always pass {} as first arg when you only need to set query options.
-- [Replit Auth setup](replit-auth-setup.md) — Auth fully integrated: sessions table, users table with role column, authMiddleware, requireAuth, auditMiddleware.
+- [Hook argument pattern](hook-arg-pattern.md) — new list hooks without OpenAPI query params take 1 arg; those with params take 2 args (params, options)
+- [DashboardSummary and ProspectStatus](dashboard-types.md) — DashboardSummary has no `activeAgents` (use `totalAgents`); ProspectStatus values are `lead | qualified | disqualified | converted`

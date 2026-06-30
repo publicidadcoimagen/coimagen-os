@@ -30,6 +30,16 @@ import { Revenue } from "@/pages/revenue/index";
 import { Costs } from "@/pages/costs/index";
 import { AuditLog } from "@/pages/audit/index";
 
+import { AdminUsers } from "@/pages/admin/users";
+import { HQ } from "@/pages/hq/index";
+import { Backlog } from "@/pages/backlog/index";
+import { DailySprint } from "@/pages/daily-sprint/index";
+import { Roadmap } from "@/pages/roadmap/index";
+import { Bugs } from "@/pages/bugs/index";
+import { Ideas } from "@/pages/ideas/index";
+import { KPIs } from "@/pages/kpis/index";
+import { Automations } from "@/pages/automations/index";
+
 import { ComingSoon } from "@/pages/coming-soon";
 import { Bot, Users, Factory, Stethoscope, Layers, Cloud } from "lucide-react";
 
@@ -96,6 +106,16 @@ function Router() {
         <Route path="/revenue" component={Revenue} />
         <Route path="/costs" component={Costs} />
         <Route path="/audit" component={AuditLog} />
+
+        <Route path="/admin/users" component={AdminUsers} />
+        <Route path="/hq" component={HQ} />
+        <Route path="/backlog" component={Backlog} />
+        <Route path="/daily-sprint" component={DailySprint} />
+        <Route path="/roadmap" component={Roadmap} />
+        <Route path="/bugs" component={Bugs} />
+        <Route path="/ideas" component={Ideas} />
+        <Route path="/kpis" component={KPIs} />
+        <Route path="/automations" component={Automations} />
 
         <Route path="/coming-soon/ai-agents-pro">
           {() => <ComingSoon title="AI Agents Pro" description="Agentes de IA especializados con capacidades avanzadas de razonamiento, memoria y ejecución autónoma." Icon={Bot} />}

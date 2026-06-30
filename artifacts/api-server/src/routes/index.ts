@@ -21,6 +21,13 @@ import revenueRouter from "./revenue";
 import costsRouter from "./costs";
 import auditLogsRouter from "./audit-logs";
 import configRouter from "./config";
+import adminRouter from "./admin";
+import backlogRouter from "./backlog";
+import dailySprintsRouter from "./daily-sprints";
+import roadmapRouter from "./roadmap";
+import bugsRouter from "./bugs";
+import ideasRouter from "./ideas";
+import automationsRouter from "./automations";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 
@@ -53,5 +60,12 @@ router.use(revenueRouter);
 router.use(costsRouter);
 router.use(auditLogsRouter);
 router.use(configRouter);
+router.use(adminRouter);
+router.use(backlogRouter);
+router.use(dailySprintsRouter);
+router.use(roadmapRouter);
+router.use(bugsRouter);
+router.use(ideasRouter);
+router.use(automationsRouter);
 
 export default router;

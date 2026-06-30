@@ -4,7 +4,8 @@ import {
   LayoutDashboard, Users, FolderKanban, CheckSquare, Settings,
   UserSearch, TrendingUp, Stethoscope, FileText, Receipt,
   RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
-  Lock, Bot, Bell,
+  Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
+  Lightbulb, Zap, UserCog,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -50,8 +51,22 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Sistema",
+    label: "HQ Operations",
     items: [
+      { href: "/hq", label: "Mission Control", icon: Target },
+      { href: "/backlog", label: "Product Backlog", icon: Layers },
+      { href: "/daily-sprint", label: "Daily Sprint", icon: Calendar },
+      { href: "/roadmap", label: "Roadmap", icon: Map },
+      { href: "/bugs", label: "Bug Tracker", icon: Bug },
+      { href: "/ideas", label: "Ideas", icon: Lightbulb },
+      { href: "/kpis", label: "KPIs", icon: BarChart3 },
+      { href: "/automations", label: "Automatizaciones", icon: Zap },
+    ],
+  },
+  {
+    label: "Administración",
+    items: [
+      { href: "/admin/users", label: "Roles y Accesos", icon: UserCog },
       { href: "/audit", label: "Bitácora", icon: ScrollText },
       { href: "/settings", label: "Configuración", icon: Settings },
     ],
