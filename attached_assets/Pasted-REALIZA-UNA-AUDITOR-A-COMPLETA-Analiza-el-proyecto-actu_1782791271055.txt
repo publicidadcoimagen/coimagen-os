@@ -1,0 +1,188 @@
+REALIZA UNA AUDITORÍA COMPLETA
+
+Analiza el proyecto actual y genera un documento profesional indicando:
+
+1. Qué módulos ya existen.
+
+2. Qué Landing Pages ya existen.
+
+3. Qué Landing Pages faltan.
+
+4. Qué páginas necesitan rediseño.
+
+5. Qué páginas necesitan únicamente optimización.
+
+6. Qué imágenes existentes pueden reutilizarse.
+
+7. Qué imágenes deberán generarse nuevamente.
+
+8. Qué secciones del menú deben modificarse.
+
+9. Qué artículos del Blog hacen falta.
+
+10. Qué Recursos descargables hacen falta.
+
+11. Qué Casos de Éxito hacen falta.
+
+12. Qué llamadas a la acción (CTA) deben agregarse.
+
+13. Qué mejoras SEO propones.
+
+14. Qué mejoras UX propones.
+
+15. Qué mejoras de rendimiento propones.
+
+16. Qué mejoras de accesibilidad propones.
+
+========================================================
+
+LANDING PAGES
+
+Revisa el estado actual y prepara la actualización para:
+
+• AI Powered Websites
+
+• SEO Growth
+
+• Google Business Optimization
+
+• AI Automation
+
+• Camila AI
+
+• COIMAGEN OS
+
+• Medical OS
+
+• Restaurant OS
+
+• Lawyer OS
+
+• Real Estate OS
+
+• Cloud Systems
+
+• AI Agents
+
+========================================================
+
+BLOG
+
+Diseña la estructura del Blog.
+
+Propón categorías.
+
+Propón calendario editorial.
+
+Propón artículos iniciales en español e inglés.
+
+Cada artículo deberá ser SEO Friendly.
+
+========================================================
+
+CASOS DE ÉXITO
+
+Analiza la estructura necesaria para documentar correctamente:
+
+• Dr. Segovia
+
+• Chimichimi
+
+• COIMAGEN OS
+
+• Conchas Tower
+
+y cualquier otro caso relevante.
+
+========================================================
+
+RECURSOS
+
+Diseña la estructura de Recursos.
+
+Ejemplos:
+
+• PDFs
+
+• Guías
+
+• Plantillas
+
+• Checklists
+
+• Ebooks
+
+• Calculadoras
+
+• Whitepapers
+
+========================================================
+
+JOTFORM AI
+
+Este será el CTA PRINCIPAL del sitio.
+
+Integra el Asistente IA de Jotform como principal mecanismo de conversión.
+
+Debe estar visible en:
+
+• Home
+
+• Landing Pages
+
+• Recursos
+
+• Blog
+
+• Casos de éxito
+
+• Contacto
+
+No eliminar formularios existentes si aportan valor, pero priorizar la conversación con la IA.
+
+========================================================
+
+CONTROL DE CALIDAD
+
+Antes de finalizar la futura actualización deberás verificar:
+
+• No existen errores 404
+
+• No existen enlaces rotos
+
+• No existen páginas huérfanas
+
+• Todas las rutas funcionan
+
+• Todas las Landing cargan correctamente
+
+• Todo el sitio es responsive
+
+• No existen errores JavaScript
+
+• No existen errores TypeScript
+
+========================================================
+
+SEO
+
+Al finalizar la futura actualización deberás regenerar completamente:
+
+• sitemap.xml
+
+• robots.txt
+
+• Open Graph
+
+• Twitter Cards
+
+• Canonical URLs
+
+• Schema.org
+
+• FAQ Schema
+
+• Organization Schema
+
+• LocalBusiness Schema
+
