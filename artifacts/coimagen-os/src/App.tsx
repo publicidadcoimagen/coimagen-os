@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
 import { useAuth } from "@workspace/replit-auth-web";
 import { Button } from "@/components/ui/button";
+import logoUrl from "@assets/logo-coimagen_1782794060071.png";
 
 import { Dashboard } from "@/pages/dashboard";
 import { Clients } from "@/pages/clients/index";
@@ -65,13 +66,16 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">COIMAGEN OS</h1>
-          <p className="text-muted-foreground text-sm">Sistema Operativo Interno</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8">
+        <div className="flex flex-col items-center gap-4">
+          <img src={logoUrl} alt="Coimagen" className="h-28 w-auto" />
+          <div className="text-center space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">COIMAGEN OS</h1>
+            <p className="text-muted-foreground text-sm">Sistema Operativo Interno</p>
+          </div>
         </div>
         <Button onClick={login} size="lg">
-          Iniciar sesión con Replit
+          Iniciar sesión
         </Button>
       </div>
     );
