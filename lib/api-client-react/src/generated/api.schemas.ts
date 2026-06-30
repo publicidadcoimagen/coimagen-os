@@ -225,17 +225,81 @@ export type AgentStatus = typeof AgentStatus[keyof typeof AgentStatus];
 export const AgentStatus = {
   active: 'active',
   inactive: 'inactive',
+  paused: 'paused',
 } as const;
+
+export type AgentPriority = typeof AgentPriority[keyof typeof AgentPriority];
+
+
+export const AgentPriority = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  critical: 'critical',
+} as const;
+
+export type AgentAssignedClientsItem = {
+  id: number;
+  name: string;
+};
+
+export type AgentAssignedProjectsItem = {
+  id: number;
+  name: string;
+};
+
+export interface AgentPromptVersion {
+  id: number;
+  agentId: number;
+  promptText: string;
+  version: number;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
 
 export interface Agent {
   id: number;
   name: string;
   role: string;
   /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  world?: string | null;
+  /** @nullable */
+  mundoId?: number | null;
+  /** @nullable */
+  mundoName?: string | null;
+  /** @nullable */
+  directorId?: number | null;
+  /** @nullable */
+  directorName?: string | null;
+  /** @nullable */
   specialty?: string | null;
+  /** @nullable */
+  objetivo?: string | null;
   status: AgentStatus;
+  priority: AgentPriority;
+  /** @nullable */
+  aiModel?: string | null;
   /** @nullable */
   description?: string | null;
+  /** @nullable */
+  promptMaster?: string | null;
+  /** @nullable */
+  inputs?: string | null;
+  /** @nullable */
+  outputs?: string | null;
+  toolsList?: string[];
+  kpisList?: string[];
+  /** @nullable */
+  documentation?: string | null;
+  dependencies?: string[];
+  assignedClients?: AgentAssignedClientsItem[];
+  assignedProjects?: AgentAssignedProjectsItem[];
+  promptVersions?: AgentPromptVersion[];
+  /** @nullable */
+  lastActivity?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -247,6 +311,17 @@ export type AgentInputStatus = typeof AgentInputStatus[keyof typeof AgentInputSt
 export const AgentInputStatus = {
   active: 'active',
   inactive: 'inactive',
+  paused: 'paused',
+} as const;
+
+export type AgentInputPriority = typeof AgentInputPriority[keyof typeof AgentInputPriority];
+
+
+export const AgentInputPriority = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  critical: 'critical',
 } as const;
 
 export interface AgentInput {
@@ -254,9 +329,23 @@ export interface AgentInput {
   name: string;
   /** @minLength 1 */
   role: string;
+  category?: string;
+  world?: string;
+  mundoId?: number;
+  directorId?: number;
   specialty?: string;
+  objetivo?: string;
   status?: AgentInputStatus;
+  priority?: AgentInputPriority;
+  aiModel?: string;
   description?: string;
+  promptMaster?: string;
+  inputs?: string;
+  outputs?: string;
+  toolsList?: string[];
+  kpisList?: string[];
+  documentation?: string;
+  dependencies?: string[];
 }
 
 export type AgentUpdateStatus = typeof AgentUpdateStatus[keyof typeof AgentUpdateStatus];
@@ -265,15 +354,46 @@ export type AgentUpdateStatus = typeof AgentUpdateStatus[keyof typeof AgentUpdat
 export const AgentUpdateStatus = {
   active: 'active',
   inactive: 'inactive',
+  paused: 'paused',
+} as const;
+
+export type AgentUpdatePriority = typeof AgentUpdatePriority[keyof typeof AgentUpdatePriority];
+
+
+export const AgentUpdatePriority = {
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  critical: 'critical',
 } as const;
 
 export interface AgentUpdate {
   /** @minLength 1 */
   name?: string;
   role?: string;
+  category?: string;
+  world?: string;
+  mundoId?: number;
+  directorId?: number;
   specialty?: string;
+  objetivo?: string;
   status?: AgentUpdateStatus;
+  priority?: AgentUpdatePriority;
+  aiModel?: string;
   description?: string;
+  promptMaster?: string;
+  inputs?: string;
+  outputs?: string;
+  toolsList?: string[];
+  kpisList?: string[];
+  documentation?: string;
+  dependencies?: string[];
+}
+
+export interface AgentPromptVersionInput {
+  /** @minLength 1 */
+  promptText: string;
+  notes?: string;
 }
 
 export type TaskStatus = typeof TaskStatus[keyof typeof TaskStatus];

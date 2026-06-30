@@ -12,4 +12,5 @@ export type AgentStatus = typeof AgentStatus[keyof typeof AgentStatus];
 export const AgentStatus = {
   active: 'active',
   inactive: 'inactive',
+  paused: 'paused',
 } as const;

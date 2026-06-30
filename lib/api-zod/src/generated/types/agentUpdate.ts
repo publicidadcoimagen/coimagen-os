@@ -5,13 +5,28 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AgentUpdatePriority } from './agentUpdatePriority';
 import type { AgentUpdateStatus } from './agentUpdateStatus';
 
 export interface AgentUpdate {
   /** @minLength 1 */
   name?: string;
   role?: string;
+  category?: string;
+  world?: string;
+  mundoId?: number;
+  directorId?: number;
   specialty?: string;
+  objetivo?: string;
   status?: AgentUpdateStatus;
+  priority?: AgentUpdatePriority;
+  aiModel?: string;
   description?: string;
+  promptMaster?: string;
+  inputs?: string;
+  outputs?: string;
+  toolsList?: string[];
+  kpisList?: string[];
+  documentation?: string;
+  dependencies?: string[];
 }

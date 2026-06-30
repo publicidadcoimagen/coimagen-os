@@ -5,6 +5,10 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AgentAssignedClientsItem } from './agentAssignedClientsItem';
+import type { AgentAssignedProjectsItem } from './agentAssignedProjectsItem';
+import type { AgentPriority } from './agentPriority';
+import type { AgentPromptVersion } from './agentPromptVersion';
 import type { AgentStatus } from './agentStatus';
 
 export interface Agent {
@@ -12,10 +16,43 @@ export interface Agent {
   name: string;
   role: string;
   /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  world?: string | null;
+  /** @nullable */
+  mundoId?: number | null;
+  /** @nullable */
+  mundoName?: string | null;
+  /** @nullable */
+  directorId?: number | null;
+  /** @nullable */
+  directorName?: string | null;
+  /** @nullable */
   specialty?: string | null;
+  /** @nullable */
+  objetivo?: string | null;
   status: AgentStatus;
+  priority: AgentPriority;
+  /** @nullable */
+  aiModel?: string | null;
   /** @nullable */
   description?: string | null;
+  /** @nullable */
+  promptMaster?: string | null;
+  /** @nullable */
+  inputs?: string | null;
+  /** @nullable */
+  outputs?: string | null;
+  toolsList?: string[];
+  kpisList?: string[];
+  /** @nullable */
+  documentation?: string | null;
+  dependencies?: string[];
+  assignedClients?: AgentAssignedClientsItem[];
+  assignedProjects?: AgentAssignedProjectsItem[];
+  promptVersions?: AgentPromptVersion[];
+  /** @nullable */
+  lastActivity?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

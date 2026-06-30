@@ -1,0 +1,273 @@
+COIMAGEN OS V1.6.4
+
+NO rediseñar el sistema.
+
+NO modificar HQ.
+
+NO modificar Backlog.
+
+NO modificar Roadmap.
+
+NO modificar Mundos.
+
+NO eliminar ningún módulo existente.
+
+====================================================
+
+OBJETIVO
+
+Construir AGENT FACTORY.
+
+Este será el sistema interno que administrará TODOS los Agentes IA de COIMAGEN.
+
+NO crear todavía los 50 agentes.
+
+Primero construir la fábrica que los administrará.
+
+====================================================
+
+Crear un nuevo módulo:
+
+AGENT FACTORY
+
+Debe aparecer en el menú lateral.
+
+====================================================
+
+Dentro de Agent Factory crear las siguientes vistas.
+
+1. Directorio de Agentes
+
+2. Plantillas de Agentes
+
+3. Tipos de Agentes
+
+4. Herramientas
+
+5. Modelos IA
+
+6. Prompts
+
+7. Versiones
+
+8. Estado
+
+9. Logs
+
+10. Dependencias
+
+====================================================
+
+DIRECTORIO
+
+Cada agente deberá contener.
+
+• Nombre
+
+• Mundo
+
+• Director
+
+• Especialidad
+
+• Objetivo
+
+• Descripción
+
+• Estado
+
+• Versión
+
+• Modelo IA
+
+• Herramientas
+
+• Automatizaciones
+
+• Cliente asignado
+
+• Proyecto asignado
+
+• Prompt Maestro
+
+• Última actualización
+
+• Fecha creación
+
+====================================================
+
+ESTADOS
+
+Diseñando
+
+Activo
+
+Pausado
+
+En pruebas
+
+Producción
+
+Archivado
+
+====================================================
+
+TIPOS
+
+Operativo
+
+Supervisor
+
+Director
+
+Especialista
+
+Analista
+
+Creativo
+
+Automatización
+
+QA
+
+====================================================
+
+MODELOS IA
+
+Preparar soporte para.
+
+ChatGPT
+
+Claude
+
+Gemini
+
+Perplexity
+
+Grok
+
+DeepSeek
+
+OpenRouter
+
+Modelo personalizado
+
+====================================================
+
+HERRAMIENTAS
+
+Preparar catálogo.
+
+OpenAI
+
+Anthropic
+
+Google
+
+n8n
+
+Replit
+
+GitHub
+
+Notion
+
+Jotform
+
+WhatsApp
+
+Google Drive
+
+Gmail
+
+Calendar
+
+Search Console
+
+Analytics
+
+Facebook
+
+Instagram
+
+TikTok
+
+YouTube
+
+LinkedIn
+
+X
+
+Pinterest
+
+====================================================
+
+PROMPTS
+
+Cada agente deberá tener su Prompt Maestro.
+
+Versionado.
+
+Historial.
+
+Fecha.
+
+Autor.
+
+Notas.
+
+====================================================
+
+LOGS
+
+Preparar historial.
+
+Creación.
+
+Edición.
+
+Cambio de versión.
+
+Cambio de modelo.
+
+Cambio de herramientas.
+
+====================================================
+
+PLANTILLAS
+
+Permitir crear plantillas reutilizables.
+
+Marketing
+
+Ventas
+
+SEO
+
+Producción
+
+Administración
+
+Clientes
+
+Finanzas
+
+====================================================
+
+NO crear todavía automatizaciones reales.
+
+NO conectar APIs.
+
+NO crear los agentes definitivos.
+
+Construir únicamente la fábrica que administrará a todos los agentes.
+
+====================================================
+
+Mantener TypeScript en cero errores.
+
+Mantener autenticación.
+
+Mantener QA.
+
+Entregar reporte final.

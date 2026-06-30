@@ -13,6 +13,7 @@ import { ClientDetail } from "@/pages/clients/[id]";
 import { Projects } from "@/pages/projects/index";
 import { ProjectDetail } from "@/pages/projects/[id]";
 import { Agents } from "@/pages/agents/index";
+import { AgentDetail } from "@/pages/agents/[id]";
 import { Tasks } from "@/pages/tasks/index";
 import { Settings } from "@/pages/settings";
 import NotFound from "@/pages/not-found";
@@ -97,6 +98,7 @@ function Router() {
         <Route path="/projects" component={Projects} />
         <Route path="/projects/:id" component={ProjectDetail} />
         <Route path="/agents" component={Agents} />
+        <Route path="/agents/:id" component={AgentDetail} />
         <Route path="/tasks" component={Tasks} />
         <Route path="/settings" component={Settings} />
 

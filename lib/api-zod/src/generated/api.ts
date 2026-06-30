@@ -608,9 +608,42 @@ export const ListAgentsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.string(),
+  "category": zod.string().nullish(),
+  "world": zod.string().nullish(),
+  "mundoId": zod.number().nullish(),
+  "mundoName": zod.string().nullish(),
+  "directorId": zod.number().nullish(),
+  "directorName": zod.string().nullish(),
   "specialty": zod.string().nullish(),
-  "status": zod.enum(['active', 'inactive']),
+  "objetivo": zod.string().nullish(),
+  "status": zod.enum(['active', 'inactive', 'paused']),
+  "priority": zod.enum(['low', 'medium', 'high', 'critical']),
+  "aiModel": zod.string().nullish(),
   "description": zod.string().nullish(),
+  "promptMaster": zod.string().nullish(),
+  "inputs": zod.string().nullish(),
+  "outputs": zod.string().nullish(),
+  "toolsList": zod.array(zod.string()).optional(),
+  "kpisList": zod.array(zod.string()).optional(),
+  "documentation": zod.string().nullish(),
+  "dependencies": zod.array(zod.string()).optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "promptVersions": zod.array(zod.object({
+  "id": zod.number(),
+  "agentId": zod.number(),
+  "promptText": zod.string(),
+  "version": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string()
+})).optional(),
+  "lastActivity": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -620,13 +653,28 @@ export const ListAgentsResponse = zod.array(ListAgentsResponseItem)
 
 
 export const createAgentBodyStatusDefault = `active`;
+export const createAgentBodyPriorityDefault = `medium`;
 
 export const CreateAgentBody = zod.object({
   "name": zod.string().min(1),
   "role": zod.string().min(1),
+  "category": zod.string().optional(),
+  "world": zod.string().optional(),
+  "mundoId": zod.number().optional(),
+  "directorId": zod.number().optional(),
   "specialty": zod.string().optional(),
-  "status": zod.enum(['active', 'inactive']).default(createAgentBodyStatusDefault),
-  "description": zod.string().optional()
+  "objetivo": zod.string().optional(),
+  "status": zod.enum(['active', 'inactive', 'paused']).default(createAgentBodyStatusDefault),
+  "priority": zod.enum(['low', 'medium', 'high', 'critical']).default(createAgentBodyPriorityDefault),
+  "aiModel": zod.string().optional(),
+  "description": zod.string().optional(),
+  "promptMaster": zod.string().optional(),
+  "inputs": zod.string().optional(),
+  "outputs": zod.string().optional(),
+  "toolsList": zod.array(zod.string()).optional(),
+  "kpisList": zod.array(zod.string()).optional(),
+  "documentation": zod.string().optional(),
+  "dependencies": zod.array(zod.string()).optional()
 })
 
 
@@ -638,9 +686,42 @@ export const GetAgentResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.string(),
+  "category": zod.string().nullish(),
+  "world": zod.string().nullish(),
+  "mundoId": zod.number().nullish(),
+  "mundoName": zod.string().nullish(),
+  "directorId": zod.number().nullish(),
+  "directorName": zod.string().nullish(),
   "specialty": zod.string().nullish(),
-  "status": zod.enum(['active', 'inactive']),
+  "objetivo": zod.string().nullish(),
+  "status": zod.enum(['active', 'inactive', 'paused']),
+  "priority": zod.enum(['low', 'medium', 'high', 'critical']),
+  "aiModel": zod.string().nullish(),
   "description": zod.string().nullish(),
+  "promptMaster": zod.string().nullish(),
+  "inputs": zod.string().nullish(),
+  "outputs": zod.string().nullish(),
+  "toolsList": zod.array(zod.string()).optional(),
+  "kpisList": zod.array(zod.string()).optional(),
+  "documentation": zod.string().nullish(),
+  "dependencies": zod.array(zod.string()).optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "promptVersions": zod.array(zod.object({
+  "id": zod.number(),
+  "agentId": zod.number(),
+  "promptText": zod.string(),
+  "version": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string()
+})).optional(),
+  "lastActivity": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -656,18 +737,65 @@ export const UpdateAgentParams = zod.object({
 export const UpdateAgentBody = zod.object({
   "name": zod.string().min(1).optional(),
   "role": zod.string().optional(),
+  "category": zod.string().optional(),
+  "world": zod.string().optional(),
+  "mundoId": zod.number().optional(),
+  "directorId": zod.number().optional(),
   "specialty": zod.string().optional(),
-  "status": zod.enum(['active', 'inactive']).optional(),
-  "description": zod.string().optional()
+  "objetivo": zod.string().optional(),
+  "status": zod.enum(['active', 'inactive', 'paused']).optional(),
+  "priority": zod.enum(['low', 'medium', 'high', 'critical']).optional(),
+  "aiModel": zod.string().optional(),
+  "description": zod.string().optional(),
+  "promptMaster": zod.string().optional(),
+  "inputs": zod.string().optional(),
+  "outputs": zod.string().optional(),
+  "toolsList": zod.array(zod.string()).optional(),
+  "kpisList": zod.array(zod.string()).optional(),
+  "documentation": zod.string().optional(),
+  "dependencies": zod.array(zod.string()).optional()
 })
 
 export const UpdateAgentResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.string(),
+  "category": zod.string().nullish(),
+  "world": zod.string().nullish(),
+  "mundoId": zod.number().nullish(),
+  "mundoName": zod.string().nullish(),
+  "directorId": zod.number().nullish(),
+  "directorName": zod.string().nullish(),
   "specialty": zod.string().nullish(),
-  "status": zod.enum(['active', 'inactive']),
+  "objetivo": zod.string().nullish(),
+  "status": zod.enum(['active', 'inactive', 'paused']),
+  "priority": zod.enum(['low', 'medium', 'high', 'critical']),
+  "aiModel": zod.string().nullish(),
   "description": zod.string().nullish(),
+  "promptMaster": zod.string().nullish(),
+  "inputs": zod.string().nullish(),
+  "outputs": zod.string().nullish(),
+  "toolsList": zod.array(zod.string()).optional(),
+  "kpisList": zod.array(zod.string()).optional(),
+  "documentation": zod.string().nullish(),
+  "dependencies": zod.array(zod.string()).optional(),
+  "assignedClients": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "assignedProjects": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})).optional(),
+  "promptVersions": zod.array(zod.object({
+  "id": zod.number(),
+  "agentId": zod.number(),
+  "promptText": zod.string(),
+  "version": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string()
+})).optional(),
+  "lastActivity": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -675,6 +803,82 @@ export const UpdateAgentResponse = zod.object({
 
 export const DeleteAgentParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List prompt versions for an agent
+ */
+export const ListAgentPromptVersionsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListAgentPromptVersionsResponseItem = zod.object({
+  "id": zod.number(),
+  "agentId": zod.number(),
+  "promptText": zod.string(),
+  "version": zod.number(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListAgentPromptVersionsResponse = zod.array(ListAgentPromptVersionsResponseItem)
+
+
+/**
+ * @summary Save a new prompt version
+ */
+export const CreateAgentPromptVersionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const CreateAgentPromptVersionBody = zod.object({
+  "promptText": zod.string().min(1),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Assign a client to an agent
+ */
+export const AssignAgentClientParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AssignAgentClientBody = zod.object({
+  "clientId": zod.number()
+})
+
+
+/**
+ * @summary Unassign a client from an agent
+ */
+export const UnassignAgentClientParams = zod.object({
+  "id": zod.coerce.number(),
+  "clientId": zod.coerce.number()
+})
+
+
+/**
+ * @summary Assign a project to an agent
+ */
+export const AssignAgentProjectParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AssignAgentProjectBody = zod.object({
+  "projectId": zod.number()
+})
+
+
+/**
+ * @summary Unassign a project from an agent
+ */
+export const UnassignAgentProjectParams = zod.object({
+  "id": zod.coerce.number(),
+  "projectId": zod.coerce.number()
 })
 
 

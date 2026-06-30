@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AgentInputPriority } from './agentInputPriority';
 import type { AgentInputStatus } from './agentInputStatus';
 
 export interface AgentInput {
@@ -12,7 +13,21 @@ export interface AgentInput {
   name: string;
   /** @minLength 1 */
   role: string;
+  category?: string;
+  world?: string;
+  mundoId?: number;
+  directorId?: number;
   specialty?: string;
+  objetivo?: string;
   status?: AgentInputStatus;
+  priority?: AgentInputPriority;
+  aiModel?: string;
   description?: string;
+  promptMaster?: string;
+  inputs?: string;
+  outputs?: string;
+  toolsList?: string[];
+  kpisList?: string[];
+  documentation?: string;
+  dependencies?: string[];
 }

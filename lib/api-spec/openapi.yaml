@@ -629,6 +629,94 @@ paths:
         "404":
           description: Not found
 
+  /agents/{id}/prompt-versions:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: listAgentPromptVersions
+      tags: [agents]
+      summary: List prompt versions for an agent
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AgentPromptVersion"
+    post:
+      operationId: createAgentPromptVersion
+      tags: [agents]
+      summary: Save a new prompt version
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentPromptVersionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentPromptVersion"
+  /agents/{id}/clients:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    post:
+      operationId: assignAgentClient
+      tags: [agents]
+      summary: Assign a client to an agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectorAssignClient"
+      responses:
+        "204":
+          description: Assigned
+  /agents/{id}/clients/{clientId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+      - { name: clientId, in: path, required: true, schema: { type: integer } }
+    delete:
+      operationId: unassignAgentClient
+      tags: [agents]
+      summary: Unassign a client from an agent
+      responses:
+        "204":
+          description: Unassigned
+  /agents/{id}/projects:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    post:
+      operationId: assignAgentProject
+      tags: [agents]
+      summary: Assign a project to an agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DirectorAssignProject"
+      responses:
+        "204":
+          description: Assigned
+  /agents/{id}/projects/{projectId}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+      - { name: projectId, in: path, required: true, schema: { type: integer } }
+    delete:
+      operationId: unassignAgentProject
+      tags: [agents]
+      summary: Unassign a project from an agent
+      responses:
+        "204":
+          description: Unassigned
+
   # ─── TASKS ─────────────────────────────────────────────────────────────────
   /tasks:
     get:
@@ -2218,14 +2306,57 @@ components:
     # ── AGENT ─────────────────────────────────────────────────────────────────
     Agent:
       type: object
-      required: [id, name, role, status, createdAt]
+      required: [id, name, role, status, priority, createdAt]
       properties:
         id: { type: integer }
         name: { type: string }
         role: { type: string }
+        category: { type: ["string", "null"] }
+        world: { type: ["string", "null"] }
+        mundoId: { type: ["integer", "null"] }
+        mundoName: { type: ["string", "null"] }
+        directorId: { type: ["integer", "null"] }
+        directorName: { type: ["string", "null"] }
         specialty: { type: ["string", "null"] }
-        status: { type: string, enum: [active, inactive] }
+        objetivo: { type: ["string", "null"] }
+        status: { type: string, enum: [active, inactive, paused] }
+        priority: { type: string, enum: [low, medium, high, critical] }
+        aiModel: { type: ["string", "null"] }
         description: { type: ["string", "null"] }
+        promptMaster: { type: ["string", "null"] }
+        inputs: { type: ["string", "null"] }
+        outputs: { type: ["string", "null"] }
+        toolsList:
+          type: array
+          items: { type: string }
+        kpisList:
+          type: array
+          items: { type: string }
+        documentation: { type: ["string", "null"] }
+        dependencies:
+          type: array
+          items: { type: string }
+        assignedClients:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id: { type: integer }
+              name: { type: string }
+        assignedProjects:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id: { type: integer }
+              name: { type: string }
+        promptVersions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentPromptVersion"
+        lastActivity: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     AgentInput:
@@ -2234,17 +2365,73 @@ components:
       properties:
         name: { type: string, minLength: 1 }
         role: { type: string, minLength: 1 }
+        category: { type: string }
+        world: { type: string }
+        mundoId: { type: integer }
+        directorId: { type: integer }
         specialty: { type: string }
-        status: { type: string, enum: [active, inactive], default: active }
+        objetivo: { type: string }
+        status: { type: string, enum: [active, inactive, paused], default: active }
+        priority: { type: string, enum: [low, medium, high, critical], default: medium }
+        aiModel: { type: string }
         description: { type: string }
+        promptMaster: { type: string }
+        inputs: { type: string }
+        outputs: { type: string }
+        toolsList:
+          type: array
+          items: { type: string }
+        kpisList:
+          type: array
+          items: { type: string }
+        documentation: { type: string }
+        dependencies:
+          type: array
+          items: { type: string }
     AgentUpdate:
       type: object
       properties:
         name: { type: string, minLength: 1 }
         role: { type: string }
+        category: { type: string }
+        world: { type: string }
+        mundoId: { type: integer }
+        directorId: { type: integer }
         specialty: { type: string }
-        status: { type: string, enum: [active, inactive] }
+        objetivo: { type: string }
+        status: { type: string, enum: [active, inactive, paused] }
+        priority: { type: string, enum: [low, medium, high, critical] }
+        aiModel: { type: string }
         description: { type: string }
+        promptMaster: { type: string }
+        inputs: { type: string }
+        outputs: { type: string }
+        toolsList:
+          type: array
+          items: { type: string }
+        kpisList:
+          type: array
+          items: { type: string }
+        documentation: { type: string }
+        dependencies:
+          type: array
+          items: { type: string }
+    AgentPromptVersion:
+      type: object
+      required: [id, agentId, promptText, version, createdAt]
+      properties:
+        id: { type: integer }
+        agentId: { type: integer }
+        promptText: { type: string }
+        version: { type: integer }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+    AgentPromptVersionInput:
+      type: object
+      required: [promptText]
+      properties:
+        promptText: { type: string, minLength: 1 }
+        notes: { type: string }
 
     # ── TASK ──────────────────────────────────────────────────────────────────
     Task:

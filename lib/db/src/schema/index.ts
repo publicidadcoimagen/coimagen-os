@@ -25,3 +25,6 @@ export * from "./ideas";
 export * from "./automations";
 export * from "./directors";
 export * from "./mundos";
+export * from "./agent-prompt-versions";
+export * from "./agent-clients";
+export * from "./agent-projects";
