@@ -35,3 +35,6 @@ export * from "./workflow-stage-logs";
 export * from "./incidents";
 export * from "./tickets";
 export * from "./contracts";
+
+export * from "./organizations";
+export * from "./client-approvals";

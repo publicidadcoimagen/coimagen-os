@@ -2203,6 +2203,89 @@ export interface ContractUpdate {
   signedBy?: string;
 }
 
+export interface Organization {
+  id: number;
+  slug: string;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  logoUrl?: string | null;
+  /** @nullable */
+  primaryColor?: string | null;
+  /** @nullable */
+  contactEmail?: string | null;
+  /** @nullable */
+  contactPhone?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface OrganizationCreate {
+  slug: string;
+  name: string;
+  description?: string;
+  clientId?: number;
+  logoUrl?: string;
+  primaryColor?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+export interface OrganizationUpdate {
+  slug?: string;
+  name?: string;
+  description?: string;
+  clientId?: number;
+  logoUrl?: string;
+  primaryColor?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+}
+
+export interface ClientApproval {
+  id: number;
+  orgId: number;
+  type: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  status: string;
+  /** @nullable */
+  fileUrl?: string | null;
+  /** @nullable */
+  comments?: string | null;
+  /** @nullable */
+  requestedBy?: string | null;
+  /** @nullable */
+  reviewedBy?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ClientApprovalCreate {
+  orgId: number;
+  type: string;
+  title: string;
+  description?: string;
+  fileUrl?: string;
+  requestedBy?: string;
+}
+
+export interface ClientApprovalUpdate {
+  type?: string;
+  title?: string;
+  description?: string;
+  status?: string;
+  fileUrl?: string;
+  comments?: string;
+  reviewedBy?: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
@@ -2290,5 +2373,11 @@ status?: string;
 type?: string;
 clientId?: number;
 projectId?: number;
+};
+
+export type ListClientApprovalsParams = {
+orgId?: number;
+status?: string;
+type?: string;
 };
 

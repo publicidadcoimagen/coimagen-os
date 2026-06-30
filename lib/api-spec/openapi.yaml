@@ -2683,6 +2683,161 @@ paths:
         "204":
           description: No Content
 
+  /organizations:
+    get:
+      operationId: listOrganizations
+      summary: List all organizations (Client Rooms)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Organization" }
+    post:
+      operationId: createOrganization
+      summary: Create organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrganizationCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Organization" }
+
+  /organizations/{slug}:
+    get:
+      operationId: getOrganization
+      summary: Get organization by slug
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Organization" }
+    patch:
+      operationId: updateOrganization
+      summary: Update organization
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OrganizationUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Organization" }
+    delete:
+      operationId: deleteOrganization
+      summary: Delete organization
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: No Content
+
+  /client-approvals:
+    get:
+      operationId: listClientApprovals
+      summary: List client approvals
+      parameters:
+        - in: query
+          name: orgId
+          schema: { type: integer }
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: type
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ClientApproval" }
+    post:
+      operationId: createClientApproval
+      summary: Create client approval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClientApprovalCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClientApproval" }
+
+  /client-approvals/{id}:
+    get:
+      operationId: getClientApproval
+      summary: Get client approval by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClientApproval" }
+    patch:
+      operationId: updateClientApproval
+      summary: Update client approval
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClientApprovalUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClientApproval" }
+    delete:
+      operationId: deleteClientApproval
+      summary: Delete client approval
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: No Content
 
 components:
   parameters:
@@ -4349,3 +4504,78 @@ components:
         expiresAt: { type: string }
         createdBy: { type: string }
         signedBy: { type: string }
+
+    Organization:
+      type: object
+      required: [id, slug, name, createdAt]
+      properties:
+        id: { type: integer }
+        slug: { type: string }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
+        logoUrl: { type: ["string", "null"] }
+        primaryColor: { type: ["string", "null"] }
+        contactEmail: { type: ["string", "null"] }
+        contactPhone: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    OrganizationCreate:
+      type: object
+      required: [slug, name]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        description: { type: string }
+        clientId: { type: integer }
+        logoUrl: { type: string }
+        primaryColor: { type: string }
+        contactEmail: { type: string }
+        contactPhone: { type: string }
+    OrganizationUpdate:
+      type: object
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        description: { type: string }
+        clientId: { type: integer }
+        logoUrl: { type: string }
+        primaryColor: { type: string }
+        contactEmail: { type: string }
+        contactPhone: { type: string }
+    ClientApproval:
+      type: object
+      required: [id, orgId, type, title, status, createdAt]
+      properties:
+        id: { type: integer }
+        orgId: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        status: { type: string }
+        fileUrl: { type: ["string", "null"] }
+        comments: { type: ["string", "null"] }
+        requestedBy: { type: ["string", "null"] }
+        reviewedBy: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ClientApprovalCreate:
+      type: object
+      required: [orgId, type, title]
+      properties:
+        orgId: { type: integer }
+        type: { type: string }
+        title: { type: string }
+        description: { type: string }
+        fileUrl: { type: string }
+        requestedBy: { type: string }
+    ClientApprovalUpdate:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        description: { type: string }
+        status: { type: string }
+        fileUrl: { type: string }
+        comments: { type: string }
+        reviewedBy: { type: string }

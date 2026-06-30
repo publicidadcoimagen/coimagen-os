@@ -3467,3 +3467,203 @@ export const DeleteContractParams = zod.object({
 })
 
 
+/**
+ * @summary List all organizations (Client Rooms)
+ */
+export const ListOrganizationsResponseItem = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "primaryColor": zod.string().nullish(),
+  "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListOrganizationsResponse = zod.array(ListOrganizationsResponseItem)
+
+
+/**
+ * @summary Create organization
+ */
+export const CreateOrganizationBody = zod.object({
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "logoUrl": zod.string().optional(),
+  "primaryColor": zod.string().optional(),
+  "contactEmail": zod.string().optional(),
+  "contactPhone": zod.string().optional()
+})
+
+
+/**
+ * @summary Get organization by slug
+ */
+export const GetOrganizationParams = zod.object({
+  "slug": zod.coerce.string()
+})
+
+export const GetOrganizationResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "primaryColor": zod.string().nullish(),
+  "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update organization
+ */
+export const UpdateOrganizationParams = zod.object({
+  "slug": zod.coerce.string()
+})
+
+export const UpdateOrganizationBody = zod.object({
+  "slug": zod.string().optional(),
+  "name": zod.string().optional(),
+  "description": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "logoUrl": zod.string().optional(),
+  "primaryColor": zod.string().optional(),
+  "contactEmail": zod.string().optional(),
+  "contactPhone": zod.string().optional()
+})
+
+export const UpdateOrganizationResponse = zod.object({
+  "id": zod.number(),
+  "slug": zod.string(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "logoUrl": zod.string().nullish(),
+  "primaryColor": zod.string().nullish(),
+  "contactEmail": zod.string().nullish(),
+  "contactPhone": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete organization
+ */
+export const DeleteOrganizationParams = zod.object({
+  "slug": zod.coerce.string()
+})
+
+
+/**
+ * @summary List client approvals
+ */
+export const ListClientApprovalsQueryParams = zod.object({
+  "orgId": zod.coerce.number().optional(),
+  "status": zod.coerce.string().optional(),
+  "type": zod.coerce.string().optional()
+})
+
+export const ListClientApprovalsResponseItem = zod.object({
+  "id": zod.number(),
+  "orgId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "fileUrl": zod.string().nullish(),
+  "comments": zod.string().nullish(),
+  "requestedBy": zod.string().nullish(),
+  "reviewedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListClientApprovalsResponse = zod.array(ListClientApprovalsResponseItem)
+
+
+/**
+ * @summary Create client approval
+ */
+export const CreateClientApprovalBody = zod.object({
+  "orgId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "requestedBy": zod.string().optional()
+})
+
+
+/**
+ * @summary Get client approval by id
+ */
+export const GetClientApprovalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetClientApprovalResponse = zod.object({
+  "id": zod.number(),
+  "orgId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "fileUrl": zod.string().nullish(),
+  "comments": zod.string().nullish(),
+  "requestedBy": zod.string().nullish(),
+  "reviewedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update client approval
+ */
+export const UpdateClientApprovalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateClientApprovalBody = zod.object({
+  "type": zod.string().optional(),
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "status": zod.string().optional(),
+  "fileUrl": zod.string().optional(),
+  "comments": zod.string().optional(),
+  "reviewedBy": zod.string().optional()
+})
+
+export const UpdateClientApprovalResponse = zod.object({
+  "id": zod.number(),
+  "orgId": zod.number(),
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "fileUrl": zod.string().nullish(),
+  "comments": zod.string().nullish(),
+  "requestedBy": zod.string().nullish(),
+  "reviewedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete client approval
+ */
+export const DeleteClientApprovalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+

@@ -59,8 +59,22 @@ import {
   HealthCheck, TechnicalDebt, Recommendations,
 } from "@/pages/quality-center/submodules";
 
+// Client Room
+import { ClientRoomAdmin } from "@/pages/client-room/admin";
+import { ClientDashboard } from "@/pages/client-room/dashboard";
+import { ClientProjects } from "@/pages/client-room/projects";
+import { ClientWorkflow } from "@/pages/client-room/workflow";
+import { ClientApprovals } from "@/pages/client-room/approvals";
+import { ClientContracts } from "@/pages/client-room/contracts";
+import { ClientInvoices } from "@/pages/client-room/invoices";
+import { ClientDocuments } from "@/pages/client-room/documents";
+import { ClientCalendar } from "@/pages/client-room/calendar";
+import { ClientMessages } from "@/pages/client-room/messages";
+import { ClientAI } from "@/pages/client-room/ai";
+import { ClientProfile } from "@/pages/client-room/profile";
+
 import { ComingSoon } from "@/pages/coming-soon";
-import { Bot, Users, Factory, Stethoscope, Layers, Cloud } from "lucide-react";
+import { Bot, Factory, Stethoscope, Layers, Cloud } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,85 +118,103 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 function Router() {
   return (
-    <AppLayout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/clients" component={Clients} />
-        <Route path="/clients/:id" component={ClientDetail} />
-        <Route path="/projects" component={Projects} />
-        <Route path="/projects/:id" component={ProjectDetail} />
-        <Route path="/agents" component={Agents} />
-        <Route path="/agents/:id" component={AgentDetail} />
-        <Route path="/tasks" component={Tasks} />
-        <Route path="/settings" component={Settings} />
+    <Switch>
+      {/* ── Client Room — own layout, no AppLayout ─────────────────────── */}
+      <Route path="/client/:slug/projects"  component={ClientProjects} />
+      <Route path="/client/:slug/workflow"  component={ClientWorkflow} />
+      <Route path="/client/:slug/approvals" component={ClientApprovals} />
+      <Route path="/client/:slug/contracts" component={ClientContracts} />
+      <Route path="/client/:slug/invoices"  component={ClientInvoices} />
+      <Route path="/client/:slug/documents" component={ClientDocuments} />
+      <Route path="/client/:slug/calendar"  component={ClientCalendar} />
+      <Route path="/client/:slug/messages"  component={ClientMessages} />
+      <Route path="/client/:slug/ai"        component={ClientAI} />
+      <Route path="/client/:slug/profile"   component={ClientProfile} />
+      <Route path="/client/:slug"           component={ClientDashboard} />
 
-        <Route path="/commercial/prospects" component={Prospects} />
-        <Route path="/commercial/pipeline" component={Pipeline} />
-        <Route path="/commercial/diagnosis" component={Diagnosis} />
-        <Route path="/commercial/proposals" component={Proposals} />
+      {/* ── All OS routes — wrapped in AppLayout ────────────────────────── */}
+      <Route>
+        <AppLayout>
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/clients" component={Clients} />
+            <Route path="/clients/:id" component={ClientDetail} />
+            <Route path="/projects" component={Projects} />
+            <Route path="/projects/:id" component={ProjectDetail} />
+            <Route path="/agents" component={Agents} />
+            <Route path="/agents/:id" component={AgentDetail} />
+            <Route path="/tasks" component={Tasks} />
+            <Route path="/settings" component={Settings} />
 
-        <Route path="/finance/invoices" component={Invoices} />
-        <Route path="/finance/subscriptions" component={Subscriptions} />
-        <Route path="/finance/calendar" component={PaymentCalendar} />
+            <Route path="/commercial/prospects" component={Prospects} />
+            <Route path="/commercial/pipeline" component={Pipeline} />
+            <Route path="/commercial/diagnosis" component={Diagnosis} />
+            <Route path="/commercial/proposals" component={Proposals} />
 
-        <Route path="/approvals" component={Approvals} />
-        <Route path="/revenue" component={Revenue} />
-        <Route path="/costs" component={Costs} />
-        <Route path="/audit" component={AuditLog} />
+            <Route path="/finance/invoices" component={Invoices} />
+            <Route path="/finance/subscriptions" component={Subscriptions} />
+            <Route path="/finance/calendar" component={PaymentCalendar} />
 
-        <Route path="/admin/users" component={AdminUsers} />
-        <Route path="/hq" component={HQ} />
-        <Route path="/backlog" component={Backlog} />
-        <Route path="/daily-sprint" component={DailySprint} />
-        <Route path="/roadmap" component={Roadmap} />
-        <Route path="/bugs" component={Bugs} />
-        <Route path="/ideas" component={Ideas} />
-        <Route path="/kpis" component={KPIs} />
-        <Route path="/automations" component={Automations} />
-        <Route path="/org" component={Organizacion} />
-        <Route path="/mundos" component={Mundos} />
-        <Route path="/mundos/:id" component={MundoDetail} />
-        <Route path="/onboarding" component={SmartOnboardingList} />
-        <Route path="/onboarding/:id" component={SmartOnboardingWizard} />
-        <Route path="/workflow-engine" component={WorkflowEngine} />
-        <Route path="/workflow-engine/templates" component={WorkflowTemplates} />
-        <Route path="/workflow-engine/:id" component={WorkflowDetail} />
-        <Route path="/contracts" component={ContractEngine} />
-        <Route path="/contracts/:id" component={ContractDetail} />
-        <Route path="/quality-center" component={QualityCenter} />
-        <Route path="/quality-center/incidents" component={IncidentCenter} />
-        <Route path="/quality-center/incidents/:id" component={IncidentDetail} />
-        <Route path="/quality-center/code-review" component={CodeReview} />
-        <Route path="/quality-center/qa-testing" component={QATesting} />
-        <Route path="/quality-center/performance" component={Performance} />
-        <Route path="/quality-center/security" component={Security} />
-        <Route path="/quality-center/architecture" component={Architecture} />
-        <Route path="/quality-center/health-check" component={HealthCheck} />
-        <Route path="/quality-center/technical-debt" component={TechnicalDebt} />
-        <Route path="/quality-center/recommendations" component={Recommendations} />
+            <Route path="/approvals" component={Approvals} />
+            <Route path="/revenue" component={Revenue} />
+            <Route path="/costs" component={Costs} />
+            <Route path="/audit" component={AuditLog} />
 
-        <Route path="/coming-soon/ai-agents-pro">
-          {() => <ComingSoon title="AI Agents Pro" description="Agentes de IA especializados con capacidades avanzadas de razonamiento, memoria y ejecución autónoma." Icon={Bot} />}
-        </Route>
-        <Route path="/coming-soon/portal-clientes">
-          {() => <ComingSoon title="Portal de Clientes" description="Portal autoservicio para que tus clientes vean proyectos, facturas y aprobaciones en tiempo real." Icon={Users} />}
-        </Route>
-        <Route path="/coming-soon/factory-engine">
-          {() => <ComingSoon title="Factory Engine" description="Motor de producción de contenido masivo con plantillas inteligentes y flujos automatizados." Icon={Factory} />}
-        </Route>
-        <Route path="/coming-soon/medical-os">
-          {() => <ComingSoon title="Medical OS" description="Sistema operativo para clínicas y profesionales de la salud. Gestión de pacientes, citas y expedientes." Icon={Stethoscope} />}
-        </Route>
-        <Route path="/coming-soon/multi-tenant">
-          {() => <ComingSoon title="Multi-tenant" description="Soporte para múltiples agencias bajo una sola plataforma con gestión centralizada." Icon={Layers} />}
-        </Route>
-        <Route path="/coming-soon/coimagen-cloud">
-          {() => <ComingSoon title="Coimagen Cloud" description="Infraestructura cloud propia para despliegue, hosting y escalado de proyectos de clientes." Icon={Cloud} />}
-        </Route>
+            <Route path="/admin/users" component={AdminUsers} />
+            <Route path="/hq" component={HQ} />
+            <Route path="/backlog" component={Backlog} />
+            <Route path="/daily-sprint" component={DailySprint} />
+            <Route path="/roadmap" component={Roadmap} />
+            <Route path="/bugs" component={Bugs} />
+            <Route path="/ideas" component={Ideas} />
+            <Route path="/kpis" component={KPIs} />
+            <Route path="/automations" component={Automations} />
+            <Route path="/org" component={Organizacion} />
+            <Route path="/mundos" component={Mundos} />
+            <Route path="/mundos/:id" component={MundoDetail} />
+            <Route path="/onboarding" component={SmartOnboardingList} />
+            <Route path="/onboarding/:id" component={SmartOnboardingWizard} />
+            <Route path="/workflow-engine" component={WorkflowEngine} />
+            <Route path="/workflow-engine/templates" component={WorkflowTemplates} />
+            <Route path="/workflow-engine/:id" component={WorkflowDetail} />
+            <Route path="/contracts" component={ContractEngine} />
+            <Route path="/contracts/:id" component={ContractDetail} />
+            <Route path="/quality-center" component={QualityCenter} />
+            <Route path="/quality-center/incidents" component={IncidentCenter} />
+            <Route path="/quality-center/incidents/:id" component={IncidentDetail} />
+            <Route path="/quality-center/code-review" component={CodeReview} />
+            <Route path="/quality-center/qa-testing" component={QATesting} />
+            <Route path="/quality-center/performance" component={Performance} />
+            <Route path="/quality-center/security" component={Security} />
+            <Route path="/quality-center/architecture" component={Architecture} />
+            <Route path="/quality-center/health-check" component={HealthCheck} />
+            <Route path="/quality-center/technical-debt" component={TechnicalDebt} />
+            <Route path="/quality-center/recommendations" component={Recommendations} />
 
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+            {/* Client Room admin (list of orgs) — inside AppLayout */}
+            <Route path="/client" component={ClientRoomAdmin} />
+
+            <Route path="/coming-soon/ai-agents-pro">
+              {() => <ComingSoon title="AI Agents Pro" description="Agentes de IA especializados con capacidades avanzadas de razonamiento, memoria y ejecución autónoma." Icon={Bot} />}
+            </Route>
+            <Route path="/coming-soon/factory-engine">
+              {() => <ComingSoon title="Factory Engine" description="Motor de producción de contenido masivo con plantillas inteligentes y flujos automatizados." Icon={Factory} />}
+            </Route>
+            <Route path="/coming-soon/medical-os">
+              {() => <ComingSoon title="Medical OS" description="Sistema operativo para clínicas y profesionales de la salud. Gestión de pacientes, citas y expedientes." Icon={Stethoscope} />}
+            </Route>
+            <Route path="/coming-soon/multi-tenant">
+              {() => <ComingSoon title="Multi-tenant" description="Soporte para múltiples agencias bajo una sola plataforma con gestión centralizada." Icon={Layers} />}
+            </Route>
+            <Route path="/coming-soon/coimagen-cloud">
+              {() => <ComingSoon title="Coimagen Cloud" description="Infraestructura cloud propia para despliegue, hosting y escalado de proyectos de clientes." Icon={Cloud} />}
+            </Route>
+
+            <Route component={NotFound} />
+          </Switch>
+        </AppLayout>
+      </Route>
+    </Switch>
   );
 }
 

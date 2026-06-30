@@ -1,0 +1,351 @@
+COIMAGEN OS V1.6.9
+
+NO rediseñar el sistema.
+
+NO modificar HQ.
+
+NO modificar Workflow Engine.
+
+NO modificar AI Agents Pro.
+
+NO modificar Smart Client Onboarding.
+
+NO modificar Digital Contract Engine.
+
+NO modificar Quality Center.
+
+====================================================
+
+OBJETIVO
+
+Construir CLIENT ROOM.
+
+Este será el Portal privado para cada cliente.
+
+NO crear un segundo sistema.
+
+Debe ser una vista filtrada del mismo COIMAGEN OS.
+
+====================================================
+
+ARQUITECTURA
+
+Cada cliente tendrá una Organización.
+
+Cada Organización tendrá:
+
+Clientes
+
+Proyectos
+
+Contratos
+
+Facturas
+
+Workflow
+
+Agentes
+
+Archivos
+
+Aprobaciones
+
+Dashboard
+
+====================================================
+
+URL
+
+Preparar estructura para:
+
+/client/{slug}
+
+/client/drsegovia
+
+/client/chimichimi
+
+/client/coimagen
+
+/client/conchas-tower
+
+En el futuro podrá utilizarse:
+
+os.coimagenmedia.com/client/drsegovia
+
+====================================================
+
+LOGIN
+
+Cada cliente tendrá:
+
+Usuario
+
+Correo
+
+Rol Cliente
+
+Organización asignada
+
+NO podrá acceder a información de otros clientes.
+
+====================================================
+
+DASHBOARD DEL CLIENTE
+
+Mostrar únicamente información relacionada con su organización.
+
+Resumen del proyecto.
+
+Estado general.
+
+Porcentaje de avance.
+
+Próximos pasos.
+
+Próximas reuniones.
+
+Pendientes.
+
+====================================================
+
+PROYECTOS
+
+Mostrar.
+
+Nombre
+
+Estado
+
+Fecha inicio
+
+Fecha objetivo
+
+Responsable
+
+Workflow
+
+====================================================
+
+WORKFLOW
+
+Mostrar visualmente.
+
+Lead
+
+Diagnóstico
+
+Propuesta
+
+Contrato
+
+Pago
+
+Onboarding
+
+Producción
+
+QA
+
+Entrega
+
+Customer Success
+
+El cliente solamente podrá visualizar.
+
+No modificar.
+
+====================================================
+
+APROBACIONES
+
+Mostrar documentos pendientes.
+
+Diseños.
+
+Landing Pages.
+
+Videos.
+
+Contenido.
+
+Logotipos.
+
+Material gráfico.
+
+Contratos.
+
+Cada aprobación deberá permitir.
+
+Aprobar.
+
+Solicitar cambios.
+
+Agregar comentarios.
+
+====================================================
+
+FACTURACIÓN
+
+Mostrar.
+
+Facturas.
+
+Estado.
+
+Vencimientos.
+
+Historial.
+
+Mensualidades.
+
+====================================================
+
+DOCUMENTOS
+
+Mostrar.
+
+Contratos.
+
+NDA.
+
+PDF.
+
+Presentaciones.
+
+Material entregado.
+
+Brief.
+
+====================================================
+
+ARCHIVOS
+
+Preparar integración futura con Google Drive.
+
+No conectar todavía.
+
+====================================================
+
+CALENDARIO
+
+Mostrar.
+
+Reuniones.
+
+Entregas.
+
+Vencimientos.
+
+Recordatorios.
+
+====================================================
+
+MENSAJES
+
+Preparar estructura para mensajes internos.
+
+No conectar correo todavía.
+
+====================================================
+
+ASISTENTE IA
+
+Cada Client Room tendrá un asistente IA.
+
+El asistente conocerá únicamente la información del cliente.
+
+No podrá acceder a otros clientes.
+
+====================================================
+
+MÓDULOS VISIBLES
+
+Dashboard
+
+Proyectos
+
+Workflow
+
+Aprobaciones
+
+Contratos
+
+Facturas
+
+Documentos
+
+Calendario
+
+Mensajes
+
+Asistente IA
+
+Perfil
+
+====================================================
+
+SEGURIDAD
+
+El cliente solamente podrá ver su organización.
+
+Nunca podrá consultar otra.
+
+Aplicar filtros por organización en todas las consultas.
+
+====================================================
+
+ROLES
+
+CEO
+
+Admin
+
+Director
+
+Agente
+
+Cliente
+
+El rol Cliente tendrá acceso únicamente a Client Room.
+
+====================================================
+
+QA
+
+Verificar.
+
+Autenticación.
+
+Permisos.
+
+Rutas.
+
+Filtros.
+
+Workflow.
+
+Contratos.
+
+Facturas.
+
+Dashboard.
+
+====================================================
+
+ENTREGAR
+
+Reporte final.
+
+Rutas nuevas.
+
+Tablas nuevas.
+
+Componentes.
+
+Permisos.
+
+QA.
+
+TypeScript.
+
+Recomendaciones.

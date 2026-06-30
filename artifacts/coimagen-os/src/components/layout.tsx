@@ -67,6 +67,12 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    label: "Client Room",
+    items: [
+      { href: "/client", label: "Portales de Clientes", icon: Users },
+    ],
+  },
+  {
     label: "Quality Center",
     items: [
       { href: "/quality-center", label: "Hub Principal", icon: ShieldCheck },
@@ -106,7 +112,6 @@ const NAV_GROUPS: NavGroup[] = [
 
 const COMING_SOON = [
   "AI Agents Pro",
-  "Portal de Clientes",
   "Factory Engine",
   "Medical OS",
   "Multi-tenant",
