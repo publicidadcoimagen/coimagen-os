@@ -2597,6 +2597,92 @@ paths:
         "204":
           description: Deleted
 
+  /contracts:
+    get:
+      operationId: listContracts
+      summary: List contracts
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: type
+          schema: { type: string }
+        - in: query
+          name: clientId
+          schema: { type: integer }
+        - in: query
+          name: projectId
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Contract" }
+    post:
+      operationId: createContract
+      summary: Create contract
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContractCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Contract" }
+
+  /contracts/{id}:
+    get:
+      operationId: getContract
+      summary: Get contract by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Contract" }
+    patch:
+      operationId: updateContract
+      summary: Update contract
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContractUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Contract" }
+    delete:
+      operationId: deleteContract
+      summary: Delete contract
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: No Content
+
 
 components:
   parameters:
@@ -4189,3 +4275,77 @@ components:
         dueDate: { type: string }
         resolvedAt: { type: string }
         notes: { type: string }
+
+    Contract:
+      type: object
+      required: [id, type, status, title, createdAt]
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        status: { type: string }
+        title: { type: string }
+        description: { type: ["string", "null"] }
+        service: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
+        projectId: { type: ["integer", "null"] }
+        workflowId: { type: ["integer", "null"] }
+        invoiceId: { type: ["integer", "null"] }
+        approvalId: { type: ["integer", "null"] }
+        content: { type: ["string", "null"] }
+        amount: { type: ["integer", "null"] }
+        currency: { type: ["string", "null"] }
+        terms: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        sentAt: { type: ["string", "null"] }
+        signedAt: { type: ["string", "null"] }
+        expiresAt: { type: ["string", "null"] }
+        createdBy: { type: ["string", "null"] }
+        signedBy: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ContractCreate:
+      type: object
+      required: [type, title]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        description: { type: string }
+        service: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        workflowId: { type: integer }
+        invoiceId: { type: integer }
+        approvalId: { type: integer }
+        content: { type: string }
+        amount: { type: integer }
+        currency: { type: string }
+        terms: { type: string }
+        notes: { type: string }
+        sentAt: { type: string }
+        signedAt: { type: string }
+        expiresAt: { type: string }
+        createdBy: { type: string }
+        signedBy: { type: string }
+    ContractUpdate:
+      type: object
+      properties:
+        type: { type: string }
+        status: { type: string }
+        title: { type: string }
+        description: { type: string }
+        service: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        workflowId: { type: integer }
+        invoiceId: { type: integer }
+        approvalId: { type: integer }
+        content: { type: string }
+        amount: { type: integer }
+        currency: { type: string }
+        terms: { type: string }
+        notes: { type: string }
+        sentAt: { type: string }
+        signedAt: { type: string }
+        expiresAt: { type: string }
+        createdBy: { type: string }
+        signedBy: { type: string }

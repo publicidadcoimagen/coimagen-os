@@ -34,3 +34,4 @@ export * from "./workflow-templates";
 export * from "./workflow-stage-logs";
 export * from "./incidents";
 export * from "./tickets";
+export * from "./contracts";

@@ -6,7 +6,7 @@ import {
   RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
   Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
   Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
-  Code2, TestTube2, Gauge, HeartPulse,
+  Code2, TestTube2, Gauge, HeartPulse, FileSignature,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -58,6 +58,12 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/org", label: "Organigrama", icon: Network },
       { href: "/mundos", label: "Mundos", icon: Globe2 },
+    ],
+  },
+  {
+    label: "Digital Contract Engine",
+    items: [
+      { href: "/contracts", label: "Contratos", icon: FileSignature },
     ],
   },
   {

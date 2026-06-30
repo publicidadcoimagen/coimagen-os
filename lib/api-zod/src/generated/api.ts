@@ -3304,3 +3304,166 @@ export const DeleteQcTicketParams = zod.object({
 })
 
 
+/**
+ * @summary List contracts
+ */
+export const ListContractsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "type": zod.coerce.string().optional(),
+  "clientId": zod.coerce.number().optional(),
+  "projectId": zod.coerce.number().optional()
+})
+
+export const ListContractsResponseItem = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "status": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "service": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "invoiceId": zod.number().nullish(),
+  "approvalId": zod.number().nullish(),
+  "content": zod.string().nullish(),
+  "amount": zod.number().nullish(),
+  "currency": zod.string().nullish(),
+  "terms": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "sentAt": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
+  "expiresAt": zod.string().nullish(),
+  "createdBy": zod.string().nullish(),
+  "signedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListContractsResponse = zod.array(ListContractsResponseItem)
+
+
+/**
+ * @summary Create contract
+ */
+export const CreateContractBody = zod.object({
+  "type": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "service": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "invoiceId": zod.number().optional(),
+  "approvalId": zod.number().optional(),
+  "content": zod.string().optional(),
+  "amount": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "terms": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "sentAt": zod.string().optional(),
+  "signedAt": zod.string().optional(),
+  "expiresAt": zod.string().optional(),
+  "createdBy": zod.string().optional(),
+  "signedBy": zod.string().optional()
+})
+
+
+/**
+ * @summary Get contract by id
+ */
+export const GetContractParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetContractResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "status": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "service": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "invoiceId": zod.number().nullish(),
+  "approvalId": zod.number().nullish(),
+  "content": zod.string().nullish(),
+  "amount": zod.number().nullish(),
+  "currency": zod.string().nullish(),
+  "terms": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "sentAt": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
+  "expiresAt": zod.string().nullish(),
+  "createdBy": zod.string().nullish(),
+  "signedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update contract
+ */
+export const UpdateContractParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateContractBody = zod.object({
+  "type": zod.string().optional(),
+  "status": zod.string().optional(),
+  "title": zod.string().optional(),
+  "description": zod.string().optional(),
+  "service": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "invoiceId": zod.number().optional(),
+  "approvalId": zod.number().optional(),
+  "content": zod.string().optional(),
+  "amount": zod.number().optional(),
+  "currency": zod.string().optional(),
+  "terms": zod.string().optional(),
+  "notes": zod.string().optional(),
+  "sentAt": zod.string().optional(),
+  "signedAt": zod.string().optional(),
+  "expiresAt": zod.string().optional(),
+  "createdBy": zod.string().optional(),
+  "signedBy": zod.string().optional()
+})
+
+export const UpdateContractResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "status": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "service": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "invoiceId": zod.number().nullish(),
+  "approvalId": zod.number().nullish(),
+  "content": zod.string().nullish(),
+  "amount": zod.number().nullish(),
+  "currency": zod.string().nullish(),
+  "terms": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "sentAt": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
+  "expiresAt": zod.string().nullish(),
+  "createdBy": zod.string().nullish(),
+  "signedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete contract
+ */
+export const DeleteContractParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+

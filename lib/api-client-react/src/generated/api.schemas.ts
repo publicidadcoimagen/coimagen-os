@@ -2114,6 +2114,95 @@ export interface QcTicketUpdate {
   notes?: string;
 }
 
+export interface Contract {
+  id: number;
+  type: string;
+  status: string;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  service?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  workflowId?: number | null;
+  /** @nullable */
+  invoiceId?: number | null;
+  /** @nullable */
+  approvalId?: number | null;
+  /** @nullable */
+  content?: string | null;
+  /** @nullable */
+  amount?: number | null;
+  /** @nullable */
+  currency?: string | null;
+  /** @nullable */
+  terms?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  sentAt?: string | null;
+  /** @nullable */
+  signedAt?: string | null;
+  /** @nullable */
+  expiresAt?: string | null;
+  /** @nullable */
+  createdBy?: string | null;
+  /** @nullable */
+  signedBy?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ContractCreate {
+  type: string;
+  title: string;
+  description?: string;
+  service?: string;
+  clientId?: number;
+  projectId?: number;
+  workflowId?: number;
+  invoiceId?: number;
+  approvalId?: number;
+  content?: string;
+  amount?: number;
+  currency?: string;
+  terms?: string;
+  notes?: string;
+  sentAt?: string;
+  signedAt?: string;
+  expiresAt?: string;
+  createdBy?: string;
+  signedBy?: string;
+}
+
+export interface ContractUpdate {
+  type?: string;
+  status?: string;
+  title?: string;
+  description?: string;
+  service?: string;
+  clientId?: number;
+  projectId?: number;
+  workflowId?: number;
+  invoiceId?: number;
+  approvalId?: number;
+  content?: string;
+  amount?: number;
+  currency?: string;
+  terms?: string;
+  notes?: string;
+  sentAt?: string;
+  signedAt?: string;
+  expiresAt?: string;
+  createdBy?: string;
+  signedBy?: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
@@ -2194,5 +2283,12 @@ clientId?: number;
 export type ListQcTicketsParams = {
 status?: string;
 incidentId?: number;
+};
+
+export type ListContractsParams = {
+status?: string;
+type?: string;
+clientId?: number;
+projectId?: number;
 };
 

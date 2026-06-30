@@ -49,6 +49,8 @@ import { SmartOnboardingWizard } from "@/pages/onboarding/[id]";
 import { WorkflowEngine } from "@/pages/workflow-engine/index";
 import { WorkflowDetail } from "@/pages/workflow-engine/[id]";
 import { WorkflowTemplates } from "@/pages/workflow-engine/templates";
+import { ContractEngine } from "@/pages/contracts/index";
+import { ContractDetail } from "@/pages/contracts/[id]";
 import { QualityCenter } from "@/pages/quality-center/index";
 import { IncidentCenter } from "@/pages/quality-center/incidents/index";
 import { IncidentDetail } from "@/pages/quality-center/incidents/[id]";
@@ -145,6 +147,8 @@ function Router() {
         <Route path="/workflow-engine" component={WorkflowEngine} />
         <Route path="/workflow-engine/templates" component={WorkflowTemplates} />
         <Route path="/workflow-engine/:id" component={WorkflowDetail} />
+        <Route path="/contracts" component={ContractEngine} />
+        <Route path="/contracts/:id" component={ContractDetail} />
         <Route path="/quality-center" component={QualityCenter} />
         <Route path="/quality-center/incidents" component={IncidentCenter} />
         <Route path="/quality-center/incidents/:id" component={IncidentDetail} />

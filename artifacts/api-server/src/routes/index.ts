@@ -33,6 +33,7 @@ import workflowsRouter from "./workflows";
 import workflowTemplatesRouter from "./workflow-templates";
 import incidentsRouter from "./incidents";
 import qualityTicketsRouter from "./quality-tickets";
+import contractsRouter from "./contracts";
 import orgRouter from "./org";
 import mundosRouter from "./mundos";
 import { requireAuth } from "../middlewares/requireAuth";
@@ -81,5 +82,6 @@ router.use(workflowsRouter);
 router.use(workflowTemplatesRouter);
 router.use(incidentsRouter);
 router.use(qualityTicketsRouter);
+router.use(contractsRouter);
 
 export default router;
