@@ -2555,6 +2555,23 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Mundo"
+    post:
+      operationId: createMundo
+      tags: [mundos]
+      summary: Create a new mundo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MundoCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mundo"
   /mundos/{id}:
     parameters:
       - name: id
@@ -2708,6 +2725,23 @@ paths:
 
   # ─── QUALITY CENTER — TICKETS ─────────────────────────────────────────────────
   /quality-tickets:
+    post:
+      operationId: createQcTicket
+      tags: [qc-tickets]
+      summary: Create a quality ticket directly
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QcTicketCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QcTicket"
     get:
       operationId: listQcTickets
       tags: [qc-tickets]
@@ -4843,6 +4877,21 @@ components:
         sortOrder: { type: integer }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
+    MundoCreate:
+      type: object
+      required: [key, name, emoji]
+      properties:
+        key: { type: string }
+        name: { type: string }
+        emoji: { type: string }
+        description: { type: string }
+        objetivo: { type: string }
+        kpis:
+          type: array
+          items: { type: string }
+        status: { type: string }
+        directorId: { type: integer }
+        sortOrder: { type: integer }
     MundoUpdate:
       type: object
       properties:
@@ -4955,6 +5004,22 @@ components:
         notes: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
+    QcTicketCreate:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        incidentId: { type: integer }
+        status: { type: string }
+        priority: { type: string }
+        assignedToType: { type: string }
+        assignedToId: { type: string }
+        assignedToName: { type: string }
+        projectId: { type: integer }
+        clientId: { type: integer }
+        dueDate: { type: string }
+        notes: { type: string }
     QcTicketUpdate:
       type: object
       properties:

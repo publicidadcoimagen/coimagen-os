@@ -11,6 +11,7 @@ import {
   ConvertIncidentToTicketParams,
   ConvertIncidentToTicketBody,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -39,7 +40,7 @@ router.get("/incidents", async (req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/incidents", async (req, res): Promise<void> => {
+router.post("/incidents", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateIncidentBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -77,7 +78,7 @@ router.get("/incidents/:id", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-router.patch("/incidents/:id", async (req, res): Promise<void> => {
+router.patch("/incidents/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateIncidentParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateIncidentBody.safeParse(req.body);
@@ -112,14 +113,14 @@ router.patch("/incidents/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/incidents/:id", async (req, res): Promise<void> => {
+router.delete("/incidents/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteIncidentParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(incidentsTable).where(eq(incidentsTable.id, params.data.id));
   res.sendStatus(204);
 });
 
-router.post("/incidents/:id/convert-ticket", async (req, res): Promise<void> => {
+router.post("/incidents/:id/convert-ticket", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = ConvertIncidentToTicketParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = ConvertIncidentToTicketBody.safeParse(req.body ?? {});

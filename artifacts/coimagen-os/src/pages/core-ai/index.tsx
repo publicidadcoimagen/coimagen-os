@@ -166,7 +166,6 @@ export function CoreAIDashboard() {
   const todayAutoExec      = automations.reduce((s, a) => s + (a.executionsToday ?? 0), 0);
   const failedExecs        = executions.filter((e) => e.result === "error");
   const successExecs       = executions.filter((e) => e.result === "success");
-  const simExecs           = executions.filter((e) => e.isSimulated);
   const qcExecs            = executions.filter((e) => e.sentToQc);
   const recentEvents       = events.slice(0, 5);
   const activeIntegrations = integrations.filter((i) => i.status === "active").length;

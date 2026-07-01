@@ -9,6 +9,7 @@ import {
   DeleteApprovalParams,
   ListApprovalsQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -26,7 +27,7 @@ router.get("/approvals", async (req, res): Promise<void> => {
   res.json(rows.map(fmt));
 });
 
-router.post("/approvals", async (req, res): Promise<void> => {
+router.post("/approvals", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateApprovalBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(approvalsTable).values({
@@ -50,7 +51,7 @@ router.get("/approvals/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.patch("/approvals/:id", async (req, res): Promise<void> => {
+router.patch("/approvals/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateApprovalParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateApprovalBody.safeParse(req.body);
@@ -60,7 +61,7 @@ router.patch("/approvals/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.delete("/approvals/:id", async (req, res): Promise<void> => {
+router.delete("/approvals/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteApprovalParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.delete(approvalsTable).where(eq(approvalsTable.id, params.data.id)).returning();

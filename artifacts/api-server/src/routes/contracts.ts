@@ -9,6 +9,7 @@ import {
   UpdateContractBody,
   DeleteContractParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -39,7 +40,7 @@ router.get("/contracts", async (req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/contracts", async (req, res): Promise<void> => {
+router.post("/contracts", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateContractBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -78,7 +79,7 @@ router.get("/contracts/:id", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-router.patch("/contracts/:id", async (req, res): Promise<void> => {
+router.patch("/contracts/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateContractParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateContractBody.safeParse(req.body);
@@ -113,7 +114,7 @@ router.patch("/contracts/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/contracts/:id", async (req, res): Promise<void> => {
+router.delete("/contracts/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteContractParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(contractsTable).where(eq(contractsTable.id, params.data.id));

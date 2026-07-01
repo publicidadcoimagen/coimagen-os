@@ -9,6 +9,7 @@ import {
   DeleteCostParams,
   ListCostsQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -27,7 +28,7 @@ router.get("/costs", async (req, res): Promise<void> => {
   res.json(rows.map(fmt));
 });
 
-router.post("/costs", async (req, res): Promise<void> => {
+router.post("/costs", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateCostBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(costsTable).values({
@@ -63,7 +64,7 @@ router.get("/costs/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.patch("/costs/:id", async (req, res): Promise<void> => {
+router.patch("/costs/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateCostParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateCostBody.safeParse(req.body);
@@ -75,7 +76,7 @@ router.patch("/costs/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.delete("/costs/:id", async (req, res): Promise<void> => {
+router.delete("/costs/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteCostParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.delete(costsTable).where(eq(costsTable.id, params.data.id)).returning();

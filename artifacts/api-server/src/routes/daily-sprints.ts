@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, dailySprintsTable } from "@workspace/db";
 import { CreateDailySprintBody, UpdateDailySprintBody, UpdateDailySprintParams, DeleteDailySprintParams, GetDailySprintParams } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -10,7 +11,7 @@ router.get("/daily-sprints", async (req, res): Promise<void> => {
   res.json(sprints.map((s) => ({ ...s, createdAt: s.createdAt.toISOString(), updatedAt: s.updatedAt?.toISOString() ?? null })));
 });
 
-router.post("/daily-sprints", async (req, res): Promise<void> => {
+router.post("/daily-sprints", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateDailySprintBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [sprint] = await db.insert(dailySprintsTable).values({
@@ -36,7 +37,7 @@ router.get("/daily-sprints/:id", async (req, res): Promise<void> => {
   res.json({ ...sprint, createdAt: sprint.createdAt.toISOString(), updatedAt: sprint.updatedAt?.toISOString() ?? null });
 });
 
-router.patch("/daily-sprints/:id", async (req, res): Promise<void> => {
+router.patch("/daily-sprints/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateDailySprintParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = UpdateDailySprintBody.safeParse(req.body);
@@ -49,7 +50,7 @@ router.patch("/daily-sprints/:id", async (req, res): Promise<void> => {
   res.json({ ...sprint, createdAt: sprint.createdAt.toISOString(), updatedAt: sprint.updatedAt?.toISOString() ?? null });
 });
 
-router.delete("/daily-sprints/:id", async (req, res): Promise<void> => {
+router.delete("/daily-sprints/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteDailySprintParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(dailySprintsTable).where(eq(dailySprintsTable.id, params.data.id));

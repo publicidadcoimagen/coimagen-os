@@ -9,6 +9,7 @@ import {
   DeleteProspectParams,
   ListProspectsQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -25,7 +26,7 @@ router.get("/prospects", async (req, res): Promise<void> => {
   res.json(rows.map(fmt));
 });
 
-router.post("/prospects", async (req, res): Promise<void> => {
+router.post("/prospects", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateProspectBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(prospectsTable).values({
@@ -49,7 +50,7 @@ router.get("/prospects/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.patch("/prospects/:id", async (req, res): Promise<void> => {
+router.patch("/prospects/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateProspectParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateProspectBody.safeParse(req.body);
@@ -59,7 +60,7 @@ router.patch("/prospects/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.delete("/prospects/:id", async (req, res): Promise<void> => {
+router.delete("/prospects/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteProspectParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.delete(prospectsTable).where(eq(prospectsTable.id, params.data.id)).returning();

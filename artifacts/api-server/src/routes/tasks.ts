@@ -9,6 +9,7 @@ import {
   CreateTaskBody,
   ListTasksQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -52,7 +53,7 @@ router.get("/tasks", async (req, res): Promise<void> => {
   })));
 });
 
-router.post("/tasks", async (req, res): Promise<void> => {
+router.post("/tasks", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateTaskBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -124,7 +125,7 @@ router.get("/tasks/:id", async (req, res): Promise<void> => {
   });
 });
 
-router.patch("/tasks/:id", async (req, res): Promise<void> => {
+router.patch("/tasks/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateTaskParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -164,7 +165,7 @@ router.patch("/tasks/:id", async (req, res): Promise<void> => {
   });
 });
 
-router.delete("/tasks/:id", async (req, res): Promise<void> => {
+router.delete("/tasks/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteTaskParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

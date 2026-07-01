@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, clientOnboardingTable } from "@workspace/db";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -11,15 +12,15 @@ const serialize = (r: typeof clientOnboardingTable.$inferSelect) => ({
 });
 
 router.get("/clients/:clientId/onboarding", async (req, res): Promise<void> => {
-  const clientId = parseInt(req.params.clientId);
+  const clientId = parseInt(req.params.clientId as string);
   if (isNaN(clientId)) { res.status(400).json({ error: "Invalid clientId" }); return; }
   const [row] = await db.select().from(clientOnboardingTable).where(eq(clientOnboardingTable.clientId, clientId));
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
   res.json(serialize(row));
 });
 
-router.put("/clients/:clientId/onboarding", async (req, res): Promise<void> => {
-  const clientId = parseInt(req.params.clientId);
+router.put("/clients/:clientId/onboarding", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const clientId = parseInt(req.params.clientId as string);
   if (isNaN(clientId)) { res.status(400).json({ error: "Invalid clientId" }); return; }
   const body = req.body;
   const [existing] = await db.select().from(clientOnboardingTable).where(eq(clientOnboardingTable.clientId, clientId));

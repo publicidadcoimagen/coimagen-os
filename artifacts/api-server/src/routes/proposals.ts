@@ -9,6 +9,7 @@ import {
   DeleteProposalParams,
   ListProposalsQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -28,7 +29,7 @@ router.get("/proposals", async (req, res): Promise<void> => {
   res.json(rows.map(fmt));
 });
 
-router.post("/proposals", async (req, res): Promise<void> => {
+router.post("/proposals", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateProposalBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(proposalsTable).values({
@@ -51,7 +52,7 @@ router.get("/proposals/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.patch("/proposals/:id", async (req, res): Promise<void> => {
+router.patch("/proposals/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateProposalParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateProposalBody.safeParse(req.body);
@@ -63,7 +64,7 @@ router.patch("/proposals/:id", async (req, res): Promise<void> => {
   res.json(fmt(row));
 });
 
-router.delete("/proposals/:id", async (req, res): Promise<void> => {
+router.delete("/proposals/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteProposalParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.delete(proposalsTable).where(eq(proposalsTable.id, params.data.id)).returning();

@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, ideasTable } from "@workspace/db";
 import { CreateIdeaBody, UpdateIdeaBody, UpdateIdeaParams, DeleteIdeaParams } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -10,7 +11,7 @@ router.get("/ideas", async (req, res): Promise<void> => {
   res.json(ideas.map((i) => ({ ...i, createdAt: i.createdAt.toISOString(), updatedAt: i.updatedAt?.toISOString() ?? null })));
 });
 
-router.post("/ideas", async (req, res): Promise<void> => {
+router.post("/ideas", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateIdeaBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [idea] = await db.insert(ideasTable).values({
@@ -25,7 +26,7 @@ router.post("/ideas", async (req, res): Promise<void> => {
   res.status(201).json({ ...idea, createdAt: idea.createdAt.toISOString(), updatedAt: idea.updatedAt?.toISOString() ?? null });
 });
 
-router.patch("/ideas/:id", async (req, res): Promise<void> => {
+router.patch("/ideas/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateIdeaParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = UpdateIdeaBody.safeParse(req.body);
@@ -38,7 +39,7 @@ router.patch("/ideas/:id", async (req, res): Promise<void> => {
   res.json({ ...idea, createdAt: idea.createdAt.toISOString(), updatedAt: idea.updatedAt?.toISOString() ?? null });
 });
 
-router.delete("/ideas/:id", async (req, res): Promise<void> => {
+router.delete("/ideas/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteIdeaParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(ideasTable).where(eq(ideasTable.id, params.data.id));

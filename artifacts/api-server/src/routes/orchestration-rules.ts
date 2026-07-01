@@ -9,6 +9,7 @@ import {
   UpdateOrchestrationRuleBody,
   DeleteOrchestrationRuleParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -33,7 +34,7 @@ router.get("/orchestration-rules", async (req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/orchestration-rules", async (req, res): Promise<void> => {
+router.post("/orchestration-rules", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateOrchestrationRuleBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -57,7 +58,7 @@ router.get("/orchestration-rules/:id", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-router.patch("/orchestration-rules/:id", async (req, res): Promise<void> => {
+router.patch("/orchestration-rules/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateOrchestrationRuleParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateOrchestrationRuleBody.safeParse(req.body);
@@ -76,7 +77,7 @@ router.patch("/orchestration-rules/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/orchestration-rules/:id", async (req, res): Promise<void> => {
+router.delete("/orchestration-rules/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteOrchestrationRuleParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(orchestrationRulesTable).where(eq(orchestrationRulesTable.id, params.data.id));

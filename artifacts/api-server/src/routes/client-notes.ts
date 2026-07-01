@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, clientNotesTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router({ mergeParams: true });
 
@@ -16,7 +17,7 @@ router.get("/", async (req, res): Promise<void> => {
   })));
 });
 
-router.post("/", async (req, res): Promise<void> => {
+router.post("/", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const clientId = parseInt((req.params as Record<string, string>).clientId);
   const body = req.body as Record<string, unknown>;
   const title = body.title;
@@ -35,8 +36,8 @@ router.post("/", async (req, res): Promise<void> => {
   });
 });
 
-router.patch("/:id", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id);
+router.patch("/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id as string);
   const body = req.body as Record<string, unknown>;
   const vals: Partial<typeof clientNotesTable.$inferInsert & { updatedAt: Date }> = { updatedAt: new Date() };
   if (typeof body.title === "string") vals.title = body.title;
@@ -51,8 +52,8 @@ router.patch("/:id", async (req, res): Promise<void> => {
   });
 });
 
-router.delete("/:id", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id);
+router.delete("/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id as string);
   await db.delete(clientNotesTable).where(eq(clientNotesTable.id, id));
   res.json({ success: true });
 });

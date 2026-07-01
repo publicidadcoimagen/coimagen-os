@@ -27,6 +27,7 @@ import {
   AssignAgentProjectBody,
   UnassignAgentProjectParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -108,7 +109,7 @@ router.get("/agents", async (req, res): Promise<void> => {
   })));
 });
 
-router.post("/agents", async (req, res): Promise<void> => {
+router.post("/agents", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateAgentBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
 
@@ -147,7 +148,7 @@ router.get("/agents/:id", async (req, res): Promise<void> => {
   res.json(agent);
 });
 
-router.patch("/agents/:id", async (req, res): Promise<void> => {
+router.patch("/agents/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateAgentParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = UpdateAgentBody.safeParse(req.body);
@@ -181,7 +182,7 @@ router.patch("/agents/:id", async (req, res): Promise<void> => {
   res.json(agent);
 });
 
-router.delete("/agents/:id", async (req, res): Promise<void> => {
+router.delete("/agents/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteAgentParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const [agent] = await db.delete(agentsTable).where(eq(agentsTable.id, params.data.id)).returning();
@@ -200,7 +201,7 @@ router.get("/agents/:id/prompt-versions", async (req, res): Promise<void> => {
   res.json(versions.map((v) => ({ ...v, createdAt: v.createdAt.toISOString() })));
 });
 
-router.post("/agents/:id/prompt-versions", async (req, res): Promise<void> => {
+router.post("/agents/:id/prompt-versions", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = CreateAgentPromptVersionParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = CreateAgentPromptVersionBody.safeParse(req.body);
@@ -224,7 +225,7 @@ router.post("/agents/:id/prompt-versions", async (req, res): Promise<void> => {
   res.status(201).json({ ...newVersion, createdAt: newVersion.createdAt.toISOString() });
 });
 
-router.post("/agents/:id/clients", async (req, res): Promise<void> => {
+router.post("/agents/:id/clients", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = AssignAgentClientParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = AssignAgentClientBody.safeParse(req.body);
@@ -233,7 +234,7 @@ router.post("/agents/:id/clients", async (req, res): Promise<void> => {
   res.sendStatus(204);
 });
 
-router.delete("/agents/:id/clients/:clientId", async (req, res): Promise<void> => {
+router.delete("/agents/:id/clients/:clientId", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UnassignAgentClientParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(agentClientsTable)
@@ -241,7 +242,7 @@ router.delete("/agents/:id/clients/:clientId", async (req, res): Promise<void> =
   res.sendStatus(204);
 });
 
-router.post("/agents/:id/projects", async (req, res): Promise<void> => {
+router.post("/agents/:id/projects", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = AssignAgentProjectParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = AssignAgentProjectBody.safeParse(req.body);
@@ -250,7 +251,7 @@ router.post("/agents/:id/projects", async (req, res): Promise<void> => {
   res.sendStatus(204);
 });
 
-router.delete("/agents/:id/projects/:projectId", async (req, res): Promise<void> => {
+router.delete("/agents/:id/projects/:projectId", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UnassignAgentProjectParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(agentProjectsTable)

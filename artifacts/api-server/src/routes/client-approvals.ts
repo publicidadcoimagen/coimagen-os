@@ -9,6 +9,7 @@ import {
   UpdateClientApprovalBody,
   DeleteClientApprovalParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -33,7 +34,7 @@ router.get("/client-approvals", async (req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/client-approvals", async (req, res): Promise<void> => {
+router.post("/client-approvals", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateClientApprovalBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -57,7 +58,7 @@ router.get("/client-approvals/:id", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-router.patch("/client-approvals/:id", async (req, res): Promise<void> => {
+router.patch("/client-approvals/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateClientApprovalParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateClientApprovalBody.safeParse(req.body);
@@ -77,7 +78,7 @@ router.patch("/client-approvals/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/client-approvals/:id", async (req, res): Promise<void> => {
+router.delete("/client-approvals/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteClientApprovalParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(clientApprovalsTable).where(eq(clientApprovalsTable.id, params.data.id));

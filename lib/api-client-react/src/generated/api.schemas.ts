@@ -2044,6 +2044,18 @@ export interface Mundo {
   updatedAt?: string | null;
 }
 
+export interface MundoCreate {
+  key: string;
+  name: string;
+  emoji: string;
+  description?: string;
+  objetivo?: string;
+  kpis?: string[];
+  status?: string;
+  directorId?: number;
+  sortOrder?: number;
+}
+
 export interface MundoUpdate {
   description?: string;
   objetivo?: string;
@@ -2174,6 +2186,21 @@ export interface QcTicket {
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
+}
+
+export interface QcTicketCreate {
+  title: string;
+  description?: string;
+  incidentId?: number;
+  status?: string;
+  priority?: string;
+  assignedToType?: string;
+  assignedToId?: string;
+  assignedToName?: string;
+  projectId?: number;
+  clientId?: number;
+  dueDate?: string;
+  notes?: string;
 }
 
 export interface QcTicketUpdate {

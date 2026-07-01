@@ -18,6 +18,7 @@ import {
   DeleteSmartOnboardingParams,
   CompleteSmartOnboardingParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -99,7 +100,7 @@ router.get("/onboardings", async (_req, res): Promise<void> => {
   res.json(rows.map(serializeOnboarding));
 });
 
-router.post("/onboardings", async (_req, res): Promise<void> => {
+router.post("/onboardings", requireRole("ceo", "admin"), async (_req, res): Promise<void> => {
   const [ob] = await db.insert(smartOnboardingsTable).values({ status: "draft", currentStep: 1 }).returning();
   res.status(201).json(serializeOnboarding(ob));
 });
@@ -112,7 +113,7 @@ router.get("/onboardings/:id", async (req, res): Promise<void> => {
   res.json(serializeOnboarding(ob));
 });
 
-router.patch("/onboardings/:id", async (req, res): Promise<void> => {
+router.patch("/onboardings/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateSmartOnboardingParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateSmartOnboardingBody.safeParse(req.body);
@@ -138,14 +139,14 @@ router.patch("/onboardings/:id", async (req, res): Promise<void> => {
   res.json(serializeOnboarding(updated));
 });
 
-router.delete("/onboardings/:id", async (req, res): Promise<void> => {
+router.delete("/onboardings/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteSmartOnboardingParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(smartOnboardingsTable).where(eq(smartOnboardingsTable.id, params.data.id));
   res.sendStatus(204);
 });
 
-router.post("/onboardings/:id/complete", async (req, res): Promise<void> => {
+router.post("/onboardings/:id/complete", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = CompleteSmartOnboardingParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
 

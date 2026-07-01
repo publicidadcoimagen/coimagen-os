@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, roadmapItemsTable } from "@workspace/db";
 import { CreateRoadmapItemBody, UpdateRoadmapItemBody, UpdateRoadmapItemParams, DeleteRoadmapItemParams } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -10,7 +11,7 @@ router.get("/roadmap", async (req, res): Promise<void> => {
   res.json(items.map((i) => ({ ...i, createdAt: i.createdAt.toISOString(), updatedAt: i.updatedAt?.toISOString() ?? null })));
 });
 
-router.post("/roadmap", async (req, res): Promise<void> => {
+router.post("/roadmap", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateRoadmapItemBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [item] = await db.insert(roadmapItemsTable).values({
@@ -26,7 +27,7 @@ router.post("/roadmap", async (req, res): Promise<void> => {
   res.status(201).json({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt?.toISOString() ?? null });
 });
 
-router.patch("/roadmap/:id", async (req, res): Promise<void> => {
+router.patch("/roadmap/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateRoadmapItemParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = UpdateRoadmapItemBody.safeParse(req.body);
@@ -39,7 +40,7 @@ router.patch("/roadmap/:id", async (req, res): Promise<void> => {
   res.json({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt?.toISOString() ?? null });
 });
 
-router.delete("/roadmap/:id", async (req, res): Promise<void> => {
+router.delete("/roadmap/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteRoadmapItemParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(roadmapItemsTable).where(eq(roadmapItemsTable.id, params.data.id));

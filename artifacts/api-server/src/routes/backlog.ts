@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, backlogItemsTable } from "@workspace/db";
 import { CreateBacklogItemBody, UpdateBacklogItemBody, UpdateBacklogItemParams, DeleteBacklogItemParams, GetBacklogItemParams } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -10,7 +11,7 @@ router.get("/backlog", async (req, res): Promise<void> => {
   res.json(items.map((i) => ({ ...i, createdAt: i.createdAt.toISOString(), updatedAt: i.updatedAt?.toISOString() ?? null })));
 });
 
-router.post("/backlog", async (req, res): Promise<void> => {
+router.post("/backlog", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateBacklogItemBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [item] = await db.insert(backlogItemsTable).values({
@@ -39,7 +40,7 @@ router.get("/backlog/:id", async (req, res): Promise<void> => {
   res.json({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt?.toISOString() ?? null });
 });
 
-router.patch("/backlog/:id", async (req, res): Promise<void> => {
+router.patch("/backlog/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateBacklogItemParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const parsed = UpdateBacklogItemBody.safeParse(req.body);
@@ -52,7 +53,7 @@ router.patch("/backlog/:id", async (req, res): Promise<void> => {
   res.json({ ...item, createdAt: item.createdAt.toISOString(), updatedAt: item.updatedAt?.toISOString() ?? null });
 });
 
-router.delete("/backlog/:id", async (req, res): Promise<void> => {
+router.delete("/backlog/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteBacklogItemParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(backlogItemsTable).where(eq(backlogItemsTable.id, params.data.id));

@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, clientTimelineTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router({ mergeParams: true });
 
@@ -16,7 +17,7 @@ router.get("/", async (req, res): Promise<void> => {
   })));
 });
 
-router.post("/", async (req, res): Promise<void> => {
+router.post("/", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const clientId = parseInt((req.params as Record<string, string>).clientId);
   const { title, eventType, description, occurredAt } = req.body as Record<string, string>;
   if (!title) { res.status(400).json({ error: "title required" }); return; }
@@ -34,8 +35,8 @@ router.post("/", async (req, res): Promise<void> => {
   });
 });
 
-router.delete("/:id", async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id);
+router.delete("/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id as string);
   await db.delete(clientTimelineTable).where(eq(clientTimelineTable.id, id));
   res.json({ success: true });
 });

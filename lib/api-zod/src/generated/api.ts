@@ -3277,6 +3277,22 @@ export const ListMundosResponse = zod.array(ListMundosResponseItem)
 
 
 /**
+ * @summary Create a new mundo
+ */
+export const CreateMundoBody = zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "emoji": zod.string(),
+  "description": zod.string().optional(),
+  "objetivo": zod.string().optional(),
+  "kpis": zod.array(zod.string()).optional(),
+  "status": zod.string().optional(),
+  "directorId": zod.number().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+
+/**
  * @summary Get mundo detail
  */
 export const GetMundoParams = zod.object({
@@ -3542,6 +3558,25 @@ export const ConvertIncidentToTicketBody = zod.object({
   "assignedToType": zod.string().optional(),
   "assignedToId": zod.string().optional(),
   "assignedToName": zod.string().optional(),
+  "dueDate": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Create a quality ticket directly
+ */
+export const CreateQcTicketBody = zod.object({
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "incidentId": zod.number().optional(),
+  "status": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "assignedToType": zod.string().optional(),
+  "assignedToId": zod.string().optional(),
+  "assignedToName": zod.string().optional(),
+  "projectId": zod.number().optional(),
+  "clientId": zod.number().optional(),
   "dueDate": zod.string().optional(),
   "notes": zod.string().optional()
 })

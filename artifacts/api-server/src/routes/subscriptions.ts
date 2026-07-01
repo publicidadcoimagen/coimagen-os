@@ -9,6 +9,7 @@ import {
   DeleteSubscriptionParams,
   ListSubscriptionsQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -26,7 +27,7 @@ router.get("/subscriptions", async (req, res): Promise<void> => {
   res.json(filtered.map((r) => ({ ...r, amount: parseFloat(r.amount), createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt ? r.updatedAt.toISOString() : null })));
 });
 
-router.post("/subscriptions", async (req, res): Promise<void> => {
+router.post("/subscriptions", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateSubscriptionBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(subscriptionsTable).values({
@@ -60,7 +61,7 @@ router.get("/subscriptions/:id", async (req, res): Promise<void> => {
   res.json({ ...row, amount: parseFloat(row.amount), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null });
 });
 
-router.patch("/subscriptions/:id", async (req, res): Promise<void> => {
+router.patch("/subscriptions/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateSubscriptionParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateSubscriptionBody.safeParse(req.body);
@@ -77,7 +78,7 @@ router.patch("/subscriptions/:id", async (req, res): Promise<void> => {
   res.json({ ...row, clientName, amount: parseFloat(row.amount), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null });
 });
 
-router.delete("/subscriptions/:id", async (req, res): Promise<void> => {
+router.delete("/subscriptions/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteSubscriptionParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.delete(subscriptionsTable).where(eq(subscriptionsTable.id, params.data.id)).returning();

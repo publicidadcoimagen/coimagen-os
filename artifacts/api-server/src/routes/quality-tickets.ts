@@ -7,7 +7,9 @@ import {
   UpdateQcTicketParams,
   UpdateQcTicketBody,
   DeleteQcTicketParams,
+  CreateQcTicketBody,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -18,6 +20,27 @@ function serialize(r: typeof ticketsTable.$inferSelect) {
     updatedAt: r.updatedAt ? r.updatedAt.toISOString() : null,
   };
 }
+
+router.post("/quality-tickets", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const parsed = CreateQcTicketBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const d = parsed.data;
+  const [row] = await db.insert(ticketsTable).values({
+    title: d.title,
+    description: d.description ?? null,
+    incidentId: d.incidentId ?? null,
+    status: d.status ?? "open",
+    priority: d.priority ?? "medium",
+    assignedToType: d.assignedToType ?? null,
+    assignedToId: d.assignedToId ?? null,
+    assignedToName: d.assignedToName ?? null,
+    projectId: d.projectId ?? null,
+    clientId: d.clientId ?? null,
+    dueDate: d.dueDate ?? null,
+    notes: d.notes ?? null,
+  }).returning();
+  res.status(201).json(serialize(row!));
+});
 
 router.get("/quality-tickets", async (req, res): Promise<void> => {
   const q = ListQcTicketsQueryParams.safeParse(req.query);
@@ -39,7 +62,7 @@ router.get("/quality-tickets/:id", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-router.patch("/quality-tickets/:id", async (req, res): Promise<void> => {
+router.patch("/quality-tickets/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateQcTicketParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateQcTicketBody.safeParse(req.body);
@@ -64,7 +87,7 @@ router.patch("/quality-tickets/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/quality-tickets/:id", async (req, res): Promise<void> => {
+router.delete("/quality-tickets/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteQcTicketParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(ticketsTable).where(eq(ticketsTable.id, params.data.id));

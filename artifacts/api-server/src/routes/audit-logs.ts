@@ -5,6 +5,7 @@ import {
   CreateAuditLogBody,
   ListAuditLogsQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -22,7 +23,7 @@ router.get("/audit-logs", async (req, res): Promise<void> => {
   res.json(rows.slice(0, limit).map(fmt));
 });
 
-router.post("/audit-logs", async (req, res): Promise<void> => {
+router.post("/audit-logs", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateAuditLogBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(auditLogsTable).values({

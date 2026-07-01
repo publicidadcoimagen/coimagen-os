@@ -8,6 +8,7 @@ import {
   DeleteClientParams,
   CreateClientBody,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -20,7 +21,7 @@ router.get("/clients", async (req, res): Promise<void> => {
   })));
 });
 
-router.post("/clients", async (req, res): Promise<void> => {
+router.post("/clients", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateClientBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -60,7 +61,7 @@ router.get("/clients/:id", async (req, res): Promise<void> => {
   });
 });
 
-router.patch("/clients/:id", async (req, res): Promise<void> => {
+router.patch("/clients/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateClientParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -86,7 +87,7 @@ router.patch("/clients/:id", async (req, res): Promise<void> => {
   });
 });
 
-router.delete("/clients/:id", async (req, res): Promise<void> => {
+router.delete("/clients/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteClientParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

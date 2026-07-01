@@ -8,6 +8,7 @@ import {
   UpdateWorkflowTemplateBody,
   DeleteWorkflowTemplateParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -56,7 +57,7 @@ router.get("/workflow-templates", async (_req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/workflow-templates", async (req, res): Promise<void> => {
+router.post("/workflow-templates", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateWorkflowTemplateBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -79,7 +80,7 @@ router.get("/workflow-templates/:id", async (req, res): Promise<void> => {
   res.json(serialize(tmpl));
 });
 
-router.patch("/workflow-templates/:id", async (req, res): Promise<void> => {
+router.patch("/workflow-templates/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateWorkflowTemplateParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateWorkflowTemplateBody.safeParse(req.body);
@@ -97,7 +98,7 @@ router.patch("/workflow-templates/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/workflow-templates/:id", async (req, res): Promise<void> => {
+router.delete("/workflow-templates/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteWorkflowTemplateParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(workflowTemplatesTable).where(eq(workflowTemplatesTable.id, params.data.id));

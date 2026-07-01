@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
 import { db, clientAccessTable, auditLogsTable } from "@workspace/db";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -20,8 +21,8 @@ router.get("/clients/:clientId/access", async (req, res): Promise<void> => {
   res.json(rows.map(serializeAccess));
 });
 
-router.post("/clients/:clientId/access", async (req, res): Promise<void> => {
-  const clientId = parseInt(req.params.clientId);
+router.post("/clients/:clientId/access", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const clientId = parseInt(req.params.clientId as string);
   if (isNaN(clientId)) { res.status(400).json({ error: "Invalid clientId" }); return; }
   const body = req.body;
   const [row] = await db.insert(clientAccessTable).values({
@@ -49,9 +50,9 @@ router.post("/clients/:clientId/access", async (req, res): Promise<void> => {
   res.status(201).json(serializeAccess(row));
 });
 
-router.patch("/clients/:clientId/access/:id", async (req, res): Promise<void> => {
-  const clientId = parseInt(req.params.clientId);
-  const id = parseInt(req.params.id);
+router.patch("/clients/:clientId/access/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const clientId = parseInt(req.params.clientId as string);
+  const id = parseInt(req.params.id as string);
   if (isNaN(clientId) || isNaN(id)) { res.status(400).json({ error: "Invalid params" }); return; }
   const body = req.body;
   const update: Record<string, unknown> = { updatedAt: new Date() };
@@ -82,9 +83,9 @@ router.patch("/clients/:clientId/access/:id", async (req, res): Promise<void> =>
   res.json(serializeAccess(row));
 });
 
-router.delete("/clients/:clientId/access/:id", async (req, res): Promise<void> => {
-  const clientId = parseInt(req.params.clientId);
-  const id = parseInt(req.params.id);
+router.delete("/clients/:clientId/access/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const clientId = parseInt(req.params.clientId as string);
+  const id = parseInt(req.params.id as string);
   if (isNaN(clientId) || isNaN(id)) { res.status(400).json({ error: "Invalid params" }); return; }
   const [row] = await db.delete(clientAccessTable)
     .where(and(eq(clientAccessTable.id, id), eq(clientAccessTable.clientId, clientId)))

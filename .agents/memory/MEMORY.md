@@ -1,2 +1,4 @@
 - [Hook argument pattern](hook-arg-pattern.md) — new list hooks without OpenAPI query params take 1 arg; those with params take 2 args (params, options)
 - [DashboardSummary and ProspectStatus](dashboard-types.md) — DashboardSummary has no `activeAgents` (use `totalAgents`); ProspectStatus values are `lead | qualified | disqualified | converted`
+- [Express 5 params typing](express5-params-typing.md) — req.params values are `string | string[]`; always cast with `as string` before parseInt in route handlers.
+- [Contract-first POST pattern](contract-first-post.md) — add op + Create schema to openapi.yaml → run codegen → import generated Body schema in route → use .safeParse on req.body.

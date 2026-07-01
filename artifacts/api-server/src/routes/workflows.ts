@@ -12,6 +12,7 @@ import {
   AdvanceWorkflowBody,
   GetWorkflowStageLogsParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -53,7 +54,7 @@ router.get("/workflows", async (req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/workflows", async (req, res): Promise<void> => {
+router.post("/workflows", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateWorkflowBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -95,7 +96,7 @@ router.get("/workflows/:id", async (req, res): Promise<void> => {
   res.json(serialize(wf));
 });
 
-router.patch("/workflows/:id", async (req, res): Promise<void> => {
+router.patch("/workflows/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateWorkflowParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateWorkflowBody.safeParse(req.body);
@@ -139,14 +140,14 @@ router.patch("/workflows/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/workflows/:id", async (req, res): Promise<void> => {
+router.delete("/workflows/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteWorkflowParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(workflowsTable).where(eq(workflowsTable.id, params.data.id));
   res.sendStatus(204);
 });
 
-router.post("/workflows/:id/advance", async (req, res): Promise<void> => {
+router.post("/workflows/:id/advance", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = AdvanceWorkflowParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = AdvanceWorkflowBody.safeParse(req.body);

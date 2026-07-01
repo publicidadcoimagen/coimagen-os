@@ -9,6 +9,7 @@ import {
   DeleteInvoiceParams,
   ListInvoicesQueryParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -33,7 +34,7 @@ router.get("/invoices", async (req, res): Promise<void> => {
   res.json(filtered.map((r) => ({ ...r, amount: parseFloat(r.amount), createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt ? r.updatedAt.toISOString() : null })));
 });
 
-router.post("/invoices", async (req, res): Promise<void> => {
+router.post("/invoices", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateInvoiceBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(invoicesTable).values({
@@ -66,7 +67,7 @@ router.get("/invoices/:id", async (req, res): Promise<void> => {
   res.json({ ...row, amount: parseFloat(row.amount), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null });
 });
 
-router.patch("/invoices/:id", async (req, res): Promise<void> => {
+router.patch("/invoices/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateInvoiceParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateInvoiceBody.safeParse(req.body);
@@ -83,7 +84,7 @@ router.patch("/invoices/:id", async (req, res): Promise<void> => {
   res.json({ ...row, clientName, amount: parseFloat(row.amount), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null });
 });
 
-router.delete("/invoices/:id", async (req, res): Promise<void> => {
+router.delete("/invoices/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteInvoiceParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.delete(invoicesTable).where(eq(invoicesTable.id, params.data.id)).returning();

@@ -9,6 +9,7 @@ import {
   UpdateOrchestrationEventBody,
   DeleteOrchestrationEventParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -36,7 +37,7 @@ router.get("/orchestration-events", async (req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/orchestration-events", async (req, res): Promise<void> => {
+router.post("/orchestration-events", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateOrchestrationEventBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -62,7 +63,7 @@ router.get("/orchestration-events/:id", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-router.patch("/orchestration-events/:id", async (req, res): Promise<void> => {
+router.patch("/orchestration-events/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateOrchestrationEventParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateOrchestrationEventBody.safeParse(req.body);
@@ -84,7 +85,7 @@ router.patch("/orchestration-events/:id", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/orchestration-events/:id", async (req, res): Promise<void> => {
+router.delete("/orchestration-events/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteOrchestrationEventParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(orchestrationEventsTable).where(eq(orchestrationEventsTable.id, params.data.id));

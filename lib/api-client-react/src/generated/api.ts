@@ -128,6 +128,7 @@ import type {
   MobileTokenExchangeSuccess,
   MrrDataPoint,
   Mundo,
+  MundoCreate,
   MundoUpdate,
   OrchestrationEvent,
   OrchestrationEventCreate,
@@ -148,6 +149,7 @@ import type {
   ProspectInput,
   ProspectUpdate,
   QcTicket,
+  QcTicketCreate,
   QcTicketUpdate,
   RevenueSummary,
   RoadmapItem,
@@ -11729,6 +11731,77 @@ export function useListMundos<TData = Awaited<ReturnType<typeof listMundos>>, TE
 
 
 
+export const getCreateMundoUrl = () => {
+
+
+
+
+  return `/api/mundos`
+}
+
+/**
+ * @summary Create a new mundo
+ */
+export const createMundo = async (mundoCreate: MundoCreate, options?: RequestInit): Promise<Mundo> => {
+
+  return customFetch<Mundo>(getCreateMundoUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      mundoCreate,)
+  }
+);}
+
+
+
+
+export const getCreateMundoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMundo>>, TError,{data: BodyType<MundoCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createMundo>>, TError,{data: BodyType<MundoCreate>}, TContext> => {
+
+const mutationKey = ['createMundo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMundo>>, {data: BodyType<MundoCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createMundo(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateMundoMutationResult = NonNullable<Awaited<ReturnType<typeof createMundo>>>
+    export type CreateMundoMutationBody = BodyType<MundoCreate>
+    export type CreateMundoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a new mundo
+ */
+export const useCreateMundo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createMundo>>, TError,{data: BodyType<MundoCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createMundo>>,
+        TError,
+        {data: BodyType<MundoCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateMundoMutationOptions(options));
+    }
+
 export const getGetMundoUrl = (id: number,) => {
 
 
@@ -12322,6 +12395,77 @@ export const useConvertIncidentToTicket = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getConvertIncidentToTicketMutationOptions(options));
+    }
+
+export const getCreateQcTicketUrl = () => {
+
+
+
+
+  return `/api/quality-tickets`
+}
+
+/**
+ * @summary Create a quality ticket directly
+ */
+export const createQcTicket = async (qcTicketCreate: QcTicketCreate, options?: RequestInit): Promise<QcTicket> => {
+
+  return customFetch<QcTicket>(getCreateQcTicketUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      qcTicketCreate,)
+  }
+);}
+
+
+
+
+export const getCreateQcTicketMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createQcTicket>>, TError,{data: BodyType<QcTicketCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createQcTicket>>, TError,{data: BodyType<QcTicketCreate>}, TContext> => {
+
+const mutationKey = ['createQcTicket'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createQcTicket>>, {data: BodyType<QcTicketCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createQcTicket(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateQcTicketMutationResult = NonNullable<Awaited<ReturnType<typeof createQcTicket>>>
+    export type CreateQcTicketMutationBody = BodyType<QcTicketCreate>
+    export type CreateQcTicketMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a quality ticket directly
+ */
+export const useCreateQcTicket = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createQcTicket>>, TError,{data: BodyType<QcTicketCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createQcTicket>>,
+        TError,
+        {data: BodyType<QcTicketCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateQcTicketMutationOptions(options));
     }
 
 export const getListQcTicketsUrl = (params?: ListQcTicketsParams,) => {

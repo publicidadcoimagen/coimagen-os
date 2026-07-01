@@ -8,6 +8,7 @@ import {
   UpdateOrganizationBody,
   DeleteOrganizationParams,
 } from "@workspace/api-zod";
+import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
@@ -24,7 +25,7 @@ router.get("/organizations", async (_req, res): Promise<void> => {
   res.json(rows.map(serialize));
 });
 
-router.post("/organizations", async (req, res): Promise<void> => {
+router.post("/organizations", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const body = CreateOrganizationBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
@@ -54,7 +55,7 @@ router.get("/organizations/:slug", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-router.patch("/organizations/:slug", async (req, res): Promise<void> => {
+router.patch("/organizations/:slug", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = UpdateOrganizationParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid slug" }); return; }
   const body = UpdateOrganizationBody.safeParse(req.body);
@@ -77,7 +78,7 @@ router.patch("/organizations/:slug", async (req, res): Promise<void> => {
   res.json(serialize(updated));
 });
 
-router.delete("/organizations/:slug", async (req, res): Promise<void> => {
+router.delete("/organizations/:slug", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = DeleteOrganizationParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid slug" }); return; }
   await db.delete(organizationsTable).where(eq(organizationsTable.slug, params.data.slug));

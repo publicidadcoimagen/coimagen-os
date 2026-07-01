@@ -9,7 +9,7 @@ import {
   clientsTable,
   projectsTable,
 } from "@workspace/db";
-import { GetMundoParams, UpdateMundoParams, UpdateMundoBody } from "@workspace/api-zod";
+import { GetMundoParams, UpdateMundoParams, UpdateMundoBody, CreateMundoBody } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -119,6 +119,27 @@ async function getMundoWithRelations(mundoId: number) {
     updatedAt: mundo.updatedAt ? mundo.updatedAt.toISOString() : null,
   };
 }
+
+router.post("/mundos", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const parsed = CreateMundoBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const d = parsed.data;
+  const maxOrder = await db.select({ sortOrder: mundosTable.sortOrder }).from(mundosTable).orderBy(mundosTable.sortOrder);
+  const nextOrder = maxOrder.length > 0 ? (maxOrder[maxOrder.length - 1]!.sortOrder ?? 0) + 1 : 1;
+  const [row] = await db.insert(mundosTable).values({
+    key: d.key,
+    name: d.name,
+    emoji: d.emoji,
+    description: d.description ?? null,
+    objetivo: d.objetivo ?? null,
+    kpis: d.kpis ?? [],
+    status: d.status ?? "active",
+    directorId: d.directorId ?? null,
+    sortOrder: d.sortOrder ?? nextOrder,
+  }).returning();
+  const mundo = await getMundoWithRelations(row!.id);
+  res.status(201).json(mundo);
+});
 
 router.get("/mundos", async (req, res): Promise<void> => {
   await seedMundos();
