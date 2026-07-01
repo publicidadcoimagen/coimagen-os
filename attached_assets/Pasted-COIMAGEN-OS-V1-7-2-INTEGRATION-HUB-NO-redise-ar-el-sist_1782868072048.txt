@@ -1,0 +1,136 @@
+COIMAGEN OS V1.7.2 — INTEGRATION HUB
+
+NO rediseñar el sistema.
+NO eliminar módulos existentes.
+NO romper COIMAGEN CORE AI.
+NO romper Workflow Engine.
+NO romper Client Room.
+NO romper Quality Center.
+NO romper AI Agents Pro.
+NO conectar APIs reales todavía si no hay credenciales.
+
+OBJETIVO:
+Crear INTEGRATION HUB, el centro donde se administrarán todas las conexiones externas de COIMAGEN OS.
+
+Crear módulo:
+INTEGRATION HUB
+
+Debe aparecer en el menú lateral, debajo de COIMAGEN CORE AI o dentro de Administración avanzada.
+
+INTEGRACIONES INICIALES:
+- Gmail
+- Google Calendar
+- Google Drive
+- Jotform
+- Google Analytics
+- Google Search Console
+- Google Business Profile
+- WhatsApp Business
+- n8n
+- Replit
+- GitHub
+- Stripe / pagos futuros
+- IONOS / dominios futuros
+
+CADA INTEGRACIÓN DEBE TENER:
+- Nombre
+- Plataforma
+- Descripción
+- Estado
+- Tipo
+- Credenciales requeridas
+- Variables de entorno necesarias
+- Última sincronización
+- Responsable
+- Cliente relacionado opcional
+- Proyecto relacionado opcional
+- Agente relacionado opcional
+- Notas
+- Logs
+- Errores
+- Acciones disponibles
+
+ESTADOS:
+- No configurada
+- Configurada
+- Activa
+- Pausada
+- Error
+- Requiere atención
+
+TIPOS:
+- Email
+- Calendario
+- Archivos
+- Formularios
+- Analytics
+- SEO
+- Mensajería
+- Automatización
+- Desarrollo
+- Pagos
+- Dominios
+
+SEGURIDAD:
+No guardar claves sensibles en texto plano.
+Preparar estructura para usar variables de entorno.
+No exponer secretos en frontend.
+Solo CEO/Admin pueden editar integraciones.
+Viewer solo puede ver.
+Cliente no puede acceder.
+
+LOGS:
+Cada integración debe tener historial de:
+- Configuración
+- Activación
+- Pausa
+- Error
+- Última prueba
+- Última sincronización
+
+TEST CONNECTION:
+Agregar botón “Probar conexión”.
+Por ahora, si no hay credenciales, debe mostrar:
+“Credenciales pendientes. Agrega variables de entorno para activar esta integración.”
+No intentar llamadas reales sin credenciales.
+
+RELACIONES:
+Integration Hub debe poder relacionarse con:
+- COIMAGEN CORE AI
+- Workflow Engine
+- AI Agents
+- Automatizaciones
+- Clientes
+- Proyectos
+- Quality Center
+- Incident Center
+
+QUALITY CENTER:
+Si una integración entra en estado Error, debe poder crear un incidente relacionado en Quality Center.
+
+COIMAGEN CORE AI:
+CORE debe poder mostrar resumen de integraciones:
+- activas
+- con error
+- pendientes
+- no configuradas
+
+QA:
+Verificar:
+- rutas cargan
+- CRUD funciona
+- roles funcionan
+- TypeScript 0 errores
+- no se rompieron módulos existentes
+- logs funcionan
+- errores se muestran correctamente
+
+ENTREGA:
+Reporte final con:
+- rutas creadas
+- tablas creadas
+- endpoints creados
+- componentes creados
+- relaciones implementadas
+- pruebas realizadas
+- próximos pasos para Automation Engine V1.7.3

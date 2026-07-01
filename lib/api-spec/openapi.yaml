@@ -3006,6 +3006,138 @@ paths:
       responses:
         "204":
           description: No Content
+  /integrations:
+    get:
+      operationId: listIntegrations
+      summary: List integrations
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string }
+        - in: query
+          name: type
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Integration" }
+    post:
+      operationId: createIntegration
+      summary: Create integration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IntegrationCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Integration" }
+
+  /integrations/{id}:
+    get:
+      operationId: getIntegration
+      summary: Get integration by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Integration" }
+    patch:
+      operationId: updateIntegration
+      summary: Update integration
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IntegrationUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Integration" }
+    delete:
+      operationId: deleteIntegration
+      summary: Delete integration
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: No Content
+
+  /integrations/{id}/logs:
+    get:
+      operationId: listIntegrationLogs
+      summary: List logs for integration
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/IntegrationLog" }
+    post:
+      operationId: createIntegrationLog
+      summary: Add log entry
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/IntegrationLogCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationLog" }
+
+  /integrations/{id}/test:
+    post:
+      operationId: testIntegration
+      summary: Test integration connection
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/IntegrationTestResult" }
 
 components:
   parameters:
@@ -4824,3 +4956,78 @@ components:
         condition: { type: string }
         actions: { type: string }
         status: { type: string }
+
+    Integration:
+      type: object
+      required: [id, name, platform, status, type, createdAt]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        platform: { type: string }
+        description: { type: ["string", "null"] }
+        status: { type: string }
+        type: { type: string }
+        credentialsRequired: { type: ["string", "null"] }
+        envVars: { type: ["string", "null"] }
+        lastSync: { type: ["string", "null"] }
+        responsibleId: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
+        projectId: { type: ["integer", "null"] }
+        agentId: { type: ["integer", "null"] }
+        notes: { type: ["string", "null"] }
+        errors: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    IntegrationCreate:
+      type: object
+      required: [name, platform, type]
+      properties:
+        name: { type: string }
+        platform: { type: string }
+        description: { type: string }
+        status: { type: string }
+        type: { type: string }
+        credentialsRequired: { type: string }
+        envVars: { type: string }
+        responsibleId: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        agentId: { type: integer }
+        notes: { type: string }
+    IntegrationUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        platform: { type: string }
+        description: { type: string }
+        status: { type: string }
+        type: { type: string }
+        credentialsRequired: { type: string }
+        envVars: { type: string }
+        responsibleId: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+        agentId: { type: integer }
+        notes: { type: string }
+        errors: { type: string }
+    IntegrationLog:
+      type: object
+      required: [id, integrationId, action, createdAt]
+      properties:
+        id: { type: integer }
+        integrationId: { type: integer }
+        action: { type: string }
+        message: { type: ["string", "null"] }
+        createdAt: { type: string }
+    IntegrationLogCreate:
+      type: object
+      required: [action]
+      properties:
+        action: { type: string }
+        message: { type: string }
+    IntegrationTestResult:
+      type: object
+      required: [success, message]
+      properties:
+        success: { type: boolean }
+        message: { type: string }

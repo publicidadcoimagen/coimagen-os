@@ -11,6 +11,7 @@ import {
   useListAutomations, getListAutomationsQueryKey,
   useListIncidents, getListIncidentsQueryKey,
   useListQcTickets, getListQcTicketsQueryKey,
+  useListIntegrations, getListIntegrationsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,7 @@ import {
   Shield, GitBranch, User, Clock, CircleCheck, CircleX,
   CircleAlert, ArrowRight, Cpu, BookOpen, Target, Sparkles,
   BarChart3, DollarSign, Calendar, Bell, PlayCircle, RefreshCw,
-  Wifi, WifiOff, ChevronRight,
+  Wifi, WifiOff, ChevronRight, Plug,
 } from "lucide-react";
 import { Link } from "wouter";
 import { getEventLabel, SOURCE_LABELS } from "@/pages/orchestration/catalog";
@@ -46,6 +47,7 @@ type Automation = { id: number; status?: string | null };
 type Incident = { id: number; status?: string | null; severity?: string | null; title: string };
 type QcTicket = { id: number; status?: string | null; priority?: string | null; title: string };
 type OEvent = { id: number; eventType: string; source: string; status: string; createdAt: string };
+type Integ = { id: number; status: string };
 
 function fmtMoney(n: number) {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
@@ -142,6 +144,9 @@ export function CoreAIDashboard() {
   const revenue    = rawRevenue    as RevSummary | undefined;
   const events     = rawEvents     as OEvent[];
 
+  const { data: rawIntegrations = [] } = useListIntegrations({}, { query: { queryKey: getListIntegrationsQueryKey({}) } });
+  const integrations = rawIntegrations as Integ[];
+
   // Derived counts
   const overdueInvoices   = invoices.filter((i) => i.status === "overdue");
   const pendingContracts  = contracts.filter((c) => c.status === "draft" || c.status === "pending" || c.status === "review");
@@ -151,8 +156,12 @@ export function CoreAIDashboard() {
   const inactiveAgents    = agents.filter((a) => a.status === "inactive");
   const openIncidents     = incidents.filter((i) => i.status !== "resolved" && i.status !== "closed");
   const openQcTickets     = qcTickets.filter((q) => q.status !== "closed" && q.status !== "resolved");
-  const activeAutomations = automations.filter((a) => a.status === "active");
-  const recentEvents      = events.slice(0, 5);
+  const activeAutomations  = automations.filter((a) => a.status === "active");
+  const recentEvents       = events.slice(0, 5);
+  const activeIntegrations = integrations.filter((i) => i.status === "active").length;
+  const errorIntegrations  = integrations.filter((i) => i.status === "error").length;
+  const pendingIntegrations= integrations.filter((i) => i.status === "attention" || i.status === "configured").length;
+  const unconfiguredIntegrations = integrations.filter((i) => i.status === "not_configured").length;
 
   // Decision Center — build priority list
   const priorities: Priority[] = [];
@@ -336,6 +345,32 @@ export function CoreAIDashboard() {
         </Card>
 
         <div className="space-y-4">
+          {/* Integration Hub Summary */}
+          <Card className="border-border/50">
+            <CardHeader className="p-4 pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Plug className="h-4 w-4 text-primary" />
+                  Integration Hub
+                </CardTitle>
+                <Link href="/integrations"><Badge variant="outline" className="text-[9px] cursor-pointer hover:bg-muted/40">Ver todo</Badge></Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-2 grid grid-cols-2 gap-3">
+              {[
+                { label: "Activas",           value: activeIntegrations,     color: "text-green-400" },
+                { label: "Con error",         value: errorIntegrations,      color: errorIntegrations > 0 ? "text-red-400" : "text-muted-foreground" },
+                { label: "Pendientes",        value: pendingIntegrations,    color: pendingIntegrations > 0 ? "text-yellow-400" : "text-muted-foreground" },
+                { label: "No configuradas",   value: unconfiguredIntegrations, color: "text-muted-foreground" },
+              ].map(({ label, value, color }) => (
+                <div key={label}>
+                  <p className="text-[9px] text-muted-foreground">{label}</p>
+                  <p className={`text-xl font-bold ${color}`}>{value}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
           {/* Financial Summary */}
           <Card className="border-border/50">
             <CardHeader className="p-4 pb-2">

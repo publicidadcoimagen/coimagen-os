@@ -7,7 +7,7 @@ import {
   Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
   Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
   Code2, TestTube2, Gauge, HeartPulse, FileSignature,
-  Cpu, Activity, BookOpen, Brain,
+  Cpu, Activity, BookOpen, Brain, Plug,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -101,7 +101,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "COIMAGEN CORE AI",
     items: [
-      { href: "/core-ai", label: "Director General Digital", icon: Brain },
+      { href: "/core-ai",       label: "Director General Digital", icon: Brain },
+      { href: "/integrations",  label: "Integration Hub",          icon: Plug },
     ],
   },
   {

@@ -2369,6 +2369,87 @@ export interface OrchestrationRuleUpdate {
   status?: string;
 }
 
+export interface Integration {
+  id: number;
+  name: string;
+  platform: string;
+  /** @nullable */
+  description?: string | null;
+  status: string;
+  type: string;
+  /** @nullable */
+  credentialsRequired?: string | null;
+  /** @nullable */
+  envVars?: string | null;
+  /** @nullable */
+  lastSync?: string | null;
+  /** @nullable */
+  responsibleId?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  agentId?: number | null;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  errors?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface IntegrationCreate {
+  name: string;
+  platform: string;
+  description?: string;
+  status?: string;
+  type: string;
+  credentialsRequired?: string;
+  envVars?: string;
+  responsibleId?: string;
+  clientId?: number;
+  projectId?: number;
+  agentId?: number;
+  notes?: string;
+}
+
+export interface IntegrationUpdate {
+  name?: string;
+  platform?: string;
+  description?: string;
+  status?: string;
+  type?: string;
+  credentialsRequired?: string;
+  envVars?: string;
+  responsibleId?: string;
+  clientId?: number;
+  projectId?: number;
+  agentId?: number;
+  notes?: string;
+  errors?: string;
+}
+
+export interface IntegrationLog {
+  id: number;
+  integrationId: number;
+  action: string;
+  /** @nullable */
+  message?: string | null;
+  createdAt: string;
+}
+
+export interface IntegrationLogCreate {
+  action: string;
+  message?: string;
+}
+
+export interface IntegrationTestResult {
+  success: boolean;
+  message: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
@@ -2475,5 +2556,10 @@ priority?: string;
 export type ListOrchestrationRulesParams = {
 status?: string;
 triggerEvent?: string;
+};
+
+export type ListIntegrationsParams = {
+status?: string;
+type?: string;
 };
 

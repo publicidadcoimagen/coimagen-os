@@ -59,6 +59,10 @@ import {
   HealthCheck, TechnicalDebt, Recommendations,
 } from "@/pages/quality-center/submodules";
 
+// Integration Hub
+import { IntegrationHub } from "@/pages/integrations/index";
+import { IntegrationDetail } from "@/pages/integrations/[id]";
+
 // COIMAGEN CORE AI
 import { CoreAIDashboard } from "@/pages/core-ai/index";
 
@@ -200,6 +204,10 @@ function Router() {
             <Route path="/quality-center/health-check" component={HealthCheck} />
             <Route path="/quality-center/technical-debt" component={TechnicalDebt} />
             <Route path="/quality-center/recommendations" component={Recommendations} />
+
+            {/* Integration Hub */}
+            <Route path="/integrations/:id" component={IntegrationDetail} />
+            <Route path="/integrations" component={IntegrationHub} />
 
             {/* COIMAGEN CORE AI */}
             <Route path="/core-ai" component={CoreAIDashboard} />

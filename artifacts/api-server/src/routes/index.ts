@@ -40,6 +40,7 @@ import organizationsRouter from "./organizations";
 import clientApprovalsRouter from "./client-approvals";
 import orchestrationEventsRouter from "./orchestration-events";
 import orchestrationRulesRouter from "./orchestration-rules";
+import integrationsRouter from "./integrations";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 
@@ -91,5 +92,6 @@ router.use(organizationsRouter);
 router.use(clientApprovalsRouter);
 router.use(orchestrationEventsRouter);
 router.use(orchestrationRulesRouter);
+router.use(integrationsRouter);
 
 export default router;

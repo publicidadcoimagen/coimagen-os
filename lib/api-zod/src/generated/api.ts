@@ -3878,3 +3878,175 @@ export const DeleteOrchestrationRuleParams = zod.object({
 })
 
 
+/**
+ * @summary List integrations
+ */
+export const ListIntegrationsQueryParams = zod.object({
+  "status": zod.coerce.string().optional(),
+  "type": zod.coerce.string().optional()
+})
+
+export const ListIntegrationsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "platform": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "credentialsRequired": zod.string().nullish(),
+  "envVars": zod.string().nullish(),
+  "lastSync": zod.string().nullish(),
+  "responsibleId": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "errors": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListIntegrationsResponse = zod.array(ListIntegrationsResponseItem)
+
+
+/**
+ * @summary Create integration
+ */
+export const CreateIntegrationBody = zod.object({
+  "name": zod.string(),
+  "platform": zod.string(),
+  "description": zod.string().optional(),
+  "status": zod.string().optional(),
+  "type": zod.string(),
+  "credentialsRequired": zod.string().optional(),
+  "envVars": zod.string().optional(),
+  "responsibleId": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "agentId": zod.number().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Get integration by id
+ */
+export const GetIntegrationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetIntegrationResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "platform": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "credentialsRequired": zod.string().nullish(),
+  "envVars": zod.string().nullish(),
+  "lastSync": zod.string().nullish(),
+  "responsibleId": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "errors": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update integration
+ */
+export const UpdateIntegrationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateIntegrationBody = zod.object({
+  "name": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "description": zod.string().optional(),
+  "status": zod.string().optional(),
+  "type": zod.string().optional(),
+  "credentialsRequired": zod.string().optional(),
+  "envVars": zod.string().optional(),
+  "responsibleId": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "agentId": zod.number().optional(),
+  "notes": zod.string().optional(),
+  "errors": zod.string().optional()
+})
+
+export const UpdateIntegrationResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "platform": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "type": zod.string(),
+  "credentialsRequired": zod.string().nullish(),
+  "envVars": zod.string().nullish(),
+  "lastSync": zod.string().nullish(),
+  "responsibleId": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "errors": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete integration
+ */
+export const DeleteIntegrationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List logs for integration
+ */
+export const ListIntegrationLogsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListIntegrationLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "integrationId": zod.number(),
+  "action": zod.string(),
+  "message": zod.string().nullish(),
+  "createdAt": zod.string()
+})
+export const ListIntegrationLogsResponse = zod.array(ListIntegrationLogsResponseItem)
+
+
+/**
+ * @summary Add log entry
+ */
+export const CreateIntegrationLogParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateIntegrationLogBody = zod.object({
+  "action": zod.string(),
+  "message": zod.string().optional()
+})
+
+
+/**
+ * @summary Test integration connection
+ */
+export const TestIntegrationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const TestIntegrationResponse = zod.object({
+  "success": zod.boolean(),
+  "message": zod.string()
+})
+
+

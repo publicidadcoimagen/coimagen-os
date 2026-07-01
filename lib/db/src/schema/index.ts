@@ -41,3 +41,6 @@ export * from "./client-approvals";
 
 export * from "./orchestration-events";
 export * from "./orchestration-rules";
+
+export * from "./integrations";
+export * from "./integration-logs";
