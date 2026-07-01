@@ -1,0 +1,168 @@
+COIMAGEN OS V1.7.3 — AUTOMATION ENGINE
+
+NO rediseñar el sistema.
+NO eliminar módulos existentes.
+NO romper COIMAGEN CORE AI.
+NO romper Integration Hub.
+NO romper Workflow Engine.
+NO romper Client Room.
+NO romper Quality Center.
+NO romper AI Agents Pro.
+NO ejecutar integraciones reales todavía sin credenciales.
+NO exponer secretos en frontend.
+
+OBJETIVO:
+Crear AUTOMATION ENGINE, el motor que permitirá definir automatizaciones internas y futuras automatizaciones externas.
+
+Crear módulo:
+AUTOMATION ENGINE
+
+Debe aparecer en el menú lateral.
+
+AUTOMATION ENGINE debe permitir crear reglas tipo:
+
+CUANDO ocurra un evento
+SI se cumple una condición
+ENTONCES ejecutar una acción
+
+ESTRUCTURA DE AUTOMATIZACIÓN:
+- Nombre
+- Descripción
+- Estado
+- Trigger
+- Condiciones
+- Acciones
+- Cliente relacionado opcional
+- Proyecto relacionado opcional
+- Workflow relacionado opcional
+- Agente responsable
+- Integración relacionada
+- Prioridad
+- Última ejecución
+- Próxima ejecución
+- Resultado
+- Logs
+- Errores
+- Notas
+
+ESTADOS:
+- Borrador
+- Activa
+- Pausada
+- Error
+- Archivada
+
+TIPOS DE TRIGGERS:
+- Cliente creado
+- Prospecto creado
+- Proyecto creado
+- Contrato firmado
+- Factura vencida
+- Pago recibido
+- Workflow cambia de etapa
+- Aprobación pendiente
+- Aprobación completada
+- Bug crítico creado
+- Integración con error
+- Tarea vencida
+- Agente cambia de estado
+- Daily Sprint creado
+- Manual
+
+CONDICIONES:
+Permitir definir condiciones básicas:
+- cliente
+- proyecto
+- estado
+- prioridad
+- fecha
+- módulo
+- rol
+- agente
+- integración
+- workflow stage
+
+ACCIONES INTERNAS:
+Preparar acciones internas sin APIs externas:
+- Crear tarea
+- Crear ticket en Quality Center
+- Crear evento en Workflow Engine
+- Asignar agente
+- Cambiar estado
+- Crear recordatorio
+- Agregar nota
+- Registrar audit log
+- Generar checklist
+- Crear backlog item
+
+ACCIONES EXTERNAS FUTURAS:
+Preparar estructura para:
+- Enviar email Gmail
+- Crear evento Calendar
+- Crear carpeta Drive
+- Enviar WhatsApp
+- Enviar formulario Jotform
+- Ejecutar webhook n8n
+- Consultar Analytics
+- Consultar Search Console
+
+No ejecutar estas acciones externas todavía si no hay credenciales.
+
+TEST MODE:
+Agregar botón “Probar automatización”.
+Debe simular ejecución sin afectar datos reales.
+Debe mostrar:
+- trigger detectado
+- condiciones evaluadas
+- acciones que se ejecutarían
+- resultado simulado
+
+EXECUTION LOG:
+Crear historial de ejecuciones:
+- automation_id
+- fecha
+- trigger
+- resultado
+- acciones ejecutadas
+- errores
+- duración
+- usuario
+- cliente
+- proyecto
+
+QUALITY CENTER:
+Si una automatización falla, debe crear o relacionar un incidente en Quality Center.
+
+COIMAGEN CORE AI:
+CORE debe mostrar resumen:
+- automatizaciones activas
+- automatizaciones en error
+- ejecuciones del día
+- fallas recientes
+- automatizaciones pendientes de credenciales
+
+SEGURIDAD:
+CEO/Admin pueden crear y editar automatizaciones.
+Viewer solo puede ver.
+Cliente no puede acceder.
+
+QA:
+Verificar:
+- rutas cargan
+- CRUD funciona
+- test mode funciona
+- logs funcionan
+- auth funciona
+- roles funcionan
+- TypeScript 0 errores
+- no se rompieron módulos existentes
+
+ENTREGA:
+Reporte final con:
+- rutas creadas
+- tablas creadas
+- endpoints creados
+- componentes creados
+- relaciones implementadas
+- pruebas realizadas
+- próximos pasos para AI Execution Engine V1.7.4

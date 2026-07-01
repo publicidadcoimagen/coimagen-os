@@ -11,13 +11,22 @@ export interface Automation {
   name: string;
   /** @nullable */
   description?: string | null;
-  /** @nullable */
-  platform?: string | null;
   status: string;
+  /** @nullable */
+  triggerType?: string | null;
   /** @nullable */
   trigger?: string | null;
   /** @nullable */
-  action?: string | null;
+  conditions?: string | null;
+  /** @nullable */
+  actionsConfig?: string | null;
+  priority: string;
+  /** @nullable */
+  nextRun?: string | null;
+  /** @nullable */
+  errors?: string | null;
+  totalExecutions?: number;
+  executionsToday?: number;
   /** @nullable */
   clientId?: number | null;
   /** @nullable */
@@ -25,11 +34,19 @@ export interface Automation {
   /** @nullable */
   agentId?: number | null;
   /** @nullable */
+  workflowId?: number | null;
+  /** @nullable */
+  integrationId?: number | null;
+  /** @nullable */
   lastRun?: string | null;
   /** @nullable */
   result?: string | null;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  platform?: string | null;
+  /** @nullable */
+  action?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

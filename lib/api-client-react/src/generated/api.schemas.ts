@@ -1830,13 +1830,22 @@ export interface Automation {
   name: string;
   /** @nullable */
   description?: string | null;
-  /** @nullable */
-  platform?: string | null;
   status: string;
+  /** @nullable */
+  triggerType?: string | null;
   /** @nullable */
   trigger?: string | null;
   /** @nullable */
-  action?: string | null;
+  conditions?: string | null;
+  /** @nullable */
+  actionsConfig?: string | null;
+  priority: string;
+  /** @nullable */
+  nextRun?: string | null;
+  /** @nullable */
+  errors?: string | null;
+  totalExecutions?: number;
+  executionsToday?: number;
   /** @nullable */
   clientId?: number | null;
   /** @nullable */
@@ -1844,11 +1853,19 @@ export interface Automation {
   /** @nullable */
   agentId?: number | null;
   /** @nullable */
+  workflowId?: number | null;
+  /** @nullable */
+  integrationId?: number | null;
+  /** @nullable */
   lastRun?: string | null;
   /** @nullable */
   result?: string | null;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  platform?: string | null;
+  /** @nullable */
+  action?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -1857,30 +1874,90 @@ export interface Automation {
 export interface AutomationCreate {
   name: string;
   description?: string;
-  platform?: string;
   status?: string;
+  triggerType?: string;
   trigger?: string;
-  action?: string;
+  conditions?: string;
+  actionsConfig?: string;
+  priority?: string;
+  nextRun?: string;
+  errors?: string;
   clientId?: number;
   projectId?: number;
   agentId?: number;
+  workflowId?: number;
+  integrationId?: number;
   lastRun?: string;
   result?: string;
   notes?: string;
+  platform?: string;
+  action?: string;
 }
 
 export interface AutomationUpdate {
   name?: string;
   description?: string;
-  platform?: string;
   status?: string;
+  triggerType?: string;
   trigger?: string;
-  action?: string;
+  conditions?: string;
+  actionsConfig?: string;
+  priority?: string;
+  nextRun?: string;
+  errors?: string;
+  totalExecutions?: number;
+  executionsToday?: number;
   clientId?: number;
   projectId?: number;
   agentId?: number;
+  workflowId?: number;
+  integrationId?: number;
   lastRun?: string;
   result?: string;
+  notes?: string;
+  platform?: string;
+  action?: string;
+}
+
+export interface AutomationLog {
+  id: number;
+  automationId: number;
+  /** @nullable */
+  trigger?: string | null;
+  result: string;
+  /** @nullable */
+  actionsExecuted?: string | null;
+  /** @nullable */
+  errors?: string | null;
+  /** @nullable */
+  durationMs?: number | null;
+  isTest: boolean;
+  /** @nullable */
+  userId?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  createdAt: string;
+}
+
+export interface AutomationLogCreate {
+  trigger?: string;
+  result?: string;
+  actionsExecuted?: string;
+  errors?: string;
+  durationMs?: number;
+  isTest?: boolean;
+  userId?: string;
+  clientId?: number;
+  projectId?: number;
+}
+
+export interface AutomationTestResult {
+  triggerDetected: string;
+  conditionsEvaluated: string[];
+  actionsThatWouldRun: string[];
+  simulatedResult: string;
   notes?: string;
 }
 

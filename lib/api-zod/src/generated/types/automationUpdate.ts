@@ -9,14 +9,24 @@
 export interface AutomationUpdate {
   name?: string;
   description?: string;
-  platform?: string;
   status?: string;
+  triggerType?: string;
   trigger?: string;
-  action?: string;
+  conditions?: string;
+  actionsConfig?: string;
+  priority?: string;
+  nextRun?: string;
+  errors?: string;
+  totalExecutions?: number;
+  executionsToday?: number;
   clientId?: number;
   projectId?: number;
   agentId?: number;
+  workflowId?: number;
+  integrationId?: number;
   lastRun?: string;
   result?: string;
   notes?: string;
+  platform?: string;
+  action?: string;
 }

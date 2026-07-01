@@ -2661,16 +2661,26 @@ export const ListAutomationsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "description": zod.string().nullish(),
-  "platform": zod.string().nullish(),
   "status": zod.string(),
+  "triggerType": zod.string().nullish(),
   "trigger": zod.string().nullish(),
-  "action": zod.string().nullish(),
+  "conditions": zod.string().nullish(),
+  "actionsConfig": zod.string().nullish(),
+  "priority": zod.string(),
+  "nextRun": zod.string().nullish(),
+  "errors": zod.string().nullish(),
+  "totalExecutions": zod.number().optional(),
+  "executionsToday": zod.number().optional(),
   "clientId": zod.number().nullish(),
   "projectId": zod.number().nullish(),
   "agentId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "integrationId": zod.number().nullish(),
   "lastRun": zod.string().nullish(),
   "result": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "platform": zod.string().nullish(),
+  "action": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -2683,16 +2693,60 @@ export const ListAutomationsResponse = zod.array(ListAutomationsResponseItem)
 export const CreateAutomationBody = zod.object({
   "name": zod.string(),
   "description": zod.string().optional(),
-  "platform": zod.string().optional(),
   "status": zod.string().optional(),
+  "triggerType": zod.string().optional(),
   "trigger": zod.string().optional(),
-  "action": zod.string().optional(),
+  "conditions": zod.string().optional(),
+  "actionsConfig": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "nextRun": zod.string().optional(),
+  "errors": zod.string().optional(),
   "clientId": zod.number().optional(),
   "projectId": zod.number().optional(),
   "agentId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "integrationId": zod.number().optional(),
   "lastRun": zod.string().optional(),
   "result": zod.string().optional(),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "action": zod.string().optional()
+})
+
+
+/**
+ * @summary Get automation by id
+ */
+export const GetAutomationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetAutomationResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "status": zod.string(),
+  "triggerType": zod.string().nullish(),
+  "trigger": zod.string().nullish(),
+  "conditions": zod.string().nullish(),
+  "actionsConfig": zod.string().nullish(),
+  "priority": zod.string(),
+  "nextRun": zod.string().nullish(),
+  "errors": zod.string().nullish(),
+  "totalExecutions": zod.number().optional(),
+  "executionsToday": zod.number().optional(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "agentId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "integrationId": zod.number().nullish(),
+  "lastRun": zod.string().nullish(),
+  "result": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "platform": zod.string().nullish(),
+  "action": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
 })
 
 
@@ -2706,32 +2760,52 @@ export const UpdateAutomationParams = zod.object({
 export const UpdateAutomationBody = zod.object({
   "name": zod.string().optional(),
   "description": zod.string().optional(),
-  "platform": zod.string().optional(),
   "status": zod.string().optional(),
+  "triggerType": zod.string().optional(),
   "trigger": zod.string().optional(),
-  "action": zod.string().optional(),
+  "conditions": zod.string().optional(),
+  "actionsConfig": zod.string().optional(),
+  "priority": zod.string().optional(),
+  "nextRun": zod.string().optional(),
+  "errors": zod.string().optional(),
+  "totalExecutions": zod.number().optional(),
+  "executionsToday": zod.number().optional(),
   "clientId": zod.number().optional(),
   "projectId": zod.number().optional(),
   "agentId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "integrationId": zod.number().optional(),
   "lastRun": zod.string().optional(),
   "result": zod.string().optional(),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "platform": zod.string().optional(),
+  "action": zod.string().optional()
 })
 
 export const UpdateAutomationResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "description": zod.string().nullish(),
-  "platform": zod.string().nullish(),
   "status": zod.string(),
+  "triggerType": zod.string().nullish(),
   "trigger": zod.string().nullish(),
-  "action": zod.string().nullish(),
+  "conditions": zod.string().nullish(),
+  "actionsConfig": zod.string().nullish(),
+  "priority": zod.string(),
+  "nextRun": zod.string().nullish(),
+  "errors": zod.string().nullish(),
+  "totalExecutions": zod.number().optional(),
+  "executionsToday": zod.number().optional(),
   "clientId": zod.number().nullish(),
   "projectId": zod.number().nullish(),
   "agentId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "integrationId": zod.number().nullish(),
   "lastRun": zod.string().nullish(),
   "result": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "platform": zod.string().nullish(),
+  "action": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -2742,6 +2816,66 @@ export const UpdateAutomationResponse = zod.object({
  */
 export const DeleteAutomationParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Simulate automation execution (test mode)
+ */
+export const TestAutomationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const TestAutomationResponse = zod.object({
+  "triggerDetected": zod.string(),
+  "conditionsEvaluated": zod.array(zod.string()),
+  "actionsThatWouldRun": zod.array(zod.string()),
+  "simulatedResult": zod.string(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary List automation execution logs
+ */
+export const ListAutomationLogsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListAutomationLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "automationId": zod.number(),
+  "trigger": zod.string().nullish(),
+  "result": zod.string(),
+  "actionsExecuted": zod.string().nullish(),
+  "errors": zod.string().nullish(),
+  "durationMs": zod.number().nullish(),
+  "isTest": zod.boolean(),
+  "userId": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "createdAt": zod.string()
+})
+export const ListAutomationLogsResponse = zod.array(ListAutomationLogsResponseItem)
+
+
+/**
+ * @summary Create automation log entry
+ */
+export const CreateAutomationLogParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateAutomationLogBody = zod.object({
+  "trigger": zod.string().optional(),
+  "result": zod.string().optional(),
+  "actionsExecuted": zod.string().optional(),
+  "errors": zod.string().optional(),
+  "durationMs": zod.number().optional(),
+  "isTest": zod.boolean().optional(),
+  "userId": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional()
 })
 
 

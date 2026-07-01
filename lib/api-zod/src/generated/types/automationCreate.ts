@@ -9,14 +9,22 @@
 export interface AutomationCreate {
   name: string;
   description?: string;
-  platform?: string;
   status?: string;
+  triggerType?: string;
   trigger?: string;
-  action?: string;
+  conditions?: string;
+  actionsConfig?: string;
+  priority?: string;
+  nextRun?: string;
+  errors?: string;
   clientId?: number;
   projectId?: number;
   agentId?: number;
+  workflowId?: number;
+  integrationId?: number;
   lastRun?: string;
   result?: string;
   notes?: string;
+  platform?: string;
+  action?: string;
 }

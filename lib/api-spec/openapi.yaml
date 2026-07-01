@@ -2218,6 +2218,17 @@ paths:
         in: path
         required: true
         schema: { type: integer }
+    get:
+      operationId: getAutomation
+      tags: [automations]
+      summary: Get automation by id
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Automation"
     patch:
       operationId: updateAutomation
       tags: [automations]
@@ -2242,6 +2253,60 @@ paths:
       responses:
         "204":
           description: Deleted
+
+  /automations/{id}/test:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      operationId: testAutomation
+      tags: [automations]
+      summary: Simulate automation execution (test mode)
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutomationTestResult"
+  /automations/{id}/logs:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      operationId: listAutomationLogs
+      tags: [automations]
+      summary: List automation execution logs
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AutomationLog"
+    post:
+      operationId: createAutomationLog
+      tags: [automations]
+      summary: Create automation log entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutomationLogCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AutomationLog"
 
   # ─── ORGANIZACIÓN ────────────────────────────────────────────────────────────
   /org/directors:
@@ -4445,21 +4510,31 @@ components:
     # ─── AUTOMATIONS ──────────────────────────────────────────────────────────
     Automation:
       type: object
-      required: [id, name, status, createdAt]
+      required: [id, name, status, priority, createdAt]
       properties:
         id: { type: integer }
         name: { type: string }
         description: { type: ["string", "null"] }
-        platform: { type: ["string", "null"] }
         status: { type: string }
+        triggerType: { type: ["string", "null"] }
         trigger: { type: ["string", "null"] }
-        action: { type: ["string", "null"] }
+        conditions: { type: ["string", "null"] }
+        actionsConfig: { type: ["string", "null"] }
+        priority: { type: string }
+        nextRun: { type: ["string", "null"] }
+        errors: { type: ["string", "null"] }
+        totalExecutions: { type: integer }
+        executionsToday: { type: integer }
         clientId: { type: ["integer", "null"] }
         projectId: { type: ["integer", "null"] }
         agentId: { type: ["integer", "null"] }
+        workflowId: { type: ["integer", "null"] }
+        integrationId: { type: ["integer", "null"] }
         lastRun: { type: ["string", "null"] }
         result: { type: ["string", "null"] }
         notes: { type: ["string", "null"] }
+        platform: { type: ["string", "null"] }
+        action: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     AutomationCreate:
@@ -4468,30 +4543,85 @@ components:
       properties:
         name: { type: string }
         description: { type: string }
-        platform: { type: string }
         status: { type: string }
+        triggerType: { type: string }
         trigger: { type: string }
-        action: { type: string }
+        conditions: { type: string }
+        actionsConfig: { type: string }
+        priority: { type: string }
+        nextRun: { type: string }
+        errors: { type: string }
         clientId: { type: integer }
         projectId: { type: integer }
         agentId: { type: integer }
+        workflowId: { type: integer }
+        integrationId: { type: integer }
         lastRun: { type: string }
         result: { type: string }
         notes: { type: string }
+        platform: { type: string }
+        action: { type: string }
     AutomationUpdate:
       type: object
       properties:
         name: { type: string }
         description: { type: string }
-        platform: { type: string }
         status: { type: string }
+        triggerType: { type: string }
         trigger: { type: string }
-        action: { type: string }
+        conditions: { type: string }
+        actionsConfig: { type: string }
+        priority: { type: string }
+        nextRun: { type: string }
+        errors: { type: string }
+        totalExecutions: { type: integer }
+        executionsToday: { type: integer }
         clientId: { type: integer }
         projectId: { type: integer }
         agentId: { type: integer }
+        workflowId: { type: integer }
+        integrationId: { type: integer }
         lastRun: { type: string }
         result: { type: string }
+        notes: { type: string }
+        platform: { type: string }
+        action: { type: string }
+    AutomationLog:
+      type: object
+      required: [id, automationId, result, isTest, createdAt]
+      properties:
+        id: { type: integer }
+        automationId: { type: integer }
+        trigger: { type: ["string", "null"] }
+        result: { type: string }
+        actionsExecuted: { type: ["string", "null"] }
+        errors: { type: ["string", "null"] }
+        durationMs: { type: ["integer", "null"] }
+        isTest: { type: boolean }
+        userId: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
+        projectId: { type: ["integer", "null"] }
+        createdAt: { type: string }
+    AutomationLogCreate:
+      type: object
+      properties:
+        trigger: { type: string }
+        result: { type: string }
+        actionsExecuted: { type: string }
+        errors: { type: string }
+        durationMs: { type: integer }
+        isTest: { type: boolean }
+        userId: { type: string }
+        clientId: { type: integer }
+        projectId: { type: integer }
+    AutomationTestResult:
+      type: object
+      required: [triggerDetected, conditionsEvaluated, actionsThatWouldRun, simulatedResult]
+      properties:
+        triggerDetected: { type: string }
+        conditionsEvaluated: { type: array, items: { type: string } }
+        actionsThatWouldRun: { type: array, items: { type: string } }
+        simulatedResult: { type: string }
         notes: { type: string }
 
     # ─── ORGANIZACIÓN ──────────────────────────────────────────────────────────

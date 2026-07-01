@@ -43,7 +43,7 @@ type Workflow = { id: number; name: string; status?: string | null; currentStage
 type Invoice = { id: number; status: string; totalAmount?: number | null; clientName?: string | null };
 type Contract = { id: number; status?: string | null; title?: string | null };
 type Prospect = { id: number; status?: string | null };
-type Automation = { id: number; status?: string | null };
+type Automation = { id: number; status?: string | null; errors?: string | null; totalExecutions?: number | null; executionsToday?: number | null };
 type Incident = { id: number; status?: string | null; severity?: string | null; title: string };
 type QcTicket = { id: number; status?: string | null; priority?: string | null; title: string };
 type OEvent = { id: number; eventType: string; source: string; status: string; createdAt: string };
@@ -157,6 +157,9 @@ export function CoreAIDashboard() {
   const openIncidents     = incidents.filter((i) => i.status !== "resolved" && i.status !== "closed");
   const openQcTickets     = qcTickets.filter((q) => q.status !== "closed" && q.status !== "resolved");
   const activeAutomations  = automations.filter((a) => a.status === "active");
+  const errorAutomations   = automations.filter((a) => a.status === "error");
+  const draftAutomations   = automations.filter((a) => a.status === "draft");
+  const todayAutoExec      = automations.reduce((s, a) => s + (a.executionsToday ?? 0), 0);
   const recentEvents       = events.slice(0, 5);
   const activeIntegrations = integrations.filter((i) => i.status === "active").length;
   const errorIntegrations  = integrations.filter((i) => i.status === "error").length;
@@ -187,6 +190,7 @@ export function CoreAIDashboard() {
   if (activeWorkflows.length === 0) recommendations.push("No hay workflows activos — verificar proyectos en producción");
   if (pausedAgents.length > 0)      recommendations.push(`Reactivar ${pausedAgents.length} agente${pausedAgents.length > 1 ? "s" : ""} IA pausado${pausedAgents.length > 1 ? "s" : ""}`);
   if (openIncidents.length > 0)     recommendations.push(`Resolver ${openIncidents.length} incidente${openIncidents.length > 1 ? "s" : ""} abierto${openIncidents.length > 1 ? "s" : ""} en Quality Center`);
+  if (errorAutomations.length > 0)  recommendations.push(`Revisar ${errorAutomations.length} automatización${errorAutomations.length > 1 ? "es" : ""} con error en Automation Engine`);
   if (recommendations.length === 0) recommendations.push("El sistema opera sin alertas. Buen trabajo, Camila.");
 
   // Module health
@@ -362,6 +366,32 @@ export function CoreAIDashboard() {
                 { label: "Con error",         value: errorIntegrations,      color: errorIntegrations > 0 ? "text-red-400" : "text-muted-foreground" },
                 { label: "Pendientes",        value: pendingIntegrations,    color: pendingIntegrations > 0 ? "text-yellow-400" : "text-muted-foreground" },
                 { label: "No configuradas",   value: unconfiguredIntegrations, color: "text-muted-foreground" },
+              ].map(({ label, value, color }) => (
+                <div key={label}>
+                  <p className="text-[9px] text-muted-foreground">{label}</p>
+                  <p className={`text-xl font-bold ${color}`}>{value}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Automation Engine Summary */}
+          <Card className="border-border/50">
+            <CardHeader className="p-4 pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-primary" />
+                  Automation Engine
+                </CardTitle>
+                <Link href="/automations"><Badge variant="outline" className="text-[9px] cursor-pointer hover:bg-muted/40">Ver todo</Badge></Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-2 grid grid-cols-2 gap-3">
+              {[
+                { label: "Activas",           value: activeAutomations.length,  color: "text-green-400" },
+                { label: "Con error",         value: errorAutomations.length,   color: errorAutomations.length > 0 ? "text-red-400" : "text-muted-foreground" },
+                { label: "Borrador",          value: draftAutomations.length,   color: "text-muted-foreground" },
+                { label: "Ejecuciones hoy",   value: todayAutoExec,             color: todayAutoExec > 0 ? "text-amber-400" : "text-muted-foreground" },
               ].map(({ label, value, color }) => (
                 <div key={label}>
                   <p className="text-[9px] text-muted-foreground">{label}</p>

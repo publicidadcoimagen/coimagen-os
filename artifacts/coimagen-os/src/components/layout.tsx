@@ -103,6 +103,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/core-ai",       label: "Director General Digital", icon: Brain },
       { href: "/integrations",  label: "Integration Hub",          icon: Plug },
+      { href: "/automations",   label: "Automation Engine",        icon: Zap },
     ],
   },
   {
@@ -115,7 +116,6 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/bugs", label: "Bug Tracker", icon: Bug },
       { href: "/ideas", label: "Ideas", icon: Lightbulb },
       { href: "/kpis", label: "KPIs", icon: BarChart3 },
-      { href: "/automations", label: "Automatizaciones", icon: Zap },
     ],
   },
   {

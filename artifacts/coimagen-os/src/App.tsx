@@ -41,6 +41,7 @@ import { Bugs } from "@/pages/bugs/index";
 import { Ideas } from "@/pages/ideas/index";
 import { KPIs } from "@/pages/kpis/index";
 import { Automations } from "@/pages/automations/index";
+import { AutomationDetail } from "@/pages/automations/[id]";
 import { Organizacion } from "@/pages/org/index";
 import { Mundos } from "@/pages/mundos/index";
 import { MundoDetail } from "@/pages/mundos/[id]";
@@ -182,6 +183,7 @@ function Router() {
             <Route path="/bugs" component={Bugs} />
             <Route path="/ideas" component={Ideas} />
             <Route path="/kpis" component={KPIs} />
+            <Route path="/automations/:id" component={AutomationDetail} />
             <Route path="/automations" component={Automations} />
             <Route path="/org" component={Organizacion} />
             <Route path="/mundos" component={Mundos} />
