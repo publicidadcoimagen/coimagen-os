@@ -26,6 +26,11 @@ import type {
   AgentPromptVersion,
   AgentPromptVersionInput,
   AgentUpdate,
+  AiExecution,
+  AiExecutionCreate,
+  AiExecutionQcResult,
+  AiExecutionRunResult,
+  AiExecutionUpdate,
   Approval,
   ApprovalInput,
   ApprovalUpdate,
@@ -10624,6 +10629,513 @@ export const useCreateAutomationLog = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateAutomationLogMutationOptions(options));
+    }
+
+export const getListAiExecutionsUrl = () => {
+
+
+
+
+  return `/api/executions`
+}
+
+/**
+ * @summary List all AI executions
+ */
+export const listAiExecutions = async ( options?: RequestInit): Promise<AiExecution[]> => {
+
+  return customFetch<AiExecution[]>(getListAiExecutionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListAiExecutionsQueryKey = () => {
+    return [
+    `/api/executions`
+    ] as const;
+    }
+
+
+export const getListAiExecutionsQueryOptions = <TData = Awaited<ReturnType<typeof listAiExecutions>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAiExecutions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAiExecutionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAiExecutions>>> = ({ signal }) => listAiExecutions({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAiExecutions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListAiExecutionsQueryResult = NonNullable<Awaited<ReturnType<typeof listAiExecutions>>>
+export type ListAiExecutionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all AI executions
+ */
+
+export function useListAiExecutions<TData = Awaited<ReturnType<typeof listAiExecutions>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listAiExecutions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListAiExecutionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateAiExecutionUrl = () => {
+
+
+
+
+  return `/api/executions`
+}
+
+/**
+ * @summary Create an AI execution record
+ */
+export const createAiExecution = async (aiExecutionCreate: AiExecutionCreate, options?: RequestInit): Promise<AiExecution> => {
+
+  return customFetch<AiExecution>(getCreateAiExecutionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      aiExecutionCreate,)
+  }
+);}
+
+
+
+
+export const getCreateAiExecutionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAiExecution>>, TError,{data: BodyType<AiExecutionCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createAiExecution>>, TError,{data: BodyType<AiExecutionCreate>}, TContext> => {
+
+const mutationKey = ['createAiExecution'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createAiExecution>>, {data: BodyType<AiExecutionCreate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createAiExecution(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateAiExecutionMutationResult = NonNullable<Awaited<ReturnType<typeof createAiExecution>>>
+    export type CreateAiExecutionMutationBody = BodyType<AiExecutionCreate>
+    export type CreateAiExecutionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an AI execution record
+ */
+export const useCreateAiExecution = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createAiExecution>>, TError,{data: BodyType<AiExecutionCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createAiExecution>>,
+        TError,
+        {data: BodyType<AiExecutionCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateAiExecutionMutationOptions(options));
+    }
+
+export const getGetAiExecutionUrl = (id: number,) => {
+
+
+
+
+  return `/api/executions/${id}`
+}
+
+/**
+ * @summary Get a single AI execution
+ */
+export const getAiExecution = async (id: number, options?: RequestInit): Promise<AiExecution> => {
+
+  return customFetch<AiExecution>(getGetAiExecutionUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAiExecutionQueryKey = (id: number,) => {
+    return [
+    `/api/executions/${id}`
+    ] as const;
+    }
+
+
+export const getGetAiExecutionQueryOptions = <TData = Awaited<ReturnType<typeof getAiExecution>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiExecution>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAiExecutionQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiExecution>>> = ({ signal }) => getAiExecution(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiExecution>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAiExecutionQueryResult = NonNullable<Awaited<ReturnType<typeof getAiExecution>>>
+export type GetAiExecutionQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a single AI execution
+ */
+
+export function useGetAiExecution<TData = Awaited<ReturnType<typeof getAiExecution>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAiExecution>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAiExecutionQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateAiExecutionUrl = (id: number,) => {
+
+
+
+
+  return `/api/executions/${id}`
+}
+
+/**
+ * @summary Update an AI execution
+ */
+export const updateAiExecution = async (id: number,
+    aiExecutionUpdate: AiExecutionUpdate, options?: RequestInit): Promise<AiExecution> => {
+
+  return customFetch<AiExecution>(getUpdateAiExecutionUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      aiExecutionUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateAiExecutionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAiExecution>>, TError,{id: number;data: BodyType<AiExecutionUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAiExecution>>, TError,{id: number;data: BodyType<AiExecutionUpdate>}, TContext> => {
+
+const mutationKey = ['updateAiExecution'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAiExecution>>, {id: number;data: BodyType<AiExecutionUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateAiExecution(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAiExecutionMutationResult = NonNullable<Awaited<ReturnType<typeof updateAiExecution>>>
+    export type UpdateAiExecutionMutationBody = BodyType<AiExecutionUpdate>
+    export type UpdateAiExecutionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update an AI execution
+ */
+export const useUpdateAiExecution = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAiExecution>>, TError,{id: number;data: BodyType<AiExecutionUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAiExecution>>,
+        TError,
+        {id: number;data: BodyType<AiExecutionUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateAiExecutionMutationOptions(options));
+    }
+
+export const getDeleteAiExecutionUrl = (id: number,) => {
+
+
+
+
+  return `/api/executions/${id}`
+}
+
+/**
+ * @summary Delete an AI execution
+ */
+export const deleteAiExecution = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteAiExecutionUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteAiExecutionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAiExecution>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAiExecution>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteAiExecution'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAiExecution>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteAiExecution(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAiExecutionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAiExecution>>>
+
+    export type DeleteAiExecutionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete an AI execution
+ */
+export const useDeleteAiExecution = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAiExecution>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAiExecution>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteAiExecutionMutationOptions(options));
+    }
+
+export const getRunAiExecutionUrl = (id: number,) => {
+
+
+
+
+  return `/api/executions/${id}/run`
+}
+
+/**
+ * @summary Simulate running an AI execution
+ */
+export const runAiExecution = async (id: number, options?: RequestInit): Promise<AiExecutionRunResult> => {
+
+  return customFetch<AiExecutionRunResult>(getRunAiExecutionUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getRunAiExecutionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runAiExecution>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof runAiExecution>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['runAiExecution'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof runAiExecution>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  runAiExecution(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RunAiExecutionMutationResult = NonNullable<Awaited<ReturnType<typeof runAiExecution>>>
+
+    export type RunAiExecutionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Simulate running an AI execution
+ */
+export const useRunAiExecution = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof runAiExecution>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof runAiExecution>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getRunAiExecutionMutationOptions(options));
+    }
+
+export const getSendExecutionToQcUrl = (id: number,) => {
+
+
+
+
+  return `/api/executions/${id}/send-to-qc`
+}
+
+/**
+ * @summary Send a failed execution to Quality Center as incident
+ */
+export const sendExecutionToQc = async (id: number, options?: RequestInit): Promise<AiExecutionQcResult> => {
+
+  return customFetch<AiExecutionQcResult>(getSendExecutionToQcUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getSendExecutionToQcMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendExecutionToQc>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendExecutionToQc>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['sendExecutionToQc'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendExecutionToQc>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  sendExecutionToQc(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendExecutionToQcMutationResult = NonNullable<Awaited<ReturnType<typeof sendExecutionToQc>>>
+
+    export type SendExecutionToQcMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Send a failed execution to Quality Center as incident
+ */
+export const useSendExecutionToQc = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendExecutionToQc>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendExecutionToQc>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getSendExecutionToQcMutationOptions(options));
     }
 
 export const getListDirectorsUrl = () => {

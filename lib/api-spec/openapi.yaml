@@ -2308,6 +2308,116 @@ paths:
               schema:
                 $ref: "#/components/schemas/AutomationLog"
 
+  # ─── AI EXECUTION ENGINE ─────────────────────────────────────────────────────
+  /executions:
+    get:
+      operationId: listAiExecutions
+      tags: [executions]
+      summary: List all AI executions
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiExecution"
+    post:
+      operationId: createAiExecution
+      tags: [executions]
+      summary: Create an AI execution record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiExecutionCreate"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiExecution"
+  /executions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      operationId: getAiExecution
+      tags: [executions]
+      summary: Get a single AI execution
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiExecution"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateAiExecution
+      tags: [executions]
+      summary: Update an AI execution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiExecutionUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiExecution"
+    delete:
+      operationId: deleteAiExecution
+      tags: [executions]
+      summary: Delete an AI execution
+      responses:
+        "204":
+          description: Deleted
+  /executions/{id}/run:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      operationId: runAiExecution
+      tags: [executions]
+      summary: Simulate running an AI execution
+      responses:
+        "200":
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiExecutionRunResult"
+  /executions/{id}/send-to-qc:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      operationId: sendExecutionToQc
+      tags: [executions]
+      summary: Send a failed execution to Quality Center as incident
+      responses:
+        "200":
+          description: Incident created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiExecutionQcResult"
+
   # ─── ORGANIZACIÓN ────────────────────────────────────────────────────────────
   /org/directors:
     get:
@@ -5161,3 +5271,94 @@ components:
       properties:
         success: { type: boolean }
         message: { type: string }
+    AiExecution:
+      type: object
+      required: [id, status, result, isSimulated, sentToQc, createdAt]
+      properties:
+        id:           { type: integer }
+        agentId:      { type: ["integer", "null"] }
+        agentName:    { type: ["string", "null"] }
+        mundoId:      { type: ["integer", "null"] }
+        mundoName:    { type: ["string", "null"] }
+        directorId:   { type: ["integer", "null"] }
+        directorName: { type: ["string", "null"] }
+        clientId:     { type: ["integer", "null"] }
+        projectId:    { type: ["integer", "null"] }
+        workflowId:   { type: ["integer", "null"] }
+        automationId: { type: ["integer", "null"] }
+        prompt:       { type: ["string", "null"] }
+        inputData:    { type: ["string", "null"] }
+        outputData:   { type: ["string", "null"] }
+        status:       { type: string }
+        result:       { type: string }
+        errors:       { type: ["string", "null"] }
+        durationMs:   { type: ["integer", "null"] }
+        isSimulated:  { type: boolean }
+        sentToQc:     { type: boolean }
+        qcIncidentId: { type: ["integer", "null"] }
+        notes:        { type: ["string", "null"] }
+        createdAt:    { type: string }
+        updatedAt:    { type: ["string", "null"] }
+    AiExecutionCreate:
+      type: object
+      properties:
+        agentId:      { type: integer }
+        agentName:    { type: string }
+        mundoId:      { type: integer }
+        mundoName:    { type: string }
+        directorId:   { type: integer }
+        directorName: { type: string }
+        clientId:     { type: integer }
+        projectId:    { type: integer }
+        workflowId:   { type: integer }
+        automationId: { type: integer }
+        prompt:       { type: string }
+        inputData:    { type: string }
+        outputData:   { type: string }
+        status:       { type: string }
+        result:       { type: string }
+        errors:       { type: string }
+        durationMs:   { type: integer }
+        isSimulated:  { type: boolean }
+        sentToQc:     { type: boolean }
+        notes:        { type: string }
+    AiExecutionUpdate:
+      type: object
+      properties:
+        agentId:      { type: integer }
+        agentName:    { type: string }
+        mundoId:      { type: integer }
+        mundoName:    { type: string }
+        directorId:   { type: integer }
+        directorName: { type: string }
+        clientId:     { type: integer }
+        projectId:    { type: integer }
+        workflowId:   { type: integer }
+        automationId: { type: integer }
+        prompt:       { type: string }
+        inputData:    { type: string }
+        outputData:   { type: string }
+        status:       { type: string }
+        result:       { type: string }
+        errors:       { type: string }
+        durationMs:   { type: integer }
+        isSimulated:  { type: boolean }
+        sentToQc:     { type: boolean }
+        qcIncidentId: { type: integer }
+        notes:        { type: string }
+    AiExecutionRunResult:
+      type: object
+      required: [execution, simulated]
+      properties:
+        execution:
+          $ref: "#/components/schemas/AiExecution"
+        simulated:  { type: boolean }
+        outputData: { type: ["string", "null"] }
+        durationMs: { type: integer }
+        errors:     { type: ["string", "null"] }
+    AiExecutionQcResult:
+      type: object
+      required: [incidentId, message]
+      properties:
+        incidentId: { type: integer }
+        message:    { type: string }

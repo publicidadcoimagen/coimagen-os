@@ -64,6 +64,10 @@ import {
 import { IntegrationHub } from "@/pages/integrations/index";
 import { IntegrationDetail } from "@/pages/integrations/[id]";
 
+// AI Execution Engine
+import { AiExecutionHub } from "@/pages/executions/index";
+import { AiExecutionDetail } from "@/pages/executions/[id]";
+
 // COIMAGEN CORE AI
 import { CoreAIDashboard } from "@/pages/core-ai/index";
 
@@ -210,6 +214,10 @@ function Router() {
             {/* Integration Hub */}
             <Route path="/integrations/:id" component={IntegrationDetail} />
             <Route path="/integrations" component={IntegrationHub} />
+
+            {/* AI Execution Engine */}
+            <Route path="/executions/:id" component={AiExecutionDetail} />
+            <Route path="/executions" component={AiExecutionHub} />
 
             {/* COIMAGEN CORE AI */}
             <Route path="/core-ai" component={CoreAIDashboard} />

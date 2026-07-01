@@ -2880,6 +2880,221 @@ export const CreateAutomationLogBody = zod.object({
 
 
 /**
+ * @summary List all AI executions
+ */
+export const ListAiExecutionsResponseItem = zod.object({
+  "id": zod.number(),
+  "agentId": zod.number().nullish(),
+  "agentName": zod.string().nullish(),
+  "mundoId": zod.number().nullish(),
+  "mundoName": zod.string().nullish(),
+  "directorId": zod.number().nullish(),
+  "directorName": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "automationId": zod.number().nullish(),
+  "prompt": zod.string().nullish(),
+  "inputData": zod.string().nullish(),
+  "outputData": zod.string().nullish(),
+  "status": zod.string(),
+  "result": zod.string(),
+  "errors": zod.string().nullish(),
+  "durationMs": zod.number().nullish(),
+  "isSimulated": zod.boolean(),
+  "sentToQc": zod.boolean(),
+  "qcIncidentId": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListAiExecutionsResponse = zod.array(ListAiExecutionsResponseItem)
+
+
+/**
+ * @summary Create an AI execution record
+ */
+export const CreateAiExecutionBody = zod.object({
+  "agentId": zod.number().optional(),
+  "agentName": zod.string().optional(),
+  "mundoId": zod.number().optional(),
+  "mundoName": zod.string().optional(),
+  "directorId": zod.number().optional(),
+  "directorName": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "automationId": zod.number().optional(),
+  "prompt": zod.string().optional(),
+  "inputData": zod.string().optional(),
+  "outputData": zod.string().optional(),
+  "status": zod.string().optional(),
+  "result": zod.string().optional(),
+  "errors": zod.string().optional(),
+  "durationMs": zod.number().optional(),
+  "isSimulated": zod.boolean().optional(),
+  "sentToQc": zod.boolean().optional(),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Get a single AI execution
+ */
+export const GetAiExecutionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetAiExecutionResponse = zod.object({
+  "id": zod.number(),
+  "agentId": zod.number().nullish(),
+  "agentName": zod.string().nullish(),
+  "mundoId": zod.number().nullish(),
+  "mundoName": zod.string().nullish(),
+  "directorId": zod.number().nullish(),
+  "directorName": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "automationId": zod.number().nullish(),
+  "prompt": zod.string().nullish(),
+  "inputData": zod.string().nullish(),
+  "outputData": zod.string().nullish(),
+  "status": zod.string(),
+  "result": zod.string(),
+  "errors": zod.string().nullish(),
+  "durationMs": zod.number().nullish(),
+  "isSimulated": zod.boolean(),
+  "sentToQc": zod.boolean(),
+  "qcIncidentId": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Update an AI execution
+ */
+export const UpdateAiExecutionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateAiExecutionBody = zod.object({
+  "agentId": zod.number().optional(),
+  "agentName": zod.string().optional(),
+  "mundoId": zod.number().optional(),
+  "mundoName": zod.string().optional(),
+  "directorId": zod.number().optional(),
+  "directorName": zod.string().optional(),
+  "clientId": zod.number().optional(),
+  "projectId": zod.number().optional(),
+  "workflowId": zod.number().optional(),
+  "automationId": zod.number().optional(),
+  "prompt": zod.string().optional(),
+  "inputData": zod.string().optional(),
+  "outputData": zod.string().optional(),
+  "status": zod.string().optional(),
+  "result": zod.string().optional(),
+  "errors": zod.string().optional(),
+  "durationMs": zod.number().optional(),
+  "isSimulated": zod.boolean().optional(),
+  "sentToQc": zod.boolean().optional(),
+  "qcIncidentId": zod.number().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateAiExecutionResponse = zod.object({
+  "id": zod.number(),
+  "agentId": zod.number().nullish(),
+  "agentName": zod.string().nullish(),
+  "mundoId": zod.number().nullish(),
+  "mundoName": zod.string().nullish(),
+  "directorId": zod.number().nullish(),
+  "directorName": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "automationId": zod.number().nullish(),
+  "prompt": zod.string().nullish(),
+  "inputData": zod.string().nullish(),
+  "outputData": zod.string().nullish(),
+  "status": zod.string(),
+  "result": zod.string(),
+  "errors": zod.string().nullish(),
+  "durationMs": zod.number().nullish(),
+  "isSimulated": zod.boolean(),
+  "sentToQc": zod.boolean(),
+  "qcIncidentId": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Delete an AI execution
+ */
+export const DeleteAiExecutionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Simulate running an AI execution
+ */
+export const RunAiExecutionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const RunAiExecutionResponse = zod.object({
+  "execution": zod.object({
+  "id": zod.number(),
+  "agentId": zod.number().nullish(),
+  "agentName": zod.string().nullish(),
+  "mundoId": zod.number().nullish(),
+  "mundoName": zod.string().nullish(),
+  "directorId": zod.number().nullish(),
+  "directorName": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "automationId": zod.number().nullish(),
+  "prompt": zod.string().nullish(),
+  "inputData": zod.string().nullish(),
+  "outputData": zod.string().nullish(),
+  "status": zod.string(),
+  "result": zod.string(),
+  "errors": zod.string().nullish(),
+  "durationMs": zod.number().nullish(),
+  "isSimulated": zod.boolean(),
+  "sentToQc": zod.boolean(),
+  "qcIncidentId": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}),
+  "simulated": zod.boolean(),
+  "outputData": zod.string().nullish(),
+  "durationMs": zod.number().optional(),
+  "errors": zod.string().nullish()
+})
+
+
+/**
+ * @summary Send a failed execution to Quality Center as incident
+ */
+export const SendExecutionToQcParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SendExecutionToQcResponse = zod.object({
+  "incidentId": zod.number(),
+  "message": zod.string()
+})
+
+
+/**
  * @summary List all directors
  */
 export const ListDirectorsResponseItem = zod.object({

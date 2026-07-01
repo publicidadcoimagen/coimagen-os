@@ -12,6 +12,7 @@ import {
   useListIncidents, getListIncidentsQueryKey,
   useListQcTickets, getListQcTicketsQueryKey,
   useListIntegrations, getListIntegrationsQueryKey,
+  useListAiExecutions, getListAiExecutionsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,7 @@ type Invoice = { id: number; status: string; totalAmount?: number | null; client
 type Contract = { id: number; status?: string | null; title?: string | null };
 type Prospect = { id: number; status?: string | null };
 type Automation = { id: number; status?: string | null; errors?: string | null; totalExecutions?: number | null; executionsToday?: number | null };
+type AiExec = { id: number; status: string; result: string; isSimulated: boolean; sentToQc: boolean; errors?: string | null };
 type Incident = { id: number; status?: string | null; severity?: string | null; title: string };
 type QcTicket = { id: number; status?: string | null; priority?: string | null; title: string };
 type OEvent = { id: number; eventType: string; source: string; status: string; createdAt: string };
@@ -145,7 +147,9 @@ export function CoreAIDashboard() {
   const events     = rawEvents     as OEvent[];
 
   const { data: rawIntegrations = [] } = useListIntegrations({}, { query: { queryKey: getListIntegrationsQueryKey({}) } });
+  const { data: rawExecs = [] } = useListAiExecutions({ query: { queryKey: getListAiExecutionsQueryKey() } });
   const integrations = rawIntegrations as Integ[];
+  const executions   = rawExecs        as AiExec[];
 
   // Derived counts
   const overdueInvoices   = invoices.filter((i) => i.status === "overdue");
@@ -160,6 +164,10 @@ export function CoreAIDashboard() {
   const errorAutomations   = automations.filter((a) => a.status === "error");
   const draftAutomations   = automations.filter((a) => a.status === "draft");
   const todayAutoExec      = automations.reduce((s, a) => s + (a.executionsToday ?? 0), 0);
+  const failedExecs        = executions.filter((e) => e.result === "error");
+  const successExecs       = executions.filter((e) => e.result === "success");
+  const simExecs           = executions.filter((e) => e.isSimulated);
+  const qcExecs            = executions.filter((e) => e.sentToQc);
   const recentEvents       = events.slice(0, 5);
   const activeIntegrations = integrations.filter((i) => i.status === "active").length;
   const errorIntegrations  = integrations.filter((i) => i.status === "error").length;
@@ -191,6 +199,7 @@ export function CoreAIDashboard() {
   if (pausedAgents.length > 0)      recommendations.push(`Reactivar ${pausedAgents.length} agente${pausedAgents.length > 1 ? "s" : ""} IA pausado${pausedAgents.length > 1 ? "s" : ""}`);
   if (openIncidents.length > 0)     recommendations.push(`Resolver ${openIncidents.length} incidente${openIncidents.length > 1 ? "s" : ""} abierto${openIncidents.length > 1 ? "s" : ""} en Quality Center`);
   if (errorAutomations.length > 0)  recommendations.push(`Revisar ${errorAutomations.length} automatización${errorAutomations.length > 1 ? "es" : ""} con error en Automation Engine`);
+  if (failedExecs.length > 0)       recommendations.push(`${failedExecs.length} ejecución${failedExecs.length > 1 ? "es" : ""} de agente IA con error — revisar en AI Execution Engine`);
   if (recommendations.length === 0) recommendations.push("El sistema opera sin alertas. Buen trabajo, Camila.");
 
   // Module health
@@ -392,6 +401,32 @@ export function CoreAIDashboard() {
                 { label: "Con error",         value: errorAutomations.length,   color: errorAutomations.length > 0 ? "text-red-400" : "text-muted-foreground" },
                 { label: "Borrador",          value: draftAutomations.length,   color: "text-muted-foreground" },
                 { label: "Ejecuciones hoy",   value: todayAutoExec,             color: todayAutoExec > 0 ? "text-amber-400" : "text-muted-foreground" },
+              ].map(({ label, value, color }) => (
+                <div key={label}>
+                  <p className="text-[9px] text-muted-foreground">{label}</p>
+                  <p className={`text-xl font-bold ${color}`}>{value}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* AI Execution Engine Summary */}
+          <Card className="border-border/50">
+            <CardHeader className="p-4 pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <PlayCircle className="h-4 w-4 text-primary" />
+                  AI Execution Engine
+                </CardTitle>
+                <Link href="/executions"><Badge variant="outline" className="text-[9px] cursor-pointer hover:bg-muted/40">Ver todo</Badge></Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-2 grid grid-cols-2 gap-3">
+              {[
+                { label: "Total",        value: executions.length,      color: "text-foreground" },
+                { label: "Con error",    value: failedExecs.length,     color: failedExecs.length > 0 ? "text-red-400" : "text-muted-foreground" },
+                { label: "Exitosas",     value: successExecs.length,    color: "text-green-400" },
+                { label: "En QC",        value: qcExecs.length,         color: qcExecs.length > 0 ? "text-purple-400" : "text-muted-foreground" },
               ].map(({ label, value, color }) => (
                 <div key={label}>
                   <p className="text-[9px] text-muted-foreground">{label}</p>

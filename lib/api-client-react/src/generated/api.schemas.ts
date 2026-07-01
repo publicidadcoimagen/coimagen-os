@@ -2527,6 +2527,113 @@ export interface IntegrationTestResult {
   message: string;
 }
 
+export interface AiExecution {
+  id: number;
+  /** @nullable */
+  agentId?: number | null;
+  /** @nullable */
+  agentName?: string | null;
+  /** @nullable */
+  mundoId?: number | null;
+  /** @nullable */
+  mundoName?: string | null;
+  /** @nullable */
+  directorId?: number | null;
+  /** @nullable */
+  directorName?: string | null;
+  /** @nullable */
+  clientId?: number | null;
+  /** @nullable */
+  projectId?: number | null;
+  /** @nullable */
+  workflowId?: number | null;
+  /** @nullable */
+  automationId?: number | null;
+  /** @nullable */
+  prompt?: string | null;
+  /** @nullable */
+  inputData?: string | null;
+  /** @nullable */
+  outputData?: string | null;
+  status: string;
+  result: string;
+  /** @nullable */
+  errors?: string | null;
+  /** @nullable */
+  durationMs?: number | null;
+  isSimulated: boolean;
+  sentToQc: boolean;
+  /** @nullable */
+  qcIncidentId?: number | null;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface AiExecutionCreate {
+  agentId?: number;
+  agentName?: string;
+  mundoId?: number;
+  mundoName?: string;
+  directorId?: number;
+  directorName?: string;
+  clientId?: number;
+  projectId?: number;
+  workflowId?: number;
+  automationId?: number;
+  prompt?: string;
+  inputData?: string;
+  outputData?: string;
+  status?: string;
+  result?: string;
+  errors?: string;
+  durationMs?: number;
+  isSimulated?: boolean;
+  sentToQc?: boolean;
+  notes?: string;
+}
+
+export interface AiExecutionUpdate {
+  agentId?: number;
+  agentName?: string;
+  mundoId?: number;
+  mundoName?: string;
+  directorId?: number;
+  directorName?: string;
+  clientId?: number;
+  projectId?: number;
+  workflowId?: number;
+  automationId?: number;
+  prompt?: string;
+  inputData?: string;
+  outputData?: string;
+  status?: string;
+  result?: string;
+  errors?: string;
+  durationMs?: number;
+  isSimulated?: boolean;
+  sentToQc?: boolean;
+  qcIncidentId?: number;
+  notes?: string;
+}
+
+export interface AiExecutionRunResult {
+  execution: AiExecution;
+  simulated: boolean;
+  /** @nullable */
+  outputData?: string | null;
+  durationMs?: number;
+  /** @nullable */
+  errors?: string | null;
+}
+
+export interface AiExecutionQcResult {
+  incidentId: number;
+  message: string;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
