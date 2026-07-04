@@ -1,0 +1,558 @@
+COIMAGEN OS V2.0 FOUNDATION
+
+NO rediseñar la aplicación.
+
+NO cambiar la identidad visual.
+
+NO modificar el menú existente.
+
+NO eliminar módulos.
+
+NO romper ninguna funcionalidad existente.
+
+Todo lo construido hasta V1.7.6 debe mantenerse funcionando.
+
+====================================================
+
+OBJETIVO
+
+Entrar oficialmente en la FASE 2.
+
+La fase de OPERACIÓN.
+
+Ya no desarrollar módulos aislados.
+
+Ahora convertir COIMAGEN OS en un verdadero Sistema Operativo Empresarial basado en Inteligencia Artificial.
+
+====================================================
+
+FASE 2
+
+CONSOLIDACIÓN
+
+====================================================
+
+1.
+
+Revisar TODOS los módulos existentes.
+
+HQ
+
+COIMAGEN CORE AI
+
+Workflow Engine
+
+Automation Engine
+
+AI Execution Engine
+
+Integration Hub
+
+Quality Center
+
+Client Room
+
+Smart Client Onboarding
+
+Digital Contract Engine
+
+Backlog
+
+Roadmap
+
+Ideas
+
+Bug Tracker
+
+Daily Sprint
+
+Organizations
+
+Roles
+
+Settings
+
+Audit
+
+Analytics
+
+Finanzas
+
+Clientes
+
+Proyectos
+
+Prospectos
+
+Diagnósticos
+
+Propuestas
+
+Facturación
+
+Agentes
+
+====================================================
+
+2.
+
+Eliminar inconsistencias.
+
+Código duplicado.
+
+Variables sin uso.
+
+Endpoints huérfanos.
+
+Componentes muertos.
+
+Imports innecesarios.
+
+Queries repetidas.
+
+====================================================
+
+3.
+
+Verificar.
+
+TypeScript.
+
+OpenAPI.
+
+Drizzle.
+
+PostgreSQL.
+
+Autenticación.
+
+Roles.
+
+Sidebar.
+
+Rutas.
+
+Layouts.
+
+CRUD.
+
+====================================================
+
+4.
+
+Revisar TODAS las relaciones.
+
+Cliente
+
+↓
+
+Proyecto
+
+↓
+
+Workflow
+
+↓
+
+Contrato
+
+↓
+
+Factura
+
+↓
+
+Automation
+
+↓
+
+Agentes
+
+↓
+
+Quality
+
+↓
+
+Client Room
+
+↓
+
+Audit
+
+Todo deberá quedar conectado.
+
+====================================================
+
+5.
+
+COIMAGEN CORE AI
+
+Convertirlo oficialmente en el Director General Digital.
+
+Debe consumir información de TODOS los módulos.
+
+Debe mostrar.
+
+Estado general.
+
+Clientes.
+
+MRR.
+
+Workflow.
+
+Calidad.
+
+Automatizaciones.
+
+Errores.
+
+Incidentes.
+
+Agentes.
+
+Contratos.
+
+Producción.
+
+Health.
+
+====================================================
+
+6.
+
+Preparar Agent Factory.
+
+NO crear todavía los 50 agentes.
+
+Construir únicamente la infraestructura.
+
+Directorio.
+
+Versionado.
+
+Prompts.
+
+Modelos.
+
+Herramientas.
+
+Dependencias.
+
+Logs.
+
+Plantillas.
+
+====================================================
+
+7.
+
+Preparar Knowledge Center.
+
+No crear todavía contenido.
+
+Crear únicamente la estructura.
+
+Categorías.
+
+Búsqueda.
+
+Versionado.
+
+Relaciones.
+
+Clientes.
+
+Procesos.
+
+Prompts.
+
+SOP.
+
+Contratos.
+
+Documentación.
+
+====================================================
+
+8.
+
+Automation Engine.
+
+Verificar que pueda trabajar con.
+
+Workflow.
+
+Client Room.
+
+Quality.
+
+Integration Hub.
+
+AI Agents.
+
+====================================================
+
+9.
+
+Integration Hub.
+
+Preparar conectores.
+
+NO consumir APIs reales.
+
+Solo preparar.
+
+Google.
+
+OpenAI.
+
+Anthropic.
+
+n8n.
+
+WhatsApp.
+
+Calendar.
+
+Drive.
+
+Analytics.
+
+Search Console.
+
+GitHub.
+
+Replit.
+
+====================================================
+
+10.
+
+Quality Center.
+
+Debe ser capaz de revisar.
+
+Código.
+
+Arquitectura.
+
+Errores.
+
+Incidentes.
+
+Performance.
+
+Automatizaciones.
+
+Agentes.
+
+Integraciones.
+
+====================================================
+
+11.
+
+Client Room.
+
+Revisar permisos.
+
+Roles.
+
+Filtros.
+
+Seguridad.
+
+Organizaciones.
+
+====================================================
+
+12.
+
+Health Center.
+
+Agregar diagnóstico global.
+
+Mostrar.
+
+Base de datos.
+
+Backend.
+
+Frontend.
+
+Auth.
+
+API.
+
+Workflow.
+
+Automation.
+
+Agentes.
+
+Integraciones.
+
+====================================================
+
+13.
+
+Crear un modo.
+
+SYSTEM STATUS
+
+Mostrar.
+
+Salud General.
+
+Excelente.
+
+Buena.
+
+Advertencia.
+
+Crítica.
+
+====================================================
+
+14.
+
+Performance.
+
+Optimizar.
+
+Consultas.
+
+Componentes.
+
+Render.
+
+Carga.
+
+====================================================
+
+15.
+
+Escalabilidad.
+
+Preparar la arquitectura para.
+
+100 clientes.
+
+1,000 clientes.
+
+10,000 clientes.
+
+Sin modificar el diseño.
+
+====================================================
+
+16.
+
+NO agregar nuevas pantallas innecesarias.
+
+Reutilizar componentes.
+
+====================================================
+
+17.
+
+NO crear funcionalidades incompletas.
+
+Todo lo implementado deberá quedar funcional.
+
+====================================================
+
+18.
+
+Crear documentación técnica interna.
+
+Arquitectura.
+
+Base de datos.
+
+API.
+
+Relaciones.
+
+Workflows.
+
+Agentes.
+
+Integraciones.
+
+Deployment.
+
+====================================================
+
+19.
+
+Preparar oficialmente el sistema para iniciar la integración con APIs reales en la siguiente versión.
+
+====================================================
+
+20.
+
+AUDITORÍA FINAL
+
+Realizar una auditoría completa.
+
+Arquitectura.
+
+Seguridad.
+
+Performance.
+
+UX.
+
+Código.
+
+Base de datos.
+
+Roles.
+
+Escalabilidad.
+
+Automatizaciones.
+
+Workflow.
+
+Client Room.
+
+Quality Center.
+
+COIMAGEN CORE AI.
+
+Generar un reporte ejecutivo.
+
+Clasificar.
+
+Crítico.
+
+Alto.
+
+Medio.
+
+Bajo.
+
+Resuelto.
+
+Pendiente.
+
+====================================================
+
+ENTREGA
+
+No responder únicamente con "completado".
+
+Entregar un informe ejecutivo profesional que incluya:
+
+• Estado actual del sistema.
+• Porcentaje estimado de avance.
+• Módulos implementados.
+• Riesgos detectados.
+• Recomendaciones.
+• Próximos pasos.
+
+El objetivo es dejar COIMAGEN OS preparado para comenzar la fase de Integraciones Reales, Automatización Completa y Operación con clientes reales.
