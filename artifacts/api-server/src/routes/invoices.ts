@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, invoicesTable, clientsTable } from "@workspace/db";
 import {
   CreateInvoiceBody,
@@ -15,7 +15,7 @@ const router: IRouter = Router();
 
 router.get("/invoices", async (req, res): Promise<void> => {
   const qp = ListInvoicesQueryParams.safeParse(req.query);
-  const rows = await db.select({
+  let query = db.select({
     id: invoicesTable.id,
     number: invoicesTable.number,
     clientId: invoicesTable.clientId,
@@ -27,11 +27,13 @@ router.get("/invoices", async (req, res): Promise<void> => {
     description: invoicesTable.description,
     createdAt: invoicesTable.createdAt,
     updatedAt: invoicesTable.updatedAt,
-  }).from(invoicesTable).leftJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id)).orderBy(invoicesTable.createdAt);
-  let filtered = rows;
-  if (qp.success && qp.data.clientId) filtered = filtered.filter((r) => r.clientId === qp.data.clientId);
-  if (qp.success && qp.data.status) filtered = filtered.filter((r) => r.status === qp.data.status);
-  res.json(filtered.map((r) => ({ ...r, amount: parseFloat(r.amount), createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt ? r.updatedAt.toISOString() : null })));
+  }).from(invoicesTable).leftJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id)).$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.clientId) conditions.push(eq(invoicesTable.clientId, qp.data.clientId));
+  if (qp.success && qp.data.status) conditions.push(eq(invoicesTable.status, qp.data.status));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const rows = await query.orderBy(invoicesTable.createdAt);
+  res.json(rows.map((r) => ({ ...r, amount: parseFloat(r.amount), createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt ? r.updatedAt.toISOString() : null })));
 });
 
 router.post("/invoices", requireRole("ceo", "admin"), async (req, res): Promise<void> => {

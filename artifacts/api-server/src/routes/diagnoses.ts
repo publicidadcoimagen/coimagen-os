@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, diagnosesTable } from "@workspace/db";
 import {
   CreateDiagnosisBody,
@@ -21,10 +21,13 @@ const fmt = (d: typeof diagnosesTable.$inferSelect) => ({
 
 router.get("/diagnoses", async (req, res): Promise<void> => {
   const qp = ListDiagnosesQueryParams.safeParse(req.query);
-  let rows = await db.select().from(diagnosesTable).orderBy(diagnosesTable.createdAt);
-  if (qp.success && qp.data.status) rows = rows.filter((r) => r.status === qp.data.status);
-  if (qp.success && qp.data.prospectId) rows = rows.filter((r) => r.prospectId === qp.data.prospectId);
-  if (qp.success && qp.data.clientId) rows = rows.filter((r) => r.clientId === qp.data.clientId);
+  let query = db.select().from(diagnosesTable).$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.status) conditions.push(eq(diagnosesTable.status, qp.data.status));
+  if (qp.success && qp.data.prospectId) conditions.push(eq(diagnosesTable.prospectId, qp.data.prospectId));
+  if (qp.success && qp.data.clientId) conditions.push(eq(diagnosesTable.clientId, qp.data.clientId));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const rows = await query.orderBy(diagnosesTable.createdAt);
   res.json(rows.map(fmt));
 });
 

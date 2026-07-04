@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, approvalsTable } from "@workspace/db";
 import {
   CreateApprovalBody,
@@ -21,9 +21,12 @@ const fmt = (a: typeof approvalsTable.$inferSelect) => ({
 
 router.get("/approvals", async (req, res): Promise<void> => {
   const qp = ListApprovalsQueryParams.safeParse(req.query);
-  let rows = await db.select().from(approvalsTable).orderBy(approvalsTable.createdAt);
-  if (qp.success && qp.data.status) rows = rows.filter((r) => r.status === qp.data.status);
-  if (qp.success && qp.data.type) rows = rows.filter((r) => r.type === qp.data.type);
+  let query = db.select().from(approvalsTable).$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.status) conditions.push(eq(approvalsTable.status, qp.data.status));
+  if (qp.success && qp.data.type) conditions.push(eq(approvalsTable.type, qp.data.type));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const rows = await query.orderBy(approvalsTable.createdAt);
   res.json(rows.map(fmt));
 });
 

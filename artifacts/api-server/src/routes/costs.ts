@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, costsTable, invoicesTable } from "@workspace/db";
 import {
   CreateCostBody,
@@ -22,9 +22,12 @@ const fmt = (c: typeof costsTable.$inferSelect) => ({
 
 router.get("/costs", async (req, res): Promise<void> => {
   const qp = ListCostsQueryParams.safeParse(req.query);
-  let rows = await db.select().from(costsTable).orderBy(costsTable.month);
-  if (qp.success && qp.data.month) rows = rows.filter((r) => r.month === qp.data.month);
-  if (qp.success && qp.data.category) rows = rows.filter((r) => r.category === qp.data.category);
+  let query = db.select().from(costsTable).$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.month) conditions.push(eq(costsTable.month, qp.data.month));
+  if (qp.success && qp.data.category) conditions.push(eq(costsTable.category, qp.data.category));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const rows = await query.orderBy(costsTable.month);
   res.json(rows.map(fmt));
 });
 

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, tasksTable, projectsTable, agentsTable } from "@workspace/db";
 import {
   GetTaskParams,
@@ -16,7 +16,7 @@ const router: IRouter = Router();
 router.get("/tasks", async (req, res): Promise<void> => {
   const qp = ListTasksQueryParams.safeParse(req.query);
 
-  const rows = await db.select({
+  let query = db.select({
     id: tasksTable.id,
     title: tasksTable.title,
     description: tasksTable.description,
@@ -33,20 +33,15 @@ router.get("/tasks", async (req, res): Promise<void> => {
     .from(tasksTable)
     .leftJoin(projectsTable, eq(tasksTable.projectId, projectsTable.id))
     .leftJoin(agentsTable, eq(tasksTable.agentId, agentsTable.id))
-    .orderBy(tasksTable.createdAt);
+    .$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.projectId) conditions.push(eq(tasksTable.projectId, qp.data.projectId));
+  if (qp.success && qp.data.agentId) conditions.push(eq(tasksTable.agentId, qp.data.agentId));
+  if (qp.success && qp.data.status) conditions.push(eq(tasksTable.status, qp.data.status));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const rows = await query.orderBy(tasksTable.createdAt);
 
-  let filtered = rows;
-  if (qp.success && qp.data.projectId) {
-    filtered = filtered.filter((t) => t.projectId === qp.data.projectId);
-  }
-  if (qp.success && qp.data.agentId) {
-    filtered = filtered.filter((t) => t.agentId === qp.data.agentId);
-  }
-  if (qp.success && qp.data.status) {
-    filtered = filtered.filter((t) => t.status === qp.data.status);
-  }
-
-  res.json(filtered.map((t) => ({
+  res.json(rows.map((t) => ({
     ...t,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt ? t.updatedAt.toISOString() : null,

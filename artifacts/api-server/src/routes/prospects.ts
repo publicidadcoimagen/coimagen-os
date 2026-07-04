@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, prospectsTable } from "@workspace/db";
 import {
   CreateProspectBody,
@@ -21,8 +21,9 @@ const fmt = (p: typeof prospectsTable.$inferSelect) => ({
 
 router.get("/prospects", async (req, res): Promise<void> => {
   const qp = ListProspectsQueryParams.safeParse(req.query);
-  let rows = await db.select().from(prospectsTable).orderBy(prospectsTable.createdAt);
-  if (qp.success && qp.data.status) rows = rows.filter((r) => r.status === qp.data.status);
+  let query = db.select().from(prospectsTable).$dynamic();
+  if (qp.success && qp.data.status) query = query.where(eq(prospectsTable.status, qp.data.status));
+  const rows = await query.orderBy(prospectsTable.createdAt);
   res.json(rows.map(fmt));
 });
 

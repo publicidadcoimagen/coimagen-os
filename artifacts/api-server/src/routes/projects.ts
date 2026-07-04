@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, projectsTable, clientsTable } from "@workspace/db";
 import {
   GetProjectParams,
@@ -15,7 +15,7 @@ const router: IRouter = Router();
 
 router.get("/projects", async (req, res): Promise<void> => {
   const qp = ListProjectsQueryParams.safeParse(req.query);
-  const projects = await db.select({
+  let query = db.select({
     id: projectsTable.id,
     name: projectsTable.name,
     description: projectsTable.description,
@@ -30,17 +30,14 @@ router.get("/projects", async (req, res): Promise<void> => {
   })
     .from(projectsTable)
     .leftJoin(clientsTable, eq(projectsTable.clientId, clientsTable.id))
-    .orderBy(projectsTable.createdAt);
+    .$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.clientId) conditions.push(eq(projectsTable.clientId, qp.data.clientId));
+  if (qp.success && qp.data.status) conditions.push(eq(projectsTable.status, qp.data.status));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const projects = await query.orderBy(projectsTable.createdAt);
 
-  let filtered = projects;
-  if (qp.success && qp.data.clientId) {
-    filtered = filtered.filter((p) => p.clientId === qp.data.clientId);
-  }
-  if (qp.success && qp.data.status) {
-    filtered = filtered.filter((p) => p.status === qp.data.status);
-  }
-
-  res.json(filtered.map((p) => ({
+  res.json(projects.map((p) => ({
     ...p,
     budget: p.budget !== null ? parseFloat(p.budget) : null,
     createdAt: p.createdAt.toISOString(),

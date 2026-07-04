@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, auditLogsTable } from "@workspace/db";
-import { sql } from "drizzle-orm";
+import { sql, eq, and } from "drizzle-orm";
 import {
   CreateAuditLogBody,
   ListAuditLogsQueryParams,
@@ -16,11 +16,14 @@ const fmt = (a: typeof auditLogsTable.$inferSelect) => ({
 
 router.get("/audit-logs", async (req, res): Promise<void> => {
   const qp = ListAuditLogsQueryParams.safeParse(req.query);
-  let rows = await db.select().from(auditLogsTable).orderBy(sql`${auditLogsTable.createdAt} DESC`);
-  if (qp.success && qp.data.module) rows = rows.filter((r) => r.module === qp.data.module);
-  if (qp.success && qp.data.status) rows = rows.filter((r) => r.status === qp.data.status);
   const limit = (qp.success && qp.data.limit) ? qp.data.limit : 200;
-  res.json(rows.slice(0, limit).map(fmt));
+  let query = db.select().from(auditLogsTable).$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.module) conditions.push(eq(auditLogsTable.module, qp.data.module));
+  if (qp.success && qp.data.status) conditions.push(eq(auditLogsTable.status, qp.data.status));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const rows = await query.orderBy(sql`${auditLogsTable.createdAt} DESC`).limit(limit);
+  res.json(rows.map(fmt));
 });
 
 router.post("/audit-logs", requireRole("ceo", "admin"), async (req, res): Promise<void> => {

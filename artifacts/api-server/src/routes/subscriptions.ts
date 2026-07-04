@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, subscriptionsTable, clientsTable } from "@workspace/db";
 import {
   CreateSubscriptionBody,
@@ -15,16 +15,18 @@ const router: IRouter = Router();
 
 router.get("/subscriptions", async (req, res): Promise<void> => {
   const qp = ListSubscriptionsQueryParams.safeParse(req.query);
-  const rows = await db.select({
+  let query = db.select({
     id: subscriptionsTable.id, clientId: subscriptionsTable.clientId, clientName: clientsTable.name,
     plan: subscriptionsTable.plan, amount: subscriptionsTable.amount, billingCycle: subscriptionsTable.billingCycle,
     status: subscriptionsTable.status, startDate: subscriptionsTable.startDate, nextBillingDate: subscriptionsTable.nextBillingDate,
     notes: subscriptionsTable.notes, createdAt: subscriptionsTable.createdAt, updatedAt: subscriptionsTable.updatedAt,
-  }).from(subscriptionsTable).leftJoin(clientsTable, eq(subscriptionsTable.clientId, clientsTable.id)).orderBy(subscriptionsTable.createdAt);
-  let filtered = rows;
-  if (qp.success && qp.data.clientId) filtered = filtered.filter((r) => r.clientId === qp.data.clientId);
-  if (qp.success && qp.data.status) filtered = filtered.filter((r) => r.status === qp.data.status);
-  res.json(filtered.map((r) => ({ ...r, amount: parseFloat(r.amount), createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt ? r.updatedAt.toISOString() : null })));
+  }).from(subscriptionsTable).leftJoin(clientsTable, eq(subscriptionsTable.clientId, clientsTable.id)).$dynamic();
+  const conditions = [];
+  if (qp.success && qp.data.clientId) conditions.push(eq(subscriptionsTable.clientId, qp.data.clientId));
+  if (qp.success && qp.data.status) conditions.push(eq(subscriptionsTable.status, qp.data.status));
+  if (conditions.length > 0) query = query.where(and(...conditions));
+  const rows = await query.orderBy(subscriptionsTable.createdAt);
+  res.json(rows.map((r) => ({ ...r, amount: parseFloat(r.amount), createdAt: r.createdAt.toISOString(), updatedAt: r.updatedAt ? r.updatedAt.toISOString() : null })));
 });
 
 router.post("/subscriptions", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
