@@ -12,7 +12,7 @@ import {
 
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
-async function isFirstUser(): Promise<boolean> {
+export async function isFirstUser(): Promise<boolean> {
   const existing = await db.select({ id: usersTable.id }).from(usersTable).limit(1);
   return existing.length === 0;
 }
