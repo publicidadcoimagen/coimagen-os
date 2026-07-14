@@ -52,44 +52,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthUserEnvelope'
-  /login:
-    get:
-      tags: [Auth]
-      operationId: beginBrowserLogin
-      summary: Start the browser OIDC login flow
-      parameters:
-        - name: returnTo
-          in: query
-          required: false
-          schema:
-            type: string
-      responses:
-        '302':
-          description: Redirect to the OIDC authorization endpoint.
-  /callback:
-    get:
-      tags: [Auth]
-      operationId: handleBrowserLoginCallback
-      summary: Complete the browser OIDC login flow
-      responses:
-        '302':
-          description: Redirect to returnTo or /api/login on failure.
-  /logout:
-    get:
-      tags: [Auth]
-      operationId: logoutBrowserSession
-      summary: Clear the session and begin OIDC logout
-      parameters:
-        - $ref: '#/components/parameters/AuthorizationSessionHeader'
-        - $ref: '#/components/parameters/SessionCookie'
-      responses:
-        '302':
-          description: Redirect to the OIDC provider logout URL.
   /mobile-auth/token-exchange:
     post:
       tags: [Auth]
       operationId: exchangeMobileAuthorizationCode
-      summary: Exchange a mobile OIDC code for a session token
+      summary: Exchange email/password credentials for a mobile session token
       requestBody:
         required: true
         content:
@@ -106,7 +73,7 @@ paths:
         '400':
           description: Missing or invalid required fields.
         '401':
-          description: Token did not contain usable claims.
+          description: Invalid email or password.
         '500':
           description: Token exchange failed.
   /mobile-auth/logout:
@@ -3392,17 +3359,11 @@ components:
             - type: 'null'
     MobileTokenExchangeRequest:
       type: object
-      required: [code, code_verifier, redirect_uri, state]
+      required: [email, password]
       properties:
-        code:
+        email:
           type: string
-        code_verifier:
-          type: string
-        redirect_uri:
-          type: string
-        state:
-          type: string
-        nonce:
+        password:
           type: string
     MobileTokenExchangeSuccess:
       type: object

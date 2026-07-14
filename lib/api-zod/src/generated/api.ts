@@ -28,30 +28,11 @@ export const GetCurrentAuthUserResponse = zod.object({
 
 
 /**
- * @summary Start the browser OIDC login flow
- */
-export const BeginBrowserLoginQueryParams = zod.object({
-  "returnTo": zod.coerce.string().optional()
-})
-
-
-/**
- * @summary Clear the session and begin OIDC logout
- */
-export const LogoutBrowserSessionHeader = zod.object({
-  "Authorization": zod.string().optional().describe('Opaque session token — `Bearer <sid>`.')
-})
-
-
-/**
- * @summary Exchange a mobile OIDC code for a session token
+ * @summary Exchange email/password credentials for a mobile session token
  */
 export const ExchangeMobileAuthorizationCodeBody = zod.object({
-  "code": zod.string(),
-  "code_verifier": zod.string(),
-  "redirect_uri": zod.string(),
-  "state": zod.string(),
-  "nonce": zod.string().optional()
+  "email": zod.string(),
+  "password": zod.string()
 })
 
 export const ExchangeMobileAuthorizationCodeResponse = zod.object({
