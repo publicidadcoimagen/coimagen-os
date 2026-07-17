@@ -11,8 +11,25 @@ const FROM_ADDRESS = "Coimagen Media Agency <info@coimagenmedia.com>";
 // goes. Same address as FROM_ADDRESS by choice — see PR discussion.
 const TEAM_ADDRESS = "info@coimagenmedia.com";
 
+// Email clients don't reliably infer encoding from transport headers alone
+// for HTML bodies — without an explicit <meta charset>, accented characters
+// (á, é, í, ó, ú, ñ) were rendering as "�" in some inboxes. Every email HTML
+// body must be a full document with this meta tag, not a bare fragment.
+function wrapEmailHtml(bodyHtml: string): string {
+  return `<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body style="margin: 0; padding: 0;">
+    ${bodyHtml}
+  </body>
+</html>`;
+}
+
 function buildLeadEmailHtml(name: string, resultUrl: string): string {
-  return `
+  return wrapEmailHtml(`
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; color: #1a1a1a;">
       <p style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #00cfff; margin: 0 0 16px;">
         Coimagen Media Agency
@@ -32,11 +49,11 @@ function buildLeadEmailHtml(name: string, resultUrl: string): string {
         Coimagen Media Agency · Tijuana / San Diego
       </p>
     </div>
-  `;
+  `);
 }
 
 function buildInternalNotificationHtml(name: string, email: string, url: string, resultUrl: string): string {
-  return `
+  return wrapEmailHtml(`
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; color: #1a1a1a;">
       <p style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #00cfff; margin: 0 0 16px;">
         Nuevo lead — Diagnóstico Digital
@@ -53,7 +70,7 @@ function buildInternalNotificationHtml(name: string, email: string, url: string,
         Ver diagnóstico →
       </a>
     </div>
-  `;
+  `);
 }
 
 // Best-effort — the caller decides how to handle a thrown error (the
