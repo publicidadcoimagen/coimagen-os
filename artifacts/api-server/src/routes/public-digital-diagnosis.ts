@@ -76,7 +76,7 @@ router.post("/public/digital-diagnosis", async (req, res): Promise<void> => {
     // failure is logged as a warning and must not affect the response.
     if (diagnosis.publicToken) {
       try {
-        const emailId = await sendDigitalDiagnosisEmail(name, email, diagnosis.publicToken);
+        const emailId = await sendDigitalDiagnosisEmail(name, email, url, diagnosis.publicToken);
         req.log.info({ emailId, diagnosisId: diagnosis.id }, "Correo de diagnóstico digital enviado");
       } catch (err) {
         req.log.warn({ err, diagnosisId: diagnosis.id }, "No se pudo enviar el correo de diagnóstico digital");
