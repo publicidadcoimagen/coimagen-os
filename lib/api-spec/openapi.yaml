@@ -8,6 +8,7 @@ servers:
     description: Base API path
 tags:
   - name: health
+  - name: public
   - name: clients
   - name: client-access
   - name: client-brand
@@ -137,6 +138,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── PUBLIC (unauthenticated) ───────────────────────────────────────────────
+  /public/digital-diagnosis:
+    post:
+      operationId: submitDigitalDiagnosis
+      tags: [public]
+      summary: Analyze a business website and generate a digital diagnosis report (no auth required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DigitalDiagnosisSubmission"
+      responses:
+        "200":
+          description: Diagnosis generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DigitalDiagnosisResult"
+        "400":
+          description: Invalid request
+        "502":
+          description: Analysis failed
+  /public/digital-diagnosis/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getPublicDigitalDiagnosis
+      tags: [public]
+      summary: Fetch a completed digital diagnosis by its public token (no auth required, for the results page / emailed link)
+      responses:
+        "200":
+          description: Diagnosis found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DigitalDiagnosisPublicView"
+        "404":
+          description: Not found
 
   # ─── CLIENTS ───────────────────────────────────────────────────────────────
   /clients:
@@ -3805,8 +3849,14 @@ components:
         prospectId: { type: ["integer", "null"] }
         clientId: { type: ["integer", "null"] }
         content: { type: ["string", "null"] }
-        status: { type: string, enum: [draft, pending_approval, approved, rejected, executed, archived] }
+        status: { type: string, enum: [draft, pending_approval, approved, rejected, executed, archived, completed, failed] }
         type: { type: string }
+        executionId: { type: ["integer", "null"] }
+        sourceUrl: { type: ["string", "null"] }
+        result: { type: ["object", "null"] }
+        pdfUrl: { type: ["string", "null"] }
+        pdfGeneratedAt: { type: ["string", "null"] }
+        publicToken: { type: ["string", "null"], format: uuid }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     DiagnosisInput:
@@ -3817,7 +3867,7 @@ components:
         prospectId: { type: integer }
         clientId: { type: integer }
         content: { type: string }
-        status: { type: string, enum: [draft, pending_approval, approved, rejected, executed, archived], default: draft }
+        status: { type: string, enum: [draft, pending_approval, approved, rejected, executed, archived, completed, failed], default: draft }
         type: { type: string, default: diagnosis }
     DiagnosisUpdate:
       type: object
@@ -3826,8 +3876,31 @@ components:
         prospectId: { type: integer }
         clientId: { type: integer }
         content: { type: string }
-        status: { type: string, enum: [draft, pending_approval, approved, rejected, executed, archived] }
+        status: { type: string, enum: [draft, pending_approval, approved, rejected, executed, archived, completed, failed] }
         type: { type: string }
+    DigitalDiagnosisSubmission:
+      type: object
+      required: [url, name, email]
+      properties:
+        url:   { type: string, format: uri }
+        name:  { type: string, minLength: 1 }
+        email: { type: string, format: email }
+    DigitalDiagnosisResult:
+      type: object
+      required: [diagnosisId, status, publicToken]
+      properties:
+        diagnosisId: { type: integer }
+        status:      { type: string, enum: [completed, failed] }
+        publicToken: { type: ["string", "null"], format: uuid }
+    DigitalDiagnosisPublicView:
+      type: object
+      required: [title, status, sourceUrl, result, createdAt]
+      properties:
+        title:     { type: string }
+        status:    { type: string }
+        sourceUrl: { type: ["string", "null"] }
+        result:    { type: ["object", "null"] }
+        createdAt: { type: string }
 
     # ── PROPOSAL ──────────────────────────────────────────────────────────────
     Proposal:
