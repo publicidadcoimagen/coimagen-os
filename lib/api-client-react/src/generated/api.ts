@@ -84,6 +84,9 @@ import type {
   Diagnosis,
   DiagnosisInput,
   DiagnosisUpdate,
+  DigitalDiagnosisPublicView,
+  DigitalDiagnosisResult,
+  DigitalDiagnosisSubmission,
   Director,
   DirectorAssignClient,
   DirectorAssignProject,
@@ -471,6 +474,154 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getHealthCheckQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getSubmitDigitalDiagnosisUrl = () => {
+
+
+
+
+  return `/api/public/digital-diagnosis`
+}
+
+/**
+ * @summary Analyze a business website and generate a digital diagnosis report (no auth required)
+ */
+export const submitDigitalDiagnosis = async (digitalDiagnosisSubmission: DigitalDiagnosisSubmission, options?: RequestInit): Promise<DigitalDiagnosisResult> => {
+
+  return customFetch<DigitalDiagnosisResult>(getSubmitDigitalDiagnosisUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      digitalDiagnosisSubmission,)
+  }
+);}
+
+
+
+
+export const getSubmitDigitalDiagnosisMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitDigitalDiagnosis>>, TError,{data: BodyType<DigitalDiagnosisSubmission>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitDigitalDiagnosis>>, TError,{data: BodyType<DigitalDiagnosisSubmission>}, TContext> => {
+
+const mutationKey = ['submitDigitalDiagnosis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitDigitalDiagnosis>>, {data: BodyType<DigitalDiagnosisSubmission>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  submitDigitalDiagnosis(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitDigitalDiagnosisMutationResult = NonNullable<Awaited<ReturnType<typeof submitDigitalDiagnosis>>>
+    export type SubmitDigitalDiagnosisMutationBody = BodyType<DigitalDiagnosisSubmission>
+    export type SubmitDigitalDiagnosisMutationError = ErrorType<void>
+
+    /**
+ * @summary Analyze a business website and generate a digital diagnosis report (no auth required)
+ */
+export const useSubmitDigitalDiagnosis = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitDigitalDiagnosis>>, TError,{data: BodyType<DigitalDiagnosisSubmission>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitDigitalDiagnosis>>,
+        TError,
+        {data: BodyType<DigitalDiagnosisSubmission>},
+        TContext
+      > => {
+      return useMutation(getSubmitDigitalDiagnosisMutationOptions(options));
+    }
+
+export const getGetPublicDigitalDiagnosisUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/digital-diagnosis/${token}`
+}
+
+/**
+ * @summary Fetch a completed digital diagnosis by its public token (no auth required, for the results page / emailed link)
+ */
+export const getPublicDigitalDiagnosis = async (token: string, options?: RequestInit): Promise<DigitalDiagnosisPublicView> => {
+
+  return customFetch<DigitalDiagnosisPublicView>(getGetPublicDigitalDiagnosisUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicDigitalDiagnosisQueryKey = (token: string,) => {
+    return [
+    `/api/public/digital-diagnosis/${token}`
+    ] as const;
+    }
+
+
+export const getGetPublicDigitalDiagnosisQueryOptions = <TData = Awaited<ReturnType<typeof getPublicDigitalDiagnosis>>, TError = ErrorType<void>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicDigitalDiagnosis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicDigitalDiagnosisQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicDigitalDiagnosis>>> = ({ signal }) => getPublicDigitalDiagnosis(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(token), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicDigitalDiagnosis>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicDigitalDiagnosisQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicDigitalDiagnosis>>>
+export type GetPublicDigitalDiagnosisQueryError = ErrorType<void>
+
+
+/**
+ * @summary Fetch a completed digital diagnosis by its public token (no auth required, for the results page / emailed link)
+ */
+
+export function useGetPublicDigitalDiagnosis<TData = Awaited<ReturnType<typeof getPublicDigitalDiagnosis>>, TError = ErrorType<void>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicDigitalDiagnosis>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicDigitalDiagnosisQueryOptions(token,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

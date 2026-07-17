@@ -61,6 +61,43 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Analyze a business website and generate a digital diagnosis report (no auth required)
+ */
+
+
+
+export const SubmitDigitalDiagnosisBody = zod.object({
+  "url": zod.string().url(),
+  "name": zod.string().min(1),
+  "email": zod.string().email()
+})
+
+export const SubmitDigitalDiagnosisResponse = zod.object({
+  "diagnosisId": zod.number(),
+  "status": zod.enum(['completed', 'failed']),
+  "publicToken": zod.string().uuid().nullable()
+})
+
+
+/**
+ * @summary Fetch a completed digital diagnosis by its public token (no auth required, for the results page / emailed link)
+ */
+export const GetPublicDigitalDiagnosisParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const GetPublicDigitalDiagnosisResponse = zod.object({
+  "title": zod.string(),
+  "status": zod.string(),
+  "sourceUrl": zod.string().nullable(),
+  "result": zod.object({
+
+}).passthrough().nullable(),
+  "createdAt": zod.string()
+})
+
+
+/**
  * @summary List all clients
  */
 export const ListClientsResponseItem = zod.object({
@@ -1503,8 +1540,16 @@ export const ListDiagnosesResponseItem = zod.object({
   "prospectId": zod.number().nullish(),
   "clientId": zod.number().nullish(),
   "content": zod.string().nullish(),
-  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived', 'completed', 'failed']),
   "type": zod.string(),
+  "executionId": zod.number().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "result": zod.object({
+
+}).passthrough().nullish(),
+  "pdfUrl": zod.string().nullish(),
+  "pdfGeneratedAt": zod.string().nullish(),
+  "publicToken": zod.string().uuid().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1520,7 +1565,7 @@ export const CreateDiagnosisBody = zod.object({
   "prospectId": zod.number().optional(),
   "clientId": zod.number().optional(),
   "content": zod.string().optional(),
-  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']).default(createDiagnosisBodyStatusDefault),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived', 'completed', 'failed']).default(createDiagnosisBodyStatusDefault),
   "type": zod.string().default(createDiagnosisBodyTypeDefault)
 })
 
@@ -1535,8 +1580,16 @@ export const GetDiagnosisResponse = zod.object({
   "prospectId": zod.number().nullish(),
   "clientId": zod.number().nullish(),
   "content": zod.string().nullish(),
-  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived', 'completed', 'failed']),
   "type": zod.string(),
+  "executionId": zod.number().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "result": zod.object({
+
+}).passthrough().nullish(),
+  "pdfUrl": zod.string().nullish(),
+  "pdfGeneratedAt": zod.string().nullish(),
+  "publicToken": zod.string().uuid().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1554,7 +1607,7 @@ export const UpdateDiagnosisBody = zod.object({
   "prospectId": zod.number().optional(),
   "clientId": zod.number().optional(),
   "content": zod.string().optional(),
-  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']).optional(),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived', 'completed', 'failed']).optional(),
   "type": zod.string().optional()
 })
 
@@ -1564,8 +1617,16 @@ export const UpdateDiagnosisResponse = zod.object({
   "prospectId": zod.number().nullish(),
   "clientId": zod.number().nullish(),
   "content": zod.string().nullish(),
-  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived']),
+  "status": zod.enum(['draft', 'pending_approval', 'approved', 'rejected', 'executed', 'archived', 'completed', 'failed']),
   "type": zod.string(),
+  "executionId": zod.number().nullish(),
+  "sourceUrl": zod.string().nullish(),
+  "result": zod.object({
+
+}).passthrough().nullish(),
+  "pdfUrl": zod.string().nullish(),
+  "pdfGeneratedAt": zod.string().nullish(),
+  "publicToken": zod.string().uuid().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
