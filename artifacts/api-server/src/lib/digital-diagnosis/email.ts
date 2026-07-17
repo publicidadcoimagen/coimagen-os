@@ -3,13 +3,12 @@ import { logger } from "../logger";
 
 const RESULTS_PAGE_BASE_URL = "https://www.coimagenmedia.com/diagnostico/resultado";
 
-// No verified sending domain yet — onboarding@resend.dev is Resend's shared
-// testing address, usable without domain verification. Swap once a domain
-// (e.g. coimagenmedia.com) is verified in Resend.
-const FROM_ADDRESS = "Coimagen Media Agency <onboarding@resend.dev>";
+// coimagenmedia.com is verified in Resend — no more onboarding@resend.dev
+// sandbox restrictions (that address could only send to the account owner).
+const FROM_ADDRESS = "Coimagen Media Agency <info@coimagenmedia.com>";
 
-// Replies from the lead should reach the team's real inbox, not the shared
-// Resend testing address. Also where the internal new-lead notification goes.
+// Where the lead's reply lands, and where the internal new-lead notification
+// goes. Same address as FROM_ADDRESS by choice — see PR discussion.
 const TEAM_ADDRESS = "info@coimagenmedia.com";
 
 function buildLeadEmailHtml(name: string, resultUrl: string): string {
