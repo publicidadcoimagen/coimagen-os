@@ -4,6 +4,7 @@ import { db, prospectsTable, aiExecutionsTable, diagnosesTable, incidentsTable }
 import { SubmitDigitalDiagnosisBody, GetPublicDigitalDiagnosisParams } from "@workspace/api-zod";
 import { scrapeUrl } from "../lib/digital-diagnosis/scrape";
 import { generateDigitalDiagnosis } from "../lib/digital-diagnosis/analyze";
+import { sendDigitalDiagnosisEmail } from "../lib/digital-diagnosis/email";
 
 const router: IRouter = Router();
 
@@ -70,7 +71,18 @@ router.post("/public/digital-diagnosis", async (req, res): Promise<void> => {
       updatedAt: new Date(),
     }).where(eq(aiExecutionsTable.id, execution.id));
 
-    // Email delivery (with a link to the results page) lands in a later stage.
+    // Best-effort — the diagnosis is already saved and viewable via the
+    // results page regardless of whether the email goes out, so a delivery
+    // failure is logged as a warning and must not affect the response.
+    if (diagnosis.publicToken) {
+      try {
+        const emailId = await sendDigitalDiagnosisEmail(name, email, diagnosis.publicToken);
+        req.log.info({ emailId, diagnosisId: diagnosis.id }, "Correo de diagnóstico digital enviado");
+      } catch (err) {
+        req.log.warn({ err, diagnosisId: diagnosis.id }, "No se pudo enviar el correo de diagnóstico digital");
+      }
+    }
+
     res.json({ diagnosisId: diagnosis.id, status: "completed", publicToken: diagnosis.publicToken });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error desconocido";
