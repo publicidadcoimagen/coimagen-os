@@ -1,86 +1,84 @@
-import * as client from "openid-client";
-import crypto from "crypto";
-import { type Request, type Response } from "express";
-import { db, sessionsTable } from "@workspace/db";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { bearer } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
-import type { AuthUser } from "@workspace/api-zod";
+import {
+  db,
+  usersTable,
+  sessionsTable,
+  accountsTable,
+  verificationsTable,
+} from "@workspace/db";
 
-export const ISSUER_URL = process.env.ISSUER_URL ?? "https://replit.com/oidc";
-export const SESSION_COOKIE = "sid";
-export const SESSION_TTL = 7 * 24 * 60 * 60 * 1000;
+const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
-export interface SessionData {
-  user: AuthUser;
-  access_token: string;
-  refresh_token?: string;
-  expires_at?: number;
+export async function isFirstUser(): Promise<boolean> {
+  const existing = await db.select({ id: usersTable.id }).from(usersTable).limit(1);
+  return existing.length === 0;
 }
 
-let oidcConfig: client.Configuration | null = null;
-
-export async function getOidcConfig(): Promise<client.Configuration> {
-  if (!oidcConfig) {
-    oidcConfig = await client.discovery(
-      new URL(ISSUER_URL),
-      process.env.REPL_ID!,
-    );
-  }
-  return oidcConfig;
-}
-
-export async function createSession(data: SessionData): Promise<string> {
-  const sid = crypto.randomBytes(32).toString("hex");
-  await db.insert(sessionsTable).values({
-    sid,
-    sess: data as unknown as Record<string, unknown>,
-    expire: new Date(Date.now() + SESSION_TTL),
-  });
-  return sid;
-}
-
-export async function getSession(sid: string): Promise<SessionData | null> {
-  const [row] = await db
-    .select()
-    .from(sessionsTable)
-    .where(eq(sessionsTable.sid, sid));
-
-  if (!row || row.expire < new Date()) {
-    if (row) await deleteSession(sid);
-    return null;
-  }
-
-  return row.sess as unknown as SessionData;
-}
-
-export async function updateSession(
-  sid: string,
-  data: SessionData,
-): Promise<void> {
-  await db
-    .update(sessionsTable)
-    .set({
-      sess: data as unknown as Record<string, unknown>,
-      expire: new Date(Date.now() + SESSION_TTL),
-    })
-    .where(eq(sessionsTable.sid, sid));
-}
-
-export async function deleteSession(sid: string): Promise<void> {
-  await db.delete(sessionsTable).where(eq(sessionsTable.sid, sid));
-}
-
-export async function clearSession(
-  res: Response,
-  sid?: string,
-): Promise<void> {
-  if (sid) await deleteSession(sid);
-  res.clearCookie(SESSION_COOKIE, { path: "/" });
-}
-
-export function getSessionId(req: Request): string | undefined {
-  const authHeader = req.headers["authorization"];
-  if (authHeader?.startsWith("Bearer ")) {
-    return authHeader.slice(7);
-  }
-  return req.cookies?.[SESSION_COOKIE];
-}
+export const auth = betterAuth({
+  secret: process.env.SESSION_SECRET ?? "coimagen-default-secret-key-!!",
+  baseURL: process.env.API_BASE_URL ?? `http://localhost:${process.env.PORT ?? "8080"}`,
+  basePath: "/api/auth",
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: {
+      user: usersTable,
+      session: sessionsTable,
+      account: accountsTable,
+      verification: verificationsTable,
+    },
+  }),
+  emailAndPassword: {
+    enabled: true,
+  },
+  user: {
+    fields: {
+      image: "profileImageUrl",
+    },
+    additionalFields: {
+      firstName: { type: "string", required: false, input: true },
+      lastName: { type: "string", required: false, input: true },
+      // Server-controlled: never accepted from the signup body.
+      role: { type: "string", required: false, input: false, defaultValue: "viewer" },
+      status: { type: "string", required: false, input: false, defaultValue: "active" },
+      lastLogin: { type: "date", required: false, input: false },
+    },
+  },
+  session: {
+    expiresIn: SESSION_TTL_SECONDS,
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Preserves the previous OIDC-era behavior: the first account ever
+        // created becomes CEO, everyone after that starts as viewer.
+        before: async (user) => {
+          const first = await isFirstUser();
+          return {
+            data: {
+              ...user,
+              role: first ? "ceo" : "viewer",
+              status: "active",
+            },
+          };
+        },
+      },
+    },
+    session: {
+      create: {
+        after: async (session) => {
+          await db
+            .update(usersTable)
+            .set({ lastLogin: new Date() })
+            .where(eq(usersTable.id, session.userId))
+            .catch(() => {});
+        },
+      },
+    },
+  },
+  // Lets the mobile app authenticate with `Authorization: Bearer <token>`
+  // instead of a cookie.
+  plugins: [bearer()],
+});

@@ -7,9 +7,6 @@
  */
 
 export interface MobileTokenExchangeRequest {
-  code: string;
-  code_verifier: string;
-  redirect_uri: string;
-  state: string;
-  nonce?: string;
+  email: string;
+  password: string;
 }

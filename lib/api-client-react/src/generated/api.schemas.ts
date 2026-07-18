@@ -23,11 +23,8 @@ export interface AuthUserEnvelope {
 }
 
 export interface MobileTokenExchangeRequest {
-  code: string;
-  code_verifier: string;
-  redirect_uri: string;
-  state: string;
-  nonce?: string;
+  email: string;
+  password: string;
 }
 
 export interface MobileTokenExchangeSuccess {
@@ -2725,10 +2722,6 @@ export interface AiExecutionQcResult {
  * Opaque session token — `Bearer <sid>`.
  */
 export type AuthorizationSessionHeaderParameter = string;
-
-export type BeginBrowserLoginParams = {
-returnTo?: string;
-};
 
 export type ListProjectsParams = {
 clientId?: number;
