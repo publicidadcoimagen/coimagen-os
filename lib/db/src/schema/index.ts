@@ -15,6 +15,7 @@ export * from "./config";
 export * from "./client-access";
 export * from "./client-brand";
 export * from "./client-social-credentials";
+export * from "./content-calendar";
 export * from "./client-onboarding";
 export * from "./client-timeline";
 export * from "./client-notes";
