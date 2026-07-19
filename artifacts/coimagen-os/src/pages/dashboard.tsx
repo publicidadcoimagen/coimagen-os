@@ -1,19 +1,27 @@
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useGetDashboardSummary,
   useGetRecentActivity,
   useGetProjectsByStatus,
+  useGetCostSummary,
   getGetDashboardSummaryQueryKey,
   getGetRecentActivityQueryKey,
   getGetProjectsByStatusQueryKey,
+  getGetCostSummaryQueryKey,
 } from "@workspace/api-client-react";
 import {
   Users, FolderKanban, CheckSquare, Activity,
   TrendingUp, AlertTriangle, DollarSign, BarChart2,
-  ShieldCheck, CreditCard, Clock, Cloud, UserX, Zap,
+  ShieldCheck, CreditCard, Clock, UserX, Zap, Wallet,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatCurrency } from "@/lib/format";
+
+const CATEGORY_LABELS: Record<string, string> = {
+  openai: "OpenAI", claude: "Claude", gemini: "Gemini", whatsapp: "WhatsApp",
+  n8n: "n8n", hosting: "Hosting", replit: "Replit", other: "Otro",
+};
 
 const CHART_COLORS = [
   "hsl(var(--chart-1))",
@@ -74,6 +82,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function Dashboard() {
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
   const { data: summary, isLoading: isLoadingSummary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
@@ -83,10 +94,15 @@ export function Dashboard() {
   const { data: projectsByStatus, isLoading: isLoadingProjects } = useGetProjectsByStatus({
     query: { queryKey: getGetProjectsByStatusQueryKey() }
   });
+  const { data: costSummary, isLoading: isLoadingCosts } = useGetCostSummary(currentMonth, {
+    query: { queryKey: getGetCostSummaryQueryKey(currentMonth) }
+  });
 
   if (isLoadingSummary || isLoadingActivity || isLoadingProjects) {
     return <div className="flex items-center justify-center h-full text-muted-foreground">Cargando Mission Control...</div>;
   }
+
+  const topCosts = [...(costSummary?.breakdown ?? [])].sort((a, b) => b.amount - a.amount).slice(0, 4);
 
   const chartData = projectsByStatus?.map(stat => ({
     name: STATUS_LABELS[stat.status] ?? stat.status,
@@ -175,38 +191,36 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Replit Cost Widget */}
+        {/* Cost Widget */}
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <Cloud className="h-4 w-4 text-primary" /> Replit Cost Engine
+              <Wallet className="h-4 w-4 text-primary" /> Motor de Costos
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 space-y-2">
-            <div className="text-xs text-muted-foreground mb-2">Jun 10 – Jul 10, 2026</div>
-            <div className="flex justify-between items-center py-1.5 border-b border-border/50">
-              <span className="text-xs text-muted-foreground">Créditos restantes</span>
-              <span className="text-sm font-bold text-emerald-500">$14.37</span>
-            </div>
-            <div className="flex justify-between items-center py-1.5 border-b border-border/50">
-              <span className="text-xs text-muted-foreground">Créditos usados</span>
-              <span className="text-sm font-bold">$5.64</span>
-            </div>
-            <div className="flex justify-between items-center py-1.5 border-b border-border/50">
-              <span className="text-xs text-muted-foreground">Agent cost</span>
-              <span className="text-sm font-semibold text-orange-400">$5.06</span>
-            </div>
-            <div className="flex justify-between items-center py-1.5 border-b border-border/50">
-              <span className="text-xs text-muted-foreground">Deployment</span>
-              <span className="text-sm font-semibold">$0.56</span>
-            </div>
-            <div className="flex justify-between items-center py-1.5">
-              <span className="text-xs text-muted-foreground">PostgreSQL</span>
-              <span className="text-sm font-semibold">$0.01</span>
-            </div>
-            <div className="mt-2 p-2 rounded bg-yellow-500/10 border border-yellow-500/20">
-              <p className="text-[10px] text-yellow-600 font-medium">Riesgo principal: uso excesivo de Agent. Agrupar cambios antes de ejecutar.</p>
-            </div>
+            <div className="text-xs text-muted-foreground mb-2">{currentMonth}</div>
+            {isLoadingCosts ? (
+              <div className="text-xs text-muted-foreground">Cargando...</div>
+            ) : topCosts.length > 0 ? (
+              <>
+                {topCosts.map((item) => (
+                  <div key={item.category} className="flex justify-between items-center py-1.5 border-b border-border/50 last:border-0">
+                    <span className="text-xs text-muted-foreground">{CATEGORY_LABELS[item.category] ?? item.category}</span>
+                    <span className="text-sm font-semibold">{formatCurrency(item.amount)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-xs text-muted-foreground">Total del mes</span>
+                  <span className="text-sm font-bold text-orange-400">{formatCurrency(costSummary?.totalCosts ?? 0)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="text-xs text-muted-foreground">Sin costos registrados este mes.</div>
+            )}
+            <Link href="/costs" className="block pt-2 text-xs text-primary hover:underline">
+              Ver detalle de costos →
+            </Link>
           </CardContent>
         </Card>
       </div>
