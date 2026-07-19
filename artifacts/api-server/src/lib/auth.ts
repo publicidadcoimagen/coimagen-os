@@ -25,7 +25,18 @@ export const auth = betterAuth({
   // from this API. Its production URL isn't known until it's actually
   // deployed (Fase 5) — set DASHBOARD_URL then and redeploy, no code change
   // needed. Unset means no cross-origin dashboard requests are trusted yet.
-  trustedOrigins: [process.env.DASHBOARD_URL].filter((v): v is string => Boolean(v)),
+  //
+  // EXTRA_TRUSTED_ORIGINS: comma-separated exact origins, for temporarily
+  // trusting a specific Vercel preview URL while testing a branch against
+  // this same backend. Unset by default — must never hold a wildcard
+  // (e.g. "https://*.vercel.app"): cookies are sameSite:"none", so any
+  // origin listed here can ride the session cross-site, and vercel.app is
+  // a public multi-tenant domain anyone can deploy to. Set it on Render
+  // only for the duration of a manual preview test, then remove it.
+  trustedOrigins: [
+    process.env.DASHBOARD_URL,
+    ...(process.env.EXTRA_TRUSTED_ORIGINS?.split(",").map((o) => o.trim()) ?? []),
+  ].filter((v): v is string => Boolean(v)),
   advanced: {
     // Session cookie must be sendable cross-origin (dashboard -> this API).
     // Safe: Better Auth's originCheckMiddleware validates every mutating
