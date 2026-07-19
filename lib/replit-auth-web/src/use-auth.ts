@@ -1,13 +1,17 @@
 /// <reference types="vite/client" />
 import { useState, useEffect, useCallback } from "react";
 import { createAuthClient } from "better-auth/react";
-import type { AuthUser } from "@workspace/api-client-react";
+import { customFetch, type AuthUser } from "@workspace/api-client-react";
 
 export type { AuthUser };
 
-// No baseURL: Better Auth's client defaults to same-origin, matching how the
-// rest of this app calls relative /api/* paths today.
-const authClient = createAuthClient();
+// Explicit baseURL: Better Auth's own env-based auto-detection reads
+// `process.env`, which doesn't exist in a Vite browser bundle, so it would
+// silently no-op here. Falls back to same-origin (Better Auth's default)
+// when the var is unset, matching local dev.
+const authClient = createAuthClient({
+  baseURL: import.meta.env.VITE_API_BASE_URL || undefined,
+});
 
 interface AuthState {
   user: AuthUser | null;
@@ -23,9 +27,9 @@ export function useAuth(): AuthState {
 
   const refetchUser = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/user", { credentials: "include" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = (await res.json()) as { user: AuthUser | null };
+      const data = await customFetch<{ user: AuthUser | null }>("/api/auth/user", {
+        credentials: "include",
+      });
       setUser(data.user ?? null);
     } catch {
       setUser(null);

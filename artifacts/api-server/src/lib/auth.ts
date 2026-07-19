@@ -21,6 +21,21 @@ export const auth = betterAuth({
   secret: process.env.SESSION_SECRET ?? "coimagen-default-secret-key-!!",
   baseURL: process.env.API_BASE_URL ?? `http://localhost:${process.env.PORT ?? "8080"}`,
   basePath: "/api/auth",
+  // The dashboard (artifacts/coimagen-os) is deployed as a separate origin
+  // from this API. Its production URL isn't known until it's actually
+  // deployed (Fase 5) — set DASHBOARD_URL then and redeploy, no code change
+  // needed. Unset means no cross-origin dashboard requests are trusted yet.
+  trustedOrigins: [process.env.DASHBOARD_URL].filter((v): v is string => Boolean(v)),
+  advanced: {
+    // Session cookie must be sendable cross-origin (dashboard -> this API).
+    // Safe: Better Auth's originCheckMiddleware validates every mutating
+    // request's Origin header against trustedOrigins regardless of this
+    // setting, so this doesn't weaken CSRF protection.
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
+  },
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
