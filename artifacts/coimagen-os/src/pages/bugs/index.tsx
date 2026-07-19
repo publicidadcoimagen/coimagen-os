@@ -30,7 +30,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 const STATUS_LABELS: Record<string, string> = { new: "Nuevo", confirmed: "Confirmado", in_review: "En Revisión", fixed: "Corregido", closed: "Cerrado" };
 
-const EMPTY_FORM = { title: "", description: "", severity: "medium", status: "new", module: "", detectedAt: new Date().toISOString().split("T")[0], resolvedAt: "", assignee: "Replit", notes: "" };
+const EMPTY_FORM = { title: "", description: "", severity: "medium", status: "new", module: "", detectedAt: new Date().toISOString().split("T")[0], resolvedAt: "", assignee: "Agente IA", notes: "" };
 
 export function Bugs() {
   const { toast } = useToast();
@@ -141,7 +141,7 @@ export function Bugs() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Módulo</Label><Input value={form.module} onChange={(e) => setForm({ ...form, module: e.target.value })} className="mt-1" placeholder="Ej. Facturación" /></div>
-              <div><Label>Responsable</Label><Input value={form.assignee} onChange={(e) => setForm({ ...form, assignee: e.target.value })} className="mt-1" placeholder="Ej. Replit" /></div>
+              <div><Label>Responsable</Label><Input value={form.assignee} onChange={(e) => setForm({ ...form, assignee: e.target.value })} className="mt-1" placeholder="Ej. Agente IA" /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Detectado</Label><Input type="date" value={form.detectedAt} onChange={(e) => setForm({ ...form, detectedAt: e.target.value })} className="mt-1" /></div>

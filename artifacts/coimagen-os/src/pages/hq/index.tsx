@@ -85,7 +85,7 @@ export function HQ() {
             )}
             {activeSprint.replitWorking && (
               <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Replit está trabajando en</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Agente IA está trabajando en</p>
                 <p className="text-sm">{activeSprint.replitWorking}</p>
               </div>
             )}
