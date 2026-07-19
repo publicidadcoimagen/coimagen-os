@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
 import { useAuth, AuthProvider } from "@workspace/replit-auth-web";
 import { LoginForm } from "@/components/login-form";
+import { ForcePasswordResetScreen } from "@/components/force-password-reset-screen";
 
 import { Dashboard } from "@/pages/dashboard";
 import { Clients } from "@/pages/clients/index";
@@ -104,7 +105,7 @@ const queryClient = new QueryClient({
 });
 
 function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -116,6 +117,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return <LoginForm />;
+  }
+
+  if (user?.forcePasswordReset) {
+    return <ForcePasswordResetScreen />;
   }
 
   return <>{children}</>;
