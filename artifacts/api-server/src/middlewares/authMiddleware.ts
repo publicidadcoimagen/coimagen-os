@@ -29,6 +29,9 @@ function toAuthUser(user: SessionUser): AuthUser {
     lastName: user.lastName ?? null,
     profileImageUrl: user.image ?? null,
     role: user.role ?? "viewer",
+    status: user.status ?? "active",
+    forcePasswordReset: user.forcePasswordReset ?? false,
+    lastLogin: user.lastLogin?.toISOString() ?? null,
   };
 }
 

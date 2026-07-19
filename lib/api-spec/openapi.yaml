@@ -91,6 +91,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LogoutSuccess'
+  /account/change-password:
+    post:
+      tags: [Auth]
+      operationId: changeOwnPassword
+      summary: Change the signed-in user's password, clearing forcePasswordReset on success
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordSuccess'
+        '400':
+          description: Current password incorrect, or new password invalid.
+        '401':
+          description: Authentication required.
 
 
   /healthz:
@@ -3379,7 +3401,7 @@ components:
   schemas:
     AuthUser:
       type: object
-      required: [id, email, firstName, lastName, profileImageUrl, role]
+      required: [id, email, firstName, lastName, profileImageUrl, role, status, forcePasswordReset, lastLogin]
       properties:
         id:
           type: string
@@ -3393,6 +3415,12 @@ components:
           type: [string, 'null']
         role:
           type: string
+        status:
+          type: string
+        forcePasswordReset:
+          type: boolean
+        lastLogin:
+          type: [string, 'null']
     AuthUserEnvelope:
       type: object
       required: [user]
@@ -3409,6 +3437,20 @@ components:
           type: string
         password:
           type: string
+    ChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+    ChangePasswordSuccess:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
     MobileTokenExchangeSuccess:
       type: object
       required: [token]

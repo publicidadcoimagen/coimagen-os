@@ -22,7 +22,10 @@ export const GetCurrentAuthUserResponse = zod.object({
   "firstName": zod.string().nullable(),
   "lastName": zod.string().nullable(),
   "profileImageUrl": zod.string().nullable(),
-  "role": zod.string()
+  "role": zod.string(),
+  "status": zod.string(),
+  "forcePasswordReset": zod.boolean(),
+  "lastLogin": zod.string().nullable()
 }),zod.null()])
 })
 
@@ -48,6 +51,19 @@ export const LogoutMobileSessionHeader = zod.object({
 })
 
 export const LogoutMobileSessionResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Change the signed-in user's password, clearing forcePasswordReset on success
+ */
+export const ChangeOwnPasswordBody = zod.object({
+  "currentPassword": zod.string(),
+  "newPassword": zod.string()
+})
+
+export const ChangeOwnPasswordResponse = zod.object({
   "success": zod.boolean()
 })
 

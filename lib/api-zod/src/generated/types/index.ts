@@ -54,6 +54,8 @@ export * from './backlogItemUpdate';
 export * from './bug';
 export * from './bugCreate';
 export * from './bugUpdate';
+export * from './changePasswordRequest';
+export * from './changePasswordSuccess';
 export * from './client';
 export * from './clientAccess';
 export * from './clientAccessInput';
