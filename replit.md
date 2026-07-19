@@ -11,14 +11,14 @@ Sistema Operativo Interno de Coimagen Media Agency (CEO: Camila Segovia).
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string; `SESSION_SECRET` — Express session secret; `REPL_ID`, `ISSUER_URL` — Replit Auth OIDC
+- Required env: `DATABASE_URL` — Postgres connection string; `SESSION_SECRET` — Better Auth session secret; `DASHBOARD_URL` (and optionally `EXTRA_TRUSTED_ORIGINS`, comma-separated) — cross-origin dashboard origins trusted by Better Auth
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5 (port 8080, base path `/api`)
 - DB: PostgreSQL + Drizzle ORM
-- Auth: Replit Auth (OpenID Connect, PKCE, PostgreSQL sessions via `openid-client` v6)
+- Auth: Better Auth (email + password, PostgreSQL-backed sessions, `role`/`status`/`forcePasswordReset` as server-controlled additionalFields on the user)
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec at `lib/api-spec/openapi.yaml`)
 - Build: esbuild (CJS bundle)
@@ -30,14 +30,14 @@ Sistema Operativo Interno de Coimagen Media Agency (CEO: Camila Segovia).
 - `lib/api-spec/openapi.yaml` — source of truth for all API contracts
 - `lib/api-zod/` — generated Zod schemas (don't edit manually)
 - `lib/api-client-react/` — generated TanStack Query hooks (don't edit manually)
-- `lib/replit-auth-web/` — `useAuth()` hook for the frontend
+- `lib/replit-auth-web/` — `useAuth()`/`AuthProvider` hook for the frontend (package name predates the Better Auth migration; not renamed yet)
 - `artifacts/api-server/src/` — Express server (routes, middlewares, lib)
 - `artifacts/coimagen-os/src/` — React frontend
 
 ## Architecture decisions
 
 - Contract-first: edit `openapi.yaml` → run codegen → use generated hooks. No Zod in new route files — use generated schemas.
-- Replit Auth protects all `/api/*` routes except `/api/healthz`, `/api/auth/*`, `/api/login`, `/api/callback`, `/api/logout`.
+- Better Auth protects all `/api/*` routes except `/api/healthz`, `/api/auth/*` (Better Auth's own routes: sign-up/sign-in/sign-out/session), `/api/mobile-auth/*`, and `/api/public/*`.
 - Roles: `ceo`, `admin`, `viewer` stored in `users.role` (default: `viewer`). Use `requireRole()` middleware for protected mutations.
 - FK constraints: cascade delete for client-owned data; set null for agent/prospect references.
 - Audit middleware auto-logs all 2xx POST/PATCH/DELETE to `audit_logs` table.
@@ -61,4 +61,4 @@ _Populate as you build — explicit user instructions worth remembering across s
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
-- See the `replit-auth` skill for auth setup details
+- Auth setup (Better Auth): see `artifacts/api-server/src/lib/auth.ts` (server config, additionalFields) and `lib/replit-auth-web/src/use-auth.ts` (AuthProvider/useAuth). The old `.agents/memory/replit-auth-setup.md` note described the previous Replit Auth/OIDC setup and has been archived to `.agents/memory/archived/` — it no longer applies.

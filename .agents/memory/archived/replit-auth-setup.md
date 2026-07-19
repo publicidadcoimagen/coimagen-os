@@ -1,7 +1,14 @@
 ---
-name: Replit Auth setup for COIMAGEN OS
-description: Auth fully integrated with sessions, users+role, middleware, and frontend hook
+name: Replit Auth setup for COIMAGEN OS (ARCHIVED — superseded)
+description: "ARCHIVED 2026-07-19: this OIDC/Replit Auth setup was fully replaced by Better Auth (email + password). Kept for historical context only — do not follow these instructions."
 ---
+
+> **Archivado.** Todo lo descrito acá (Replit Auth, OIDC, `/api/login`,
+> `/api/callback`, `/api/logout`, `REPL_ID`/`ISSUER_URL`) fue reemplazado
+> por Better Auth (email + contraseña) durante la migración de auth.
+> Ver `artifacts/api-server/src/lib/auth.ts` y
+> `lib/replit-auth-web/src/use-auth.ts` para el setup actual. Se conserva
+> este archivo solo como referencia histórica.
 
 Auth is fully integrated (V1.5 Security Hardening).
 

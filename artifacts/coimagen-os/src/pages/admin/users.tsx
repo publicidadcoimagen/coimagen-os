@@ -152,8 +152,8 @@ export function AdminUsers() {
       <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/40 border border-border/40">
         <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground">
-          Los accesos se gestionan mediante autenticación externa (Replit Auth / proveedor de identidad).
-          Las contraseñas <strong>no se administran</strong> desde COIMAGEN OS. El rol <strong>Cliente</strong> está preparado para el futuro Client Room — sin acceso al panel actual.
+          Los accesos se gestionan mediante Better Auth (email y contraseña).
+          Las contraseñas <strong>no se asignan desde esta pantalla</strong> — se definen al crear la cuenta o en el primer inicio de sesión. El rol <strong>Cliente</strong> está preparado para el futuro Client Room — sin acceso al panel actual.
         </p>
       </div>
 
@@ -335,7 +335,7 @@ export function AdminUsers() {
             <div className="flex items-start gap-2 p-2.5 rounded-md bg-muted/40 border border-border/40">
               <Info className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
               <p className="text-[11px] text-muted-foreground">
-                Los usuarios creados manualmente no pueden iniciar sesión hasta que se autentiquen con Replit Auth. Este registro es para referencia y preparación del Client Room.
+                Este formulario crea un registro de referencia, sin credenciales de acceso — no crea una cuenta con contraseña en Better Auth. Para dar acceso real hay que crear la cuenta por separado (fuera de este formulario).
               </p>
             </div>
           </div>

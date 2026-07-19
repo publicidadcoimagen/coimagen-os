@@ -123,7 +123,7 @@ export function Performance() {
 // ─── SECURITY ─────────────────────────────────────────────────────────────────
 export function Security() {
   const secCategories = [
-    { title: "Autenticación", color: "text-purple-400", items: ["Replit Auth OIDC / PKCE","Sesiones seguras","Token expiry","CSRF protection","Rate limiting en auth"] },
+    { title: "Autenticación", color: "text-purple-400", items: ["Better Auth (email + contraseña)","Sesiones seguras","Token expiry","CSRF protection","Rate limiting en auth"] },
     { title: "Roles y Permisos", color: "text-purple-400", items: ["CEO / Admin / Viewer","requireRole() middleware","Rutas protegidas","Acciones por rol","Audit logging"] },
     { title: "Endpoints", color: "text-purple-400", items: ["Endpoints públicos","Endpoints protegidos","Validación de inputs","Sanitización","SQL injection"] },
     { title: "Variables y Secretos", color: "text-purple-400", items: ["SESSION_SECRET","DATABASE_URL","Variables de entorno","Sin secrets en código","Rotación de secretos"] },
@@ -143,7 +143,7 @@ export function Security() {
 export function Architecture() {
   const archCategories = [
     { title: "Servicios", color: "text-cyan-400", items: ["API Server (Express 5)","Frontend (React + Vite)","PostgreSQL + Drizzle","Reverse Proxy","Build Pipeline"] },
-    { title: "Capas", color: "text-cyan-400", items: ["Capa de presentación (React)","Capa de API (Express)","Capa de datos (Drizzle + PG)","Capa de auth (Replit OIDC)","Capa de validación (Zod)"] },
+    { title: "Capas", color: "text-cyan-400", items: ["Capa de presentación (React)","Capa de API (Express)","Capa de datos (Drizzle + PG)","Capa de auth (Better Auth)","Capa de validación (Zod)"] },
     { title: "Dependencias", color: "text-cyan-400", items: ["pnpm workspaces","TypeScript 5.9","TanStack Query","shadcn/ui","Orval codegen"] },
     { title: "Base de datos", color: "text-cyan-400", items:["Tablas y relaciones","FK constraints","Índices","Migraciones","Drizzle ORM schema"] },
     { title: "Escalabilidad", color: "text-cyan-400", items: ["Horizontal scaling","Connection pooling","Query optimization","CDN y caching","Microservices readiness"] },
@@ -163,7 +163,7 @@ export function HealthCheck() {
   const checks = [
     { label: "API Server", status: "ok", detail: "Express respondiendo en /api/healthz" },
     { label: "Base de datos", status: "ok", detail: "PostgreSQL conectado y operativo" },
-    { label: "Autenticación", status: "ok", detail: "Replit Auth OIDC activo" },
+    { label: "Autenticación", status: "ok", detail: "Better Auth activo" },
     { label: "Frontend", status: "ok", detail: "React + Vite sirviendo correctamente" },
     { label: "Sesiones", status: "ok", detail: "Session store con PostgreSQL" },
     { label: "Audit Log", status: "ok", detail: "Middleware de auditoría activo" },
