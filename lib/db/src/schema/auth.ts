@@ -11,6 +11,9 @@ export const usersTable = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("viewer"),
   status: varchar("status").notNull().default("active"),
+  // Set on admin-seeded accounts so the user is required to set their own
+  // password on first login instead of keeping the seeded temporary one.
+  forcePasswordReset: boolean("force_password_reset").notNull().default(false),
   lastLogin: timestamp("last_login", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),

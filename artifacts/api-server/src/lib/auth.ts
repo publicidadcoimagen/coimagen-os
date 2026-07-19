@@ -69,6 +69,7 @@ export const auth = betterAuth({
       // Server-controlled: never accepted from the signup body.
       role: { type: "string", required: false, input: false, defaultValue: "viewer" },
       status: { type: "string", required: false, input: false, defaultValue: "active" },
+      forcePasswordReset: { type: "boolean", required: false, input: false, defaultValue: false },
       lastLogin: { type: "date", required: false, input: false },
     },
   },
