@@ -38,12 +38,15 @@ export const auth = betterAuth({
     ...(process.env.EXTRA_TRUSTED_ORIGINS?.split(",").map((o) => o.trim()) ?? []),
   ].filter((v): v is string => Boolean(v)),
   advanced: {
-    // Session cookie must be sendable cross-origin (dashboard -> this API).
-    // Safe: Better Auth's originCheckMiddleware validates every mutating
-    // request's Origin header against trustedOrigins regardless of this
-    // setting, so this doesn't weaken CSRF protection.
+    // Dashboard (portal.coimagenmedia.com) and this API
+    // (api.coimagenmedia.com) are different hosts but the same registrable
+    // domain, so browsers treat requests between them as same-site, not
+    // cross-site — SameSite=Lax cookies are sent on same-site fetches
+    // regardless of method. This only holds because both share
+    // coimagenmedia.com; if the dashboard is ever served from a different
+    // domain (e.g. a vercel.app preview) again, its requests need "none".
     defaultCookieAttributes: {
-      sameSite: "none",
+      sameSite: "lax",
       secure: true,
     },
   },
