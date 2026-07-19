@@ -1,5 +1,14 @@
 /// <reference types="vite/client" />
-import { useState, useEffect, useCallback } from "react";
+import {
+  createContext,
+  createElement,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  useMemo,
+  type ReactNode,
+} from "react";
 import { createAuthClient } from "better-auth/react";
 import { customFetch, type AuthUser } from "@workspace/api-client-react";
 
@@ -21,7 +30,17 @@ interface AuthState {
   logout: () => void;
 }
 
-export function useAuth(): AuthState {
+// A shared Context is essential here: multiple components (AuthGate,
+// LoginForm, page components reading `user`) each consume this state, and
+// they must all observe the same session. Without it, each caller of
+// useAuth() would get its own independent useState instance — a successful
+// sign-in in LoginForm would never be seen by AuthGate, which would keep
+// rendering the login screen forever (only a full page reload, which
+// re-runs the initial session fetch, would reveal the already-authenticated
+// session).
+const AuthContext = createContext<AuthState | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -62,11 +81,24 @@ export function useAuth(): AuthState {
     authClient.signOut().finally(() => setUser(null));
   }, []);
 
-  return {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
-    signIn,
-    logout,
-  };
+  const value = useMemo<AuthState>(
+    () => ({
+      user,
+      isLoading,
+      isAuthenticated: !!user,
+      signIn,
+      logout,
+    }),
+    [user, isLoading, signIn, logout],
+  );
+
+  return createElement(AuthContext.Provider, { value }, children);
+}
+
+export function useAuth(): AuthState {
+  const state = useContext(AuthContext);
+  if (!state) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return state;
 }
