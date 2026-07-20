@@ -1477,7 +1477,7 @@ export const createProspectBodyStatusDefault = `lead`;
 
 export const CreateProspectBody = zod.object({
   "name": zod.string().min(1),
-  "email": zod.string().optional(),
+  "email": zod.string().email(),
   "phone": zod.string().optional(),
   "company": zod.string().optional(),
   "industry": zod.string().optional(),

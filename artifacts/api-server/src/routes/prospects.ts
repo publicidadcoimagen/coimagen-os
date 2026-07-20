@@ -32,7 +32,7 @@ router.post("/prospects", requireRole("ceo", "admin"), async (req, res): Promise
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [row] = await db.insert(prospectsTable).values({
     name: parsed.data.name,
-    email: parsed.data.email ?? null,
+    email: parsed.data.email,
     phone: parsed.data.phone ?? null,
     company: parsed.data.company ?? null,
     industry: parsed.data.industry ?? null,
