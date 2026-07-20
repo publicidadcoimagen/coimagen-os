@@ -1,11 +1,12 @@
 import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { clientsTable } from "./clients";
 
 export const organizationsTable = pgTable("organizations", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
   description: text("description"),
-  clientId: integer("client_id"),
+  clientId: integer("client_id").references(() => clientsTable.id, { onDelete: "set null" }),
   logoUrl: text("logo_url"),
   primaryColor: text("primary_color"),
   contactEmail: text("contact_email"),
