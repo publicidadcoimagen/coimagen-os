@@ -46,8 +46,8 @@ export function Prospects() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", industry: "", source: "", notes: "", status: "lead" });
 
   const handleSubmit = () => {
-    if (!form.name) return;
-    createProspect.mutate({ data: { name: form.name, email: form.email || undefined, phone: form.phone || undefined, company: form.company || undefined, industry: form.industry || undefined, source: form.source || undefined, notes: form.notes || undefined, status: form.status as "lead" } }, {
+    if (!form.name || !form.email) return;
+    createProspect.mutate({ data: { name: form.name, email: form.email, phone: form.phone || undefined, company: form.company || undefined, industry: form.industry || undefined, source: form.source || undefined, notes: form.notes || undefined, status: form.status as "lead" } }, {
       onSuccess: () => { qc.invalidateQueries({ queryKey: getListProspectsQueryKey() }); setOpen(false); setForm({ name: "", email: "", phone: "", company: "", industry: "", source: "", notes: "", status: "lead" }); }
     });
   };
@@ -105,7 +105,7 @@ export function Prospects() {
           <div className="space-y-3">
             <div><Label>Nombre *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nombre completo" /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" /></div>
+              <div><Label>Email *</Label><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="correo@ejemplo.com" /></div>
               <div><Label>Teléfono</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+52 55..." /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -128,7 +128,7 @@ export function Prospects() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSubmit} disabled={!form.name || createProspect.isPending}>
+            <Button onClick={handleSubmit} disabled={!form.name || !form.email || createProspect.isPending}>
               {createProspect.isPending ? "Guardando..." : "Crear Prospecto"}
             </Button>
           </DialogFooter>

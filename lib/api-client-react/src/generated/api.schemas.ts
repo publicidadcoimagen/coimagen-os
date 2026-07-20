@@ -646,7 +646,7 @@ export const ProspectInputStatus = {
 export interface ProspectInput {
   /** @minLength 1 */
   name: string;
-  email?: string;
+  email: string;
   phone?: string;
   company?: string;
   industry?: string;

@@ -3820,10 +3820,10 @@ components:
         updatedAt: { type: ["string", "null"] }
     ProspectInput:
       type: object
-      required: [name]
+      required: [name, email]
       properties:
         name: { type: string, minLength: 1 }
-        email: { type: string }
+        email: { type: string, format: email }
         phone: { type: string }
         company: { type: string }
         industry: { type: string }
