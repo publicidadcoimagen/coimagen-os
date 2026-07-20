@@ -49,6 +49,8 @@ import type {
   Bug,
   BugCreate,
   BugUpdate,
+  ChangePasswordRequest,
+  ChangePasswordSuccess,
   Client,
   ClientAccess,
   ClientAccessInput,
@@ -407,6 +409,77 @@ export const useLogoutMobileSession = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getLogoutMobileSessionMutationOptions(options));
+    }
+
+export const getChangeOwnPasswordUrl = () => {
+
+
+
+
+  return `/api/account/change-password`
+}
+
+/**
+ * @summary Change the signed-in user's password, clearing forcePasswordReset on success
+ */
+export const changeOwnPassword = async (changePasswordRequest: ChangePasswordRequest, options?: RequestInit): Promise<ChangePasswordSuccess> => {
+
+  return customFetch<ChangePasswordSuccess>(getChangeOwnPasswordUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      changePasswordRequest,)
+  }
+);}
+
+
+
+
+export const getChangeOwnPasswordMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeOwnPassword>>, TError,{data: BodyType<ChangePasswordRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof changeOwnPassword>>, TError,{data: BodyType<ChangePasswordRequest>}, TContext> => {
+
+const mutationKey = ['changeOwnPassword'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changeOwnPassword>>, {data: BodyType<ChangePasswordRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  changeOwnPassword(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChangeOwnPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof changeOwnPassword>>>
+    export type ChangeOwnPasswordMutationBody = BodyType<ChangePasswordRequest>
+    export type ChangeOwnPasswordMutationError = ErrorType<void>
+
+    /**
+ * @summary Change the signed-in user's password, clearing forcePasswordReset on success
+ */
+export const useChangeOwnPassword = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeOwnPassword>>, TError,{data: BodyType<ChangePasswordRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof changeOwnPassword>>,
+        TError,
+        {data: BodyType<ChangePasswordRequest>},
+        TContext
+      > => {
+      return useMutation(getChangeOwnPasswordMutationOptions(options));
     }
 
 export const getHealthCheckUrl = () => {

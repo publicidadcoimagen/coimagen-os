@@ -16,6 +16,10 @@ export interface AuthUser {
   /** @nullable */
   profileImageUrl: string | null;
   role: string;
+  status: string;
+  forcePasswordReset: boolean;
+  /** @nullable */
+  lastLogin: string | null;
 }
 
 export interface AuthUserEnvelope {
@@ -25,6 +29,15 @@ export interface AuthUserEnvelope {
 export interface MobileTokenExchangeRequest {
   email: string;
   password: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordSuccess {
+  success: boolean;
 }
 
 export interface MobileTokenExchangeSuccess {

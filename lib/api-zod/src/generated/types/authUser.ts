@@ -17,4 +17,8 @@ export interface AuthUser {
   /** @nullable */
   profileImageUrl: string | null;
   role: string;
+  status: string;
+  forcePasswordReset: boolean;
+  /** @nullable */
+  lastLogin: string | null;
 }

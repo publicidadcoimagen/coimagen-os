@@ -28,6 +28,7 @@ interface AuthState {
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 // A shared Context is essential here: multiple components (AuthGate,
@@ -88,8 +89,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: !!user,
       signIn,
       logout,
+      refreshUser: refetchUser,
     }),
-    [user, isLoading, signIn, logout],
+    [user, isLoading, signIn, logout, refetchUser],
   );
 
   return createElement(AuthContext.Provider, { value }, children);
