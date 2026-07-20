@@ -30,6 +30,11 @@ export const aiExecutionsTable = pgTable("ai_executions", {
   errors:       text("errors"),
   durationMs:   integer("duration_ms"),
   isSimulated:  boolean("is_simulated").notNull().default(true),
+  // Which LLM actually generated this execution's output — e.g. "anthropic"
+  // or "google" for the Digital Diagnosis Agent's try-Anthropic-then-Gemini
+  // fallback. Nullable: most agents in this table don't run real LLM calls
+  // yet, and existing rows predate this column.
+  provider:     text("provider"),
   sentToQc:     boolean("sent_to_qc").notNull().default(false),
   qcIncidentId: integer("qc_incident_id").references(() => incidentsTable.id, { onDelete: "set null" }),
   notes:        text("notes"),

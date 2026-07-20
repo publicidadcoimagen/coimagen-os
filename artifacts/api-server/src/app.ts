@@ -11,6 +11,14 @@ import { getCurrentAuthUser } from "./routes/auth";
 
 const app: Express = express();
 
+// Render sits in front of this app as a reverse proxy — without trusting the
+// first hop, req.ip resolves to Render's proxy address for every request
+// (not the real client), which breaks IP-based rate limiting on
+// /api/public/digital-diagnosis: either everyone shares one bucket, or
+// express-rate-limit refuses to start (it validates X-Forwarded-For usage
+// against this setting to prevent a spoofing bypass).
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,

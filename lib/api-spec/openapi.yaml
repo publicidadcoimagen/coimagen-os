@@ -5435,6 +5435,7 @@ components:
         errors:       { type: ["string", "null"] }
         durationMs:   { type: ["integer", "null"] }
         isSimulated:  { type: boolean }
+        provider:     { type: ["string", "null"] }
         sentToQc:     { type: boolean }
         qcIncidentId: { type: ["integer", "null"] }
         notes:        { type: ["string", "null"] }

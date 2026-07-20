@@ -41,6 +41,8 @@ export interface AiExecution {
   /** @nullable */
   durationMs?: number | null;
   isSimulated: boolean;
+  /** @nullable */
+  provider?: string | null;
   sentToQc: boolean;
   /** @nullable */
   qcIncidentId?: number | null;

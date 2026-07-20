@@ -1,7 +1,28 @@
-import { generateObject } from "ai";
-import { getDigitalDiagnosisModel } from "./provider";
+import { generateObject, APICallError } from "ai";
+import { getAnthropicModel, getGeminiModel } from "./provider";
 import { digitalDiagnosisAnalysisSchema, type DigitalDiagnosisAnalysis } from "./analysis-schema";
 import type { ScrapedSignals } from "./scrape";
+import { logger } from "../logger";
+
+export type DigitalDiagnosisProvider = "anthropic" | "google";
+
+export interface DigitalDiagnosisGeneration {
+  analysis: DigitalDiagnosisAnalysis;
+  provider: DigitalDiagnosisProvider;
+}
+
+// The only condition that triggers the Gemini fallback: Anthropic's account
+// has no credit loaded. Anthropic returns this as a dedicated HTTP 402
+// billing_error — not a message-text match, not folded into the generic
+// 400 invalid_request_error bucket. Any other error (auth, rate limit,
+// network, 5xx, or a 400 for an actually malformed request) must NOT be
+// caught here — it propagates to the caller, which is what drives the
+// existing incident-on-error path in public-digital-diagnosis.ts. Silently
+// falling back on any error would hide real bugs (a bad API key, a broken
+// prompt) behind Gemini forever instead of surfacing them.
+export function isInsufficientCreditError(err: unknown): boolean {
+  return APICallError.isInstance(err) && err.statusCode === 402;
+}
 
 // Below this word count, the page's real content is more likely hidden
 // behind client-side JS rendering (a React/Vue/etc SPA) than genuinely empty
@@ -38,12 +59,20 @@ ${signals.textSample || "(no se pudo extraer texto visible)"}
 Con base en estos datos, genera el diagnóstico estructurado. Usa los números técnicos exactos que te di arriba para los campos que los piden (no los inventes ni los cambies). Para los campos cualitativos (issues, readabilityNotes, prioritizedTasks, summary), analiza con criterio de negocio real: qué le falta a este sitio para generar más contactos/ventas. La lista de "prioritizedTasks" debe tener entre 3 y 6 tareas concretas y accionables, ordenadas por impacto. El "summary" debe ser 2-3 oraciones en español, directas, sin relleno.`;
 }
 
-export async function generateDigitalDiagnosis(url: string, signals: ScrapedSignals): Promise<DigitalDiagnosisAnalysis> {
-  const model = getDigitalDiagnosisModel();
-  const { object } = await generateObject({
-    model,
-    schema: digitalDiagnosisAnalysisSchema,
-    prompt: buildPrompt(url, signals),
-  });
-  return object;
+export async function generateDigitalDiagnosis(url: string, signals: ScrapedSignals): Promise<DigitalDiagnosisGeneration> {
+  const schema = digitalDiagnosisAnalysisSchema;
+  const prompt = buildPrompt(url, signals);
+
+  try {
+    const { object } = await generateObject({ model: getAnthropicModel(), schema, prompt });
+    return { analysis: object, provider: "anthropic" };
+  } catch (err) {
+    if (!isInsufficientCreditError(err)) throw err;
+    logger.warn(
+      { err: err instanceof Error ? err.message : err },
+      "Anthropic sin crédito disponible (402) — usando Gemini como fallback para el Digital Diagnosis Agent",
+    );
+    const { object } = await generateObject({ model: getGeminiModel(), schema, prompt });
+    return { analysis: object, provider: "google" };
+  }
 }
