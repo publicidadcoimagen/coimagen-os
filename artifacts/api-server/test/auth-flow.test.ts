@@ -105,6 +105,9 @@ describe("authMiddleware", () => {
       lastName: "Segovia",
       profileImageUrl: "https://example.com/avatar.png",
       role: "ceo",
+      status: "active",
+      forcePasswordReset: false,
+      lastLogin: null,
     });
   });
 
@@ -125,6 +128,9 @@ describe("authMiddleware", () => {
       lastName: null,
       profileImageUrl: null,
       role: "viewer",
+      status: "active",
+      forcePasswordReset: false,
+      lastLogin: null,
     });
   });
 });
@@ -205,6 +211,9 @@ describe("GET /auth/user", () => {
       lastName: "Segovia",
       profileImageUrl: null,
       role: "ceo",
+      status: "active",
+      forcePasswordReset: false,
+      lastLogin: null,
     };
     const req = createMockRequest({
       isAuthenticated: () => true,
