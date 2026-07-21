@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import rateLimit from "express-rate-limit";
 import { eq } from "drizzle-orm";
 import { db, prospectsTable, aiExecutionsTable, diagnosesTable, incidentsTable } from "@workspace/db";
 import { SubmitDigitalDiagnosisBody, GetPublicDigitalDiagnosisParams } from "@workspace/api-zod";
@@ -8,9 +9,22 @@ import { sendDigitalDiagnosisEmail } from "../lib/digital-diagnosis/email";
 
 const router: IRouter = Router();
 
+// This endpoint is public and unauthenticated by design (no session to gate
+// on), and now calls a real, billed LLM provider — without a limit, a
+// script could hit it in a loop and run up a real Anthropic bill with no
+// warning before the invoice. 5 requests/hour/IP comfortably covers a
+// real visitor retrying a typo'd URL, while capping worst-case abuse cost.
+const digitalDiagnosisLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Demasiadas solicitudes desde tu conexión. Intenta de nuevo en un rato o contáctanos por WhatsApp." },
+});
+
 // Public, unauthenticated — powers the "URL de tu sitio web" step of the
 // /diagnostico quiz on coimagen-media-web. No session required.
-router.post("/public/digital-diagnosis", async (req, res): Promise<void> => {
+router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, res): Promise<void> => {
   const parsed = SubmitDigitalDiagnosisBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -48,8 +62,10 @@ router.post("/public/digital-diagnosis", async (req, res): Promise<void> => {
     // 3. Fetch + extract signals from the target site
     const signals = await scrapeUrl(url);
 
-    // 4. Structured analysis via the configured LLM provider
-    const analysis = await generateDigitalDiagnosis(url, signals);
+    // 4. Structured analysis — tries Anthropic first, falls back to Gemini
+    // only if Anthropic has no credit loaded (see analyze.ts)
+    const { analysis, provider } = await generateDigitalDiagnosis(url, signals);
+    const storedResult = { ...analysis, _meta: { aiProvider: provider } };
 
     // 5. Persist the diagnosis
     const hostname = new URL(url).hostname;
@@ -60,13 +76,14 @@ router.post("/public/digital-diagnosis", async (req, res): Promise<void> => {
       type: "digital_diagnosis",
       executionId: execution.id,
       sourceUrl: url,
-      result: analysis,
+      result: storedResult,
     }).returning();
 
     await db.update(aiExecutionsTable).set({
       status: "completed",
       result: "success",
-      outputData: JSON.stringify(analysis),
+      outputData: JSON.stringify(storedResult),
+      provider,
       durationMs: Date.now() - startedAt,
       updatedAt: new Date(),
     }).where(eq(aiExecutionsTable.id, execution.id));
