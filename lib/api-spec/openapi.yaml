@@ -1813,6 +1813,45 @@ paths:
               schema:
                 $ref: "#/components/schemas/ConfigEntry"
 
+  # ─── SYSTEM CREDENTIALS (account-level secrets, e.g. Coimagen's own Metricool
+  #     subscription — not tied to any one client, see client_social_credentials
+  #     for per-client secrets) ───────────────────────────────────────────────
+  /system-credentials:
+    get:
+      operationId: listSystemCredentials
+      tags: [system-credentials]
+      summary: List system-level credentials (metadata only, never the decrypted value)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SystemCredentialMeta"
+  /system-credentials/{provider}/{credentialType}:
+    put:
+      operationId: upsertSystemCredential
+      tags: [system-credentials]
+      summary: Create or rotate a system-level credential (CEO/admin only)
+      parameters:
+        - { name: provider, in: path, required: true, schema: { type: string } }
+        - { name: credentialType, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SystemCredentialInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemCredentialMeta"
+
   # ─── ADMIN / USERS ──────────────────────────────────────────────────────────
   /admin/users:
     get:
@@ -4160,6 +4199,25 @@ components:
         value: { type: ["string", "null"] }
         updatedAt: { type: string }
     ConfigEntryInput:
+      type: object
+      required: [value]
+      properties:
+        value: { type: string }
+
+    # ── SYSTEM CREDENTIALS ──────────────────────────────────────────────────────
+    SystemCredentialMeta:
+      type: object
+      required: [id, provider, credentialType, status, createdAt]
+      properties:
+        id: { type: integer }
+        provider: { type: string }
+        credentialType: { type: string }
+        status: { type: string }
+        lastUsedAt: { type: ["string", "null"] }
+        updatedBy: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    SystemCredentialInput:
       type: object
       required: [value]
       properties:

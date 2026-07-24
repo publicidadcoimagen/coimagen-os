@@ -44,6 +44,7 @@ import orchestrationEventsRouter from "./orchestration-events";
 import orchestrationRulesRouter from "./orchestration-rules";
 import integrationsRouter from "./integrations";
 import executionsRouter from "./executions";
+import systemCredentialsRouter from "./system-credentials";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 
@@ -99,5 +100,6 @@ router.use(orchestrationEventsRouter);
 router.use(orchestrationRulesRouter);
 router.use(integrationsRouter);
 router.use(executionsRouter);
+router.use("/system-credentials", systemCredentialsRouter);
 
 export default router;
