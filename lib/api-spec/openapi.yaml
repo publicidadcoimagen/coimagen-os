@@ -3080,6 +3080,164 @@ paths:
       responses:
         "204":
           description: No Content
+
+  /clients/{clientId}/content-calendar/items:
+    get:
+      operationId: listContentCalendarItems
+      summary: List content calendar items for a client
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ContentCalendarItem" }
+    post:
+      operationId: createContentCalendarItem
+      summary: Create a draft content calendar item along with its target networks
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContentCalendarItemCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentCalendarItem" }
+
+  /clients/{clientId}/content-calendar/items/{id}:
+    get:
+      operationId: getContentCalendarItem
+      summary: Get a content calendar item by id
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentCalendarItem" }
+    patch:
+      operationId: updateContentCalendarItem
+      summary: Edit a content calendar item while it is still draft or pending_approval
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContentCalendarItemUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentCalendarItem" }
+
+  /clients/{clientId}/content-calendar/items/{id}/approve:
+    post:
+      operationId: approveContentCalendarItem
+      summary: Approve a content calendar item for publishing
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentCalendarItem" }
+
+  /clients/{clientId}/content-calendar/items/{id}/publish:
+    post:
+      operationId: publishContentCalendarItem
+      summary: Attempt to publish an approved content calendar item to each of its target networks
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentCalendarItem" }
+
+  /clients/{clientId}/social-credentials:
+    get:
+      operationId: listClientSocialCredentials
+      summary: List a client's social platform credentials (metadata only, never the decrypted value)
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ClientSocialCredentialMeta" }
+    post:
+      operationId: createClientSocialCredential
+      summary: Store an encrypted social platform credential for a client
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ClientSocialCredentialCreate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ClientSocialCredentialMeta" }
+
   /orchestration-events:
     get:
       operationId: listOrchestrationEvents
@@ -5260,6 +5418,86 @@ components:
         fileUrl: { type: string }
         comments: { type: string }
         reviewedBy: { type: string }
+
+    ContentCalendarTarget:
+      type: object
+      required: [id, calendarItemId, network, status, createdAt]
+      properties:
+        id: { type: integer }
+        calendarItemId: { type: integer }
+        network: { type: string }
+        publisherMode: { type: ["string", "null"] }
+        externalPostId: { type: ["string", "null"] }
+        status: { type: string }
+        publishedAt: { type: ["string", "null"] }
+        failureReason: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ContentCalendarItem:
+      type: object
+      required: [id, clientId, caption, status, createdAt, targets]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        caption: { type: string }
+        mediaUrls:
+          type: ["array", "null"]
+          items: { type: string }
+        scheduledAt: { type: ["string", "null"] }
+        status: { type: string }
+        createdBy: { type: ["string", "null"] }
+        approvedBy: { type: ["string", "null"] }
+        approvedAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+        targets:
+          type: array
+          items: { $ref: "#/components/schemas/ContentCalendarTarget" }
+    ContentCalendarItemCreate:
+      type: object
+      required: [caption, targets]
+      properties:
+        caption: { type: string }
+        mediaUrls:
+          type: array
+          items: { type: string }
+        scheduledAt: { type: string }
+        createdBy: { type: string }
+        targets:
+          type: array
+          minItems: 1
+          items: { type: string }
+    ContentCalendarItemUpdate:
+      type: object
+      properties:
+        caption: { type: string }
+        mediaUrls:
+          type: array
+          items: { type: string }
+        scheduledAt: { type: string }
+    ClientSocialCredentialMeta:
+      type: object
+      required: [id, clientId, platform, credentialType, status, createdAt]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        platform: { type: string }
+        credentialType: { type: string }
+        scopes: { type: ["string", "null"] }
+        expiresAt: { type: ["string", "null"] }
+        status: { type: string }
+        lastUsedAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    ClientSocialCredentialCreate:
+      type: object
+      required: [platform, credentialType, value]
+      properties:
+        platform: { type: string }
+        credentialType: { type: string }
+        value: { type: string }
+        scopes: { type: string }
+        expiresAt: { type: string }
 
     OrchestrationEvent:
       type: object

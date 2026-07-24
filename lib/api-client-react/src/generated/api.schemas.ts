@@ -2460,6 +2460,85 @@ export interface ClientApprovalUpdate {
   reviewedBy?: string;
 }
 
+export interface ContentCalendarTarget {
+  id: number;
+  calendarItemId: number;
+  network: string;
+  /** @nullable */
+  publisherMode?: string | null;
+  /** @nullable */
+  externalPostId?: string | null;
+  status: string;
+  /** @nullable */
+  publishedAt?: string | null;
+  /** @nullable */
+  failureReason?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ContentCalendarItem {
+  id: number;
+  clientId: number;
+  caption: string;
+  /** @nullable */
+  mediaUrls?: string[] | null;
+  /** @nullable */
+  scheduledAt?: string | null;
+  status: string;
+  /** @nullable */
+  createdBy?: string | null;
+  /** @nullable */
+  approvedBy?: string | null;
+  /** @nullable */
+  approvedAt?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+  targets: ContentCalendarTarget[];
+}
+
+export interface ContentCalendarItemCreate {
+  caption: string;
+  mediaUrls?: string[];
+  scheduledAt?: string;
+  createdBy?: string;
+  /** @minItems 1 */
+  targets: string[];
+}
+
+export interface ContentCalendarItemUpdate {
+  caption?: string;
+  mediaUrls?: string[];
+  scheduledAt?: string;
+}
+
+export interface ClientSocialCredentialMeta {
+  id: number;
+  clientId: number;
+  platform: string;
+  credentialType: string;
+  /** @nullable */
+  scopes?: string | null;
+  /** @nullable */
+  expiresAt?: string | null;
+  status: string;
+  /** @nullable */
+  lastUsedAt?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface ClientSocialCredentialCreate {
+  platform: string;
+  credentialType: string;
+  value: string;
+  scopes?: string;
+  expiresAt?: string;
+}
+
 export interface OrchestrationEvent {
   id: number;
   eventType: string;
