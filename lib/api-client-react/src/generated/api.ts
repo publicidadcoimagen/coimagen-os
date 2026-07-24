@@ -66,11 +66,16 @@ import type {
   ClientNoteUpdate,
   ClientOnboarding,
   ClientOnboardingInput,
+  ClientSocialCredentialCreate,
+  ClientSocialCredentialMeta,
   ClientTimeline,
   ClientTimelineInput,
   ClientUpdate,
   ConfigEntry,
   ConfigEntryInput,
+  ContentCalendarItem,
+  ContentCalendarItemCreate,
+  ContentCalendarItemUpdate,
   Contract,
   ContractCreate,
   ContractUpdate,
@@ -13869,6 +13874,604 @@ export const useDeleteClientApproval = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteClientApprovalMutationOptions(options));
+    }
+
+export const getListContentCalendarItemsUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items`
+}
+
+/**
+ * @summary List content calendar items for a client
+ */
+export const listContentCalendarItems = async (clientId: number, options?: RequestInit): Promise<ContentCalendarItem[]> => {
+
+  return customFetch<ContentCalendarItem[]>(getListContentCalendarItemsUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListContentCalendarItemsQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/content-calendar/items`
+    ] as const;
+    }
+
+
+export const getListContentCalendarItemsQueryOptions = <TData = Awaited<ReturnType<typeof listContentCalendarItems>>, TError = ErrorType<unknown>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listContentCalendarItems>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListContentCalendarItemsQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listContentCalendarItems>>> = ({ signal }) => listContentCalendarItems(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listContentCalendarItems>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListContentCalendarItemsQueryResult = NonNullable<Awaited<ReturnType<typeof listContentCalendarItems>>>
+export type ListContentCalendarItemsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List content calendar items for a client
+ */
+
+export function useListContentCalendarItems<TData = Awaited<ReturnType<typeof listContentCalendarItems>>, TError = ErrorType<unknown>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listContentCalendarItems>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListContentCalendarItemsQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateContentCalendarItemUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items`
+}
+
+/**
+ * @summary Create a draft content calendar item along with its target networks
+ */
+export const createContentCalendarItem = async (clientId: number,
+    contentCalendarItemCreate: ContentCalendarItemCreate, options?: RequestInit): Promise<ContentCalendarItem> => {
+
+  return customFetch<ContentCalendarItem>(getCreateContentCalendarItemUrl(clientId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      contentCalendarItemCreate,)
+  }
+);}
+
+
+
+
+export const getCreateContentCalendarItemMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContentCalendarItem>>, TError,{clientId: number;data: BodyType<ContentCalendarItemCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createContentCalendarItem>>, TError,{clientId: number;data: BodyType<ContentCalendarItemCreate>}, TContext> => {
+
+const mutationKey = ['createContentCalendarItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createContentCalendarItem>>, {clientId: number;data: BodyType<ContentCalendarItemCreate>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  createContentCalendarItem(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateContentCalendarItemMutationResult = NonNullable<Awaited<ReturnType<typeof createContentCalendarItem>>>
+    export type CreateContentCalendarItemMutationBody = BodyType<ContentCalendarItemCreate>
+    export type CreateContentCalendarItemMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a draft content calendar item along with its target networks
+ */
+export const useCreateContentCalendarItem = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContentCalendarItem>>, TError,{clientId: number;data: BodyType<ContentCalendarItemCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createContentCalendarItem>>,
+        TError,
+        {clientId: number;data: BodyType<ContentCalendarItemCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateContentCalendarItemMutationOptions(options));
+    }
+
+export const getGetContentCalendarItemUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items/${id}`
+}
+
+/**
+ * @summary Get a content calendar item by id
+ */
+export const getContentCalendarItem = async (clientId: number,
+    id: number, options?: RequestInit): Promise<ContentCalendarItem> => {
+
+  return customFetch<ContentCalendarItem>(getGetContentCalendarItemUrl(clientId,id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetContentCalendarItemQueryKey = (clientId: number,
+    id: number,) => {
+    return [
+    `/api/clients/${clientId}/content-calendar/items/${id}`
+    ] as const;
+    }
+
+
+export const getGetContentCalendarItemQueryOptions = <TData = Awaited<ReturnType<typeof getContentCalendarItem>>, TError = ErrorType<unknown>>(clientId: number,
+    id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getContentCalendarItem>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetContentCalendarItemQueryKey(clientId,id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContentCalendarItem>>> = ({ signal }) => getContentCalendarItem(clientId,id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId && id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContentCalendarItem>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetContentCalendarItemQueryResult = NonNullable<Awaited<ReturnType<typeof getContentCalendarItem>>>
+export type GetContentCalendarItemQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get a content calendar item by id
+ */
+
+export function useGetContentCalendarItem<TData = Awaited<ReturnType<typeof getContentCalendarItem>>, TError = ErrorType<unknown>>(
+ clientId: number,
+    id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getContentCalendarItem>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetContentCalendarItemQueryOptions(clientId,id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateContentCalendarItemUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items/${id}`
+}
+
+/**
+ * @summary Edit a content calendar item while it is still draft or pending_approval
+ */
+export const updateContentCalendarItem = async (clientId: number,
+    id: number,
+    contentCalendarItemUpdate: ContentCalendarItemUpdate, options?: RequestInit): Promise<ContentCalendarItem> => {
+
+  return customFetch<ContentCalendarItem>(getUpdateContentCalendarItemUrl(clientId,id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      contentCalendarItemUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateContentCalendarItemMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateContentCalendarItem>>, TError,{clientId: number;id: number;data: BodyType<ContentCalendarItemUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateContentCalendarItem>>, TError,{clientId: number;id: number;data: BodyType<ContentCalendarItemUpdate>}, TContext> => {
+
+const mutationKey = ['updateContentCalendarItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateContentCalendarItem>>, {clientId: number;id: number;data: BodyType<ContentCalendarItemUpdate>}> = (props) => {
+          const {clientId,id,data} = props ?? {};
+
+          return  updateContentCalendarItem(clientId,id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateContentCalendarItemMutationResult = NonNullable<Awaited<ReturnType<typeof updateContentCalendarItem>>>
+    export type UpdateContentCalendarItemMutationBody = BodyType<ContentCalendarItemUpdate>
+    export type UpdateContentCalendarItemMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Edit a content calendar item while it is still draft or pending_approval
+ */
+export const useUpdateContentCalendarItem = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateContentCalendarItem>>, TError,{clientId: number;id: number;data: BodyType<ContentCalendarItemUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateContentCalendarItem>>,
+        TError,
+        {clientId: number;id: number;data: BodyType<ContentCalendarItemUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateContentCalendarItemMutationOptions(options));
+    }
+
+export const getApproveContentCalendarItemUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items/${id}/approve`
+}
+
+/**
+ * @summary Approve a content calendar item for publishing
+ */
+export const approveContentCalendarItem = async (clientId: number,
+    id: number, options?: RequestInit): Promise<ContentCalendarItem> => {
+
+  return customFetch<ContentCalendarItem>(getApproveContentCalendarItemUrl(clientId,id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getApproveContentCalendarItemMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveContentCalendarItem>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approveContentCalendarItem>>, TError,{clientId: number;id: number}, TContext> => {
+
+const mutationKey = ['approveContentCalendarItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveContentCalendarItem>>, {clientId: number;id: number}> = (props) => {
+          const {clientId,id} = props ?? {};
+
+          return  approveContentCalendarItem(clientId,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveContentCalendarItemMutationResult = NonNullable<Awaited<ReturnType<typeof approveContentCalendarItem>>>
+
+    export type ApproveContentCalendarItemMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Approve a content calendar item for publishing
+ */
+export const useApproveContentCalendarItem = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveContentCalendarItem>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof approveContentCalendarItem>>,
+        TError,
+        {clientId: number;id: number},
+        TContext
+      > => {
+      return useMutation(getApproveContentCalendarItemMutationOptions(options));
+    }
+
+export const getPublishContentCalendarItemUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items/${id}/publish`
+}
+
+/**
+ * @summary Attempt to publish an approved content calendar item to each of its target networks
+ */
+export const publishContentCalendarItem = async (clientId: number,
+    id: number, options?: RequestInit): Promise<ContentCalendarItem> => {
+
+  return customFetch<ContentCalendarItem>(getPublishContentCalendarItemUrl(clientId,id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getPublishContentCalendarItemMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publishContentCalendarItem>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof publishContentCalendarItem>>, TError,{clientId: number;id: number}, TContext> => {
+
+const mutationKey = ['publishContentCalendarItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof publishContentCalendarItem>>, {clientId: number;id: number}> = (props) => {
+          const {clientId,id} = props ?? {};
+
+          return  publishContentCalendarItem(clientId,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PublishContentCalendarItemMutationResult = NonNullable<Awaited<ReturnType<typeof publishContentCalendarItem>>>
+
+    export type PublishContentCalendarItemMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Attempt to publish an approved content calendar item to each of its target networks
+ */
+export const usePublishContentCalendarItem = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof publishContentCalendarItem>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof publishContentCalendarItem>>,
+        TError,
+        {clientId: number;id: number},
+        TContext
+      > => {
+      return useMutation(getPublishContentCalendarItemMutationOptions(options));
+    }
+
+export const getListClientSocialCredentialsUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/social-credentials`
+}
+
+/**
+ * @summary List a client's social platform credentials (metadata only, never the decrypted value)
+ */
+export const listClientSocialCredentials = async (clientId: number, options?: RequestInit): Promise<ClientSocialCredentialMeta[]> => {
+
+  return customFetch<ClientSocialCredentialMeta[]>(getListClientSocialCredentialsUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListClientSocialCredentialsQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/social-credentials`
+    ] as const;
+    }
+
+
+export const getListClientSocialCredentialsQueryOptions = <TData = Awaited<ReturnType<typeof listClientSocialCredentials>>, TError = ErrorType<unknown>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientSocialCredentials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListClientSocialCredentialsQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listClientSocialCredentials>>> = ({ signal }) => listClientSocialCredentials(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listClientSocialCredentials>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListClientSocialCredentialsQueryResult = NonNullable<Awaited<ReturnType<typeof listClientSocialCredentials>>>
+export type ListClientSocialCredentialsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List a client's social platform credentials (metadata only, never the decrypted value)
+ */
+
+export function useListClientSocialCredentials<TData = Awaited<ReturnType<typeof listClientSocialCredentials>>, TError = ErrorType<unknown>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientSocialCredentials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListClientSocialCredentialsQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateClientSocialCredentialUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/social-credentials`
+}
+
+/**
+ * @summary Store an encrypted social platform credential for a client
+ */
+export const createClientSocialCredential = async (clientId: number,
+    clientSocialCredentialCreate: ClientSocialCredentialCreate, options?: RequestInit): Promise<ClientSocialCredentialMeta> => {
+
+  return customFetch<ClientSocialCredentialMeta>(getCreateClientSocialCredentialUrl(clientId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientSocialCredentialCreate,)
+  }
+);}
+
+
+
+
+export const getCreateClientSocialCredentialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientSocialCredential>>, TError,{clientId: number;data: BodyType<ClientSocialCredentialCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createClientSocialCredential>>, TError,{clientId: number;data: BodyType<ClientSocialCredentialCreate>}, TContext> => {
+
+const mutationKey = ['createClientSocialCredential'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createClientSocialCredential>>, {clientId: number;data: BodyType<ClientSocialCredentialCreate>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  createClientSocialCredential(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateClientSocialCredentialMutationResult = NonNullable<Awaited<ReturnType<typeof createClientSocialCredential>>>
+    export type CreateClientSocialCredentialMutationBody = BodyType<ClientSocialCredentialCreate>
+    export type CreateClientSocialCredentialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Store an encrypted social platform credential for a client
+ */
+export const useCreateClientSocialCredential = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createClientSocialCredential>>, TError,{clientId: number;data: BodyType<ClientSocialCredentialCreate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createClientSocialCredential>>,
+        TError,
+        {clientId: number;data: BodyType<ClientSocialCredentialCreate>},
+        TContext
+      > => {
+      return useMutation(getCreateClientSocialCredentialMutationOptions(options));
     }
 
 export const getListOrchestrationEventsUrl = (params?: ListOrchestrationEventsParams,) => {

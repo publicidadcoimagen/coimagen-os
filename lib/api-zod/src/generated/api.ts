@@ -4114,6 +4114,244 @@ export const DeleteClientApprovalParams = zod.object({
 
 
 /**
+ * @summary List content calendar items for a client
+ */
+export const ListContentCalendarItemsParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const ListContentCalendarItemsResponseItem = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "caption": zod.string(),
+  "mediaUrls": zod.array(zod.string()).nullish(),
+  "scheduledAt": zod.string().nullish(),
+  "status": zod.string(),
+  "createdBy": zod.string().nullish(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish(),
+  "targets": zod.array(zod.object({
+  "id": zod.number(),
+  "calendarItemId": zod.number(),
+  "network": zod.string(),
+  "publisherMode": zod.string().nullish(),
+  "externalPostId": zod.string().nullish(),
+  "status": zod.string(),
+  "publishedAt": zod.string().nullish(),
+  "failureReason": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}))
+})
+export const ListContentCalendarItemsResponse = zod.array(ListContentCalendarItemsResponseItem)
+
+
+/**
+ * @summary Create a draft content calendar item along with its target networks
+ */
+export const CreateContentCalendarItemParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+
+
+
+export const CreateContentCalendarItemBody = zod.object({
+  "caption": zod.string(),
+  "mediaUrls": zod.array(zod.string()).optional(),
+  "scheduledAt": zod.string().optional(),
+  "createdBy": zod.string().optional(),
+  "targets": zod.array(zod.string()).min(1)
+})
+
+
+/**
+ * @summary Get a content calendar item by id
+ */
+export const GetContentCalendarItemParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+export const GetContentCalendarItemResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "caption": zod.string(),
+  "mediaUrls": zod.array(zod.string()).nullish(),
+  "scheduledAt": zod.string().nullish(),
+  "status": zod.string(),
+  "createdBy": zod.string().nullish(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish(),
+  "targets": zod.array(zod.object({
+  "id": zod.number(),
+  "calendarItemId": zod.number(),
+  "network": zod.string(),
+  "publisherMode": zod.string().nullish(),
+  "externalPostId": zod.string().nullish(),
+  "status": zod.string(),
+  "publishedAt": zod.string().nullish(),
+  "failureReason": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Edit a content calendar item while it is still draft or pending_approval
+ */
+export const UpdateContentCalendarItemParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+export const UpdateContentCalendarItemBody = zod.object({
+  "caption": zod.string().optional(),
+  "mediaUrls": zod.array(zod.string()).optional(),
+  "scheduledAt": zod.string().optional()
+})
+
+export const UpdateContentCalendarItemResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "caption": zod.string(),
+  "mediaUrls": zod.array(zod.string()).nullish(),
+  "scheduledAt": zod.string().nullish(),
+  "status": zod.string(),
+  "createdBy": zod.string().nullish(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish(),
+  "targets": zod.array(zod.object({
+  "id": zod.number(),
+  "calendarItemId": zod.number(),
+  "network": zod.string(),
+  "publisherMode": zod.string().nullish(),
+  "externalPostId": zod.string().nullish(),
+  "status": zod.string(),
+  "publishedAt": zod.string().nullish(),
+  "failureReason": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Approve a content calendar item for publishing
+ */
+export const ApproveContentCalendarItemParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+export const ApproveContentCalendarItemResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "caption": zod.string(),
+  "mediaUrls": zod.array(zod.string()).nullish(),
+  "scheduledAt": zod.string().nullish(),
+  "status": zod.string(),
+  "createdBy": zod.string().nullish(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish(),
+  "targets": zod.array(zod.object({
+  "id": zod.number(),
+  "calendarItemId": zod.number(),
+  "network": zod.string(),
+  "publisherMode": zod.string().nullish(),
+  "externalPostId": zod.string().nullish(),
+  "status": zod.string(),
+  "publishedAt": zod.string().nullish(),
+  "failureReason": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary Attempt to publish an approved content calendar item to each of its target networks
+ */
+export const PublishContentCalendarItemParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+export const PublishContentCalendarItemResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "caption": zod.string(),
+  "mediaUrls": zod.array(zod.string()).nullish(),
+  "scheduledAt": zod.string().nullish(),
+  "status": zod.string(),
+  "createdBy": zod.string().nullish(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish(),
+  "targets": zod.array(zod.object({
+  "id": zod.number(),
+  "calendarItemId": zod.number(),
+  "network": zod.string(),
+  "publisherMode": zod.string().nullish(),
+  "externalPostId": zod.string().nullish(),
+  "status": zod.string(),
+  "publishedAt": zod.string().nullish(),
+  "failureReason": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}))
+})
+
+
+/**
+ * @summary List a client's social platform credentials (metadata only, never the decrypted value)
+ */
+export const ListClientSocialCredentialsParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const ListClientSocialCredentialsResponseItem = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "platform": zod.string(),
+  "credentialType": zod.string(),
+  "scopes": zod.string().nullish(),
+  "expiresAt": zod.string().nullish(),
+  "status": zod.string(),
+  "lastUsedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListClientSocialCredentialsResponse = zod.array(ListClientSocialCredentialsResponseItem)
+
+
+/**
+ * @summary Store an encrypted social platform credential for a client
+ */
+export const CreateClientSocialCredentialParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const CreateClientSocialCredentialBody = zod.object({
+  "platform": zod.string(),
+  "credentialType": zod.string(),
+  "value": zod.string(),
+  "scopes": zod.string().optional(),
+  "expiresAt": zod.string().optional()
+})
+
+
+/**
  * @summary List orchestration events
  */
 export const ListOrchestrationEventsQueryParams = zod.object({
