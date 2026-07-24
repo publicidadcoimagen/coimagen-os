@@ -7,12 +7,13 @@ import {
   Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
   Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
   Code2, TestTube2, Gauge, HeartPulse, FileSignature,
-  Cpu, Activity, BookOpen, Brain, Plug, PlayCircle,
+  Cpu, Activity, BookOpen, Brain, Plug, PlayCircle, LogOut,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
   getGetDashboardSummaryQueryKey,
 } from "@workspace/api-client-react";
+import { useAuth } from "@workspace/replit-auth-web";
 import logoUrl from "@assets/logo-coimagen_1781919063971.png";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
@@ -155,6 +156,39 @@ function NavLink({ href, label, icon: Icon }: NavItem) {
   );
 }
 
+function UserMenu() {
+  const { user, logout } = useAuth();
+  const displayName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email || "Usuario";
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="flex items-center gap-2.5">
+      <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold text-xs flex-shrink-0">
+        {initials}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-xs font-medium truncate">{displayName}</div>
+        <div className="text-[10px] text-muted-foreground uppercase">{user?.role}</div>
+      </div>
+      <NotificationBell />
+      <button
+        type="button"
+        onClick={logout}
+        title="Cerrar sesión"
+        className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+      >
+        <LogOut className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
+
 function NotificationBell() {
   const { data: summary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
@@ -214,16 +248,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-3 border-t border-border flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center text-secondary-foreground font-bold text-xs flex-shrink-0">
-              CS
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-medium truncate">Camila Segovia</div>
-              <div className="text-[10px] text-muted-foreground">CEO</div>
-            </div>
-            <NotificationBell />
-          </div>
+          <UserMenu />
         </div>
       </aside>
 
