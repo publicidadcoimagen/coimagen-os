@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db, clientSocialCredentialsTable, decrypt } from "@workspace/db";
+import { db, clientSocialCredentialsTable, systemCredentialsTable, decrypt } from "@workspace/db";
 
 export interface PublishTarget {
   network: string; // "meta_facebook" | "meta_instagram" | "linkedin" | ...
@@ -80,6 +80,22 @@ async function getActiveCredentials(clientId: number, platform: string) {
   );
 }
 
+// Account-level secret (e.g. Coimagen's own Metricool subscription) — see
+// system_credentials, the account-scoped counterpart of client_social_credentials.
+async function getSystemCredential(provider: string, credentialType: string): Promise<string> {
+  const [row] = await db.select().from(systemCredentialsTable).where(
+    and(
+      eq(systemCredentialsTable.provider, provider),
+      eq(systemCredentialsTable.credentialType, credentialType),
+      eq(systemCredentialsTable.status, "active"),
+    ),
+  );
+  if (!row) {
+    throw new Error(`Credencial de sistema "${provider}/${credentialType}" no configurada — agrégala en Configuración > Integraciones API`);
+  }
+  return decrypt(row.encryptedValue);
+}
+
 // The rest of the agent (calendar, approval flow) only ever calls this — it
 // never imports MetricoolPublisher or MetaDirectPublisher directly, and
 // doesn't know or care which one a given client resolves to.
@@ -87,11 +103,8 @@ export async function getPublisherForClient(clientId: number, network: string): 
   const metricoolRows = await getActiveCredentials(clientId, "metricool");
   const blogIdRow = metricoolRows.find((r) => r.credentialType === "blog_id");
   if (blogIdRow) {
-    const userToken = process.env.METRICOOL_USER_TOKEN;
-    const userId = process.env.METRICOOL_USER_ID;
-    if (!userToken || !userId) {
-      throw new Error("METRICOOL_USER_TOKEN / METRICOOL_USER_ID no están configuradas — requeridas para publicar vía Metricool");
-    }
+    const userToken = await getSystemCredential("metricool", "user_token");
+    const userId = await getSystemCredential("metricool", "user_id");
     return new MetricoolPublisher(userToken, userId, decrypt(blogIdRow.encryptedValue));
   }
 

@@ -46,6 +46,7 @@ import integrationsRouter from "./integrations";
 import executionsRouter from "./executions";
 import contentCalendarRouter from "./content-calendar";
 import socialCredentialsRouter from "./social-credentials";
+import systemCredentialsRouter from "./system-credentials";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 
@@ -103,5 +104,6 @@ router.use(integrationsRouter);
 router.use(executionsRouter);
 router.use("/clients/:clientId/content-calendar", contentCalendarRouter);
 router.use("/clients/:clientId/social-credentials", socialCredentialsRouter);
+router.use("/system-credentials", systemCredentialsRouter);
 
 export default router;

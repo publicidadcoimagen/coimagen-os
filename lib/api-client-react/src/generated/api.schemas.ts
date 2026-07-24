@@ -1330,6 +1330,24 @@ export interface ConfigEntryInput {
   value: string;
 }
 
+export interface SystemCredentialMeta {
+  id: number;
+  provider: string;
+  credentialType: string;
+  status: string;
+  /** @nullable */
+  lastUsedAt?: string | null;
+  /** @nullable */
+  updatedBy?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export interface SystemCredentialInput {
+  value: string;
+}
+
 export interface ClientAccess {
   id: number;
   clientId: number;

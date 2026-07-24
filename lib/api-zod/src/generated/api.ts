@@ -2195,6 +2195,46 @@ export const UpsertConfigResponse = zod.object({
 
 
 /**
+ * @summary List system-level credentials (metadata only, never the decrypted value)
+ */
+export const ListSystemCredentialsResponseItem = zod.object({
+  "id": zod.number(),
+  "provider": zod.string(),
+  "credentialType": zod.string(),
+  "status": zod.string(),
+  "lastUsedAt": zod.string().nullish(),
+  "updatedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListSystemCredentialsResponse = zod.array(ListSystemCredentialsResponseItem)
+
+
+/**
+ * @summary Create or rotate a system-level credential (CEO/admin only)
+ */
+export const UpsertSystemCredentialParams = zod.object({
+  "provider": zod.coerce.string(),
+  "credentialType": zod.coerce.string()
+})
+
+export const UpsertSystemCredentialBody = zod.object({
+  "value": zod.string()
+})
+
+export const UpsertSystemCredentialResponse = zod.object({
+  "id": zod.number(),
+  "provider": zod.string(),
+  "credentialType": zod.string(),
+  "status": zod.string(),
+  "lastUsedAt": zod.string().nullish(),
+  "updatedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
  * @summary List all system users
  */
 export const ListSystemUsersResponseItem = zod.object({

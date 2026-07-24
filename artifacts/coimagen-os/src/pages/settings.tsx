@@ -4,6 +4,9 @@ import {
   useListConfig,
   useUpsertConfig,
   getListConfigQueryKey,
+  useListSystemCredentials,
+  useUpsertSystemCredential,
+  getListSystemCredentialsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +15,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Settings as SettingsIcon, Link, Info, CheckCircle2, XCircle, ScrollText } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Settings as SettingsIcon, Link, Info, CheckCircle2, XCircle, ScrollText, KeyRound } from "lucide-react";
 import { Link as WouterLink } from "wouter";
 
 const INTEGRATIONS = [
@@ -30,6 +34,106 @@ const INTEGRATIONS = [
   { key: "stripe", name: "Stripe", description: "Pagos y facturación", color: "#635bff" },
   { key: "twilio", name: "Twilio", description: "SMS y voz", color: "#f22f46" },
 ];
+
+// The one integration in this tab that's actually wired end-to-end (see
+// P-34): reads/writes system_credentials via /system-credentials instead of
+// depending on a Render env var, so getPublisherForClient can resolve
+// Metricool's account-level USER_TOKEN/USER_ID from the DB. Every other
+// card above stays disabled/V2 — this is intentionally the only exception.
+function MetricoolCredentialCard() {
+  const qc = useQueryClient();
+  const { data: creds } = useListSystemCredentials({
+    query: { queryKey: getListSystemCredentialsQueryKey() },
+  });
+  const upsert = useUpsertSystemCredential();
+
+  const [open, setOpen] = useState(false);
+  const [userToken, setUserToken] = useState("");
+  const [userId, setUserId] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const tokenMeta = creds?.find((c) => c.provider === "metricool" && c.credentialType === "user_token");
+  const idMeta = creds?.find((c) => c.provider === "metricool" && c.credentialType === "user_id");
+  const connected = tokenMeta?.status === "active" && idMeta?.status === "active";
+  const lastUpdated = [tokenMeta?.updatedAt, idMeta?.updatedAt].filter(Boolean).sort().at(-1);
+
+  async function handleSave() {
+    if (!userToken.trim() || !userId.trim()) return;
+    setSaving(true);
+    await new Promise<void>((res) => {
+      upsert.mutate({ provider: "metricool", credentialType: "user_token", data: { value: userToken.trim() } }, { onSettled: () => res() });
+    });
+    await new Promise<void>((res) => {
+      upsert.mutate({ provider: "metricool", credentialType: "user_id", data: { value: userId.trim() } }, { onSettled: () => res() });
+    });
+    qc.invalidateQueries({ queryKey: getListSystemCredentialsQueryKey() });
+    setSaving(false);
+    setUserToken("");
+    setUserId("");
+    setOpen(false);
+  }
+
+  return (
+    <>
+      <Card className="border-border/50">
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0" style={{ backgroundColor: "#e91e63" }}>
+                MC
+              </div>
+              <div>
+                <div className="text-sm font-medium">Metricool</div>
+                <div className="text-xs text-muted-foreground">Autopublicador Social · cuenta Coimagen</div>
+              </div>
+            </div>
+            {connected
+              ? <CheckCircle2 className="h-4 w-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+              : <XCircle className="h-4 w-4 text-muted-foreground/40 flex-shrink-0 mt-0.5" />}
+          </div>
+          <div className="mt-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">USER_TOKEN / USER_ID</span>
+              <span className="text-xs font-mono text-muted-foreground/60">
+                {connected ? "••••••••••••" : "No configurada"}
+              </span>
+            </div>
+            {connected && lastUpdated && (
+              <div className="text-[10px] text-muted-foreground/60 mt-0.5">
+                Actualizada: {new Date(lastUpdated).toLocaleDateString("es-MX")}
+              </div>
+            )}
+          </div>
+          <Button variant="outline" size="sm" className="mt-3 w-full text-xs h-7" onClick={() => setOpen(true)}>
+            <KeyRound className="h-3 w-3 mr-1.5" /> {connected ? "Actualizar credenciales" : "Conectar"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Credenciales de Metricool</DialogTitle></DialogHeader>
+          <p className="text-xs text-muted-foreground -mt-2">
+            USER_TOKEN y USER_ID de la cuenta Metricool de Coimagen (compartida entre todos los clientes). Una vez guardado, el valor no vuelve a mostrarse.
+          </p>
+          <div className="space-y-3">
+            <div>
+              <Label>USER_TOKEN</Label>
+              <Input type="password" value={userToken} onChange={(e) => setUserToken(e.target.value)} placeholder={connected ? "••••••••••••" : ""} className="mt-1 font-mono text-sm" />
+            </div>
+            <div>
+              <Label>USER_ID</Label>
+              <Input type="password" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder={connected ? "••••••••••••" : ""} className="mt-1 font-mono text-sm" />
+            </div>
+          </div>
+          <Button onClick={handleSave} disabled={saving || !userToken.trim() || !userId.trim()} className="w-full">
+            {saving ? "Guardando..." : "Guardar"}
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 export function Settings() {
   const qc = useQueryClient();
@@ -150,6 +254,7 @@ export function Settings() {
               <p className="text-xs text-muted-foreground">Las API keys se configuran como variables de entorno en el servidor. Las conexiones OAuth se activarán en V2. Nunca se muestran las claves completas.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MetricoolCredentialCard />
               {INTEGRATIONS.map((intg) => {
                 const connected = isConnected(intg.key);
                 return (

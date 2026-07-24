@@ -170,6 +170,8 @@ import type {
   Subscription,
   SubscriptionInput,
   SubscriptionUpdate,
+  SystemCredentialInput,
+  SystemCredentialMeta,
   SystemUser,
   SystemUserCreate,
   SystemUserUpdate,
@@ -8141,6 +8143,157 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getUpsertConfigMutationOptions(options));
+    }
+
+export const getListSystemCredentialsUrl = () => {
+
+
+
+
+  return `/api/system-credentials`
+}
+
+/**
+ * @summary List system-level credentials (metadata only, never the decrypted value)
+ */
+export const listSystemCredentials = async ( options?: RequestInit): Promise<SystemCredentialMeta[]> => {
+
+  return customFetch<SystemCredentialMeta[]>(getListSystemCredentialsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSystemCredentialsQueryKey = () => {
+    return [
+    `/api/system-credentials`
+    ] as const;
+    }
+
+
+export const getListSystemCredentialsQueryOptions = <TData = Awaited<ReturnType<typeof listSystemCredentials>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSystemCredentials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSystemCredentialsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSystemCredentials>>> = ({ signal }) => listSystemCredentials({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSystemCredentials>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSystemCredentialsQueryResult = NonNullable<Awaited<ReturnType<typeof listSystemCredentials>>>
+export type ListSystemCredentialsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List system-level credentials (metadata only, never the decrypted value)
+ */
+
+export function useListSystemCredentials<TData = Awaited<ReturnType<typeof listSystemCredentials>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSystemCredentials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSystemCredentialsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpsertSystemCredentialUrl = (provider: string,
+    credentialType: string,) => {
+
+
+
+
+  return `/api/system-credentials/${provider}/${credentialType}`
+}
+
+/**
+ * @summary Create or rotate a system-level credential (CEO/admin only)
+ */
+export const upsertSystemCredential = async (provider: string,
+    credentialType: string,
+    systemCredentialInput: SystemCredentialInput, options?: RequestInit): Promise<SystemCredentialMeta> => {
+
+  return customFetch<SystemCredentialMeta>(getUpsertSystemCredentialUrl(provider,credentialType),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      systemCredentialInput,)
+  }
+);}
+
+
+
+
+export const getUpsertSystemCredentialMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertSystemCredential>>, TError,{provider: string;credentialType: string;data: BodyType<SystemCredentialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof upsertSystemCredential>>, TError,{provider: string;credentialType: string;data: BodyType<SystemCredentialInput>}, TContext> => {
+
+const mutationKey = ['upsertSystemCredential'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof upsertSystemCredential>>, {provider: string;credentialType: string;data: BodyType<SystemCredentialInput>}> = (props) => {
+          const {provider,credentialType,data} = props ?? {};
+
+          return  upsertSystemCredential(provider,credentialType,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpsertSystemCredentialMutationResult = NonNullable<Awaited<ReturnType<typeof upsertSystemCredential>>>
+    export type UpsertSystemCredentialMutationBody = BodyType<SystemCredentialInput>
+    export type UpsertSystemCredentialMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create or rotate a system-level credential (CEO/admin only)
+ */
+export const useUpsertSystemCredential = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof upsertSystemCredential>>, TError,{provider: string;credentialType: string;data: BodyType<SystemCredentialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof upsertSystemCredential>>,
+        TError,
+        {provider: string;credentialType: string;data: BodyType<SystemCredentialInput>},
+        TContext
+      > => {
+      return useMutation(getUpsertSystemCredentialMutationOptions(options));
     }
 
 export const getListSystemUsersUrl = () => {
