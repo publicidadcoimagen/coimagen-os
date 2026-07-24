@@ -360,7 +360,16 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  // Dashboard (portal.coimagenmedia.com) and API (api.coimagenmedia.com) are
+  // cross-origin in production, so the fetch default of "same-origin" drops
+  // the session cookie on every request unless overridden here. Callers can
+  // still opt out via `init.credentials`.
+  const response = await fetch(input, {
+    credentials: "include",
+    ...init,
+    method,
+    headers,
+  });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);
