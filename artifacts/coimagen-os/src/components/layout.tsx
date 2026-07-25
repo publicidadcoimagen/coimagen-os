@@ -4,10 +4,10 @@ import {
   LayoutDashboard, Users, FolderKanban, CheckSquare, Settings,
   UserSearch, TrendingUp, Stethoscope, FileText, Receipt,
   RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
-  Lock, Bot, Bell, Target, Layers, Calendar, Map, Bug,
-  Lightbulb, Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
-  Code2, TestTube2, Gauge, HeartPulse, FileSignature,
-  Cpu, Activity, BookOpen, Brain, Plug, PlayCircle, LogOut,
+  Lock, Bot, Bell, Bug,
+  Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
+  FileSignature,
+  Brain, Plug, PlayCircle, LogOut,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -69,16 +69,6 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Orchestration Engine",
-    items: [
-      { href: "/orchestration",          label: "Hub Principal",  icon: Cpu },
-      { href: "/orchestration/events",   label: "Event Monitor",  icon: Activity },
-      { href: "/orchestration/rules",    label: "Rule Engine",    icon: GitBranch },
-      { href: "/orchestration/timeline", label: "Timeline Global",icon: ScrollText },
-      { href: "/orchestration/catalog",  label: "Catálogo",       icon: BookOpen },
-    ],
-  },
-  {
     label: "Client Room",
     items: [
       { href: "/client", label: "Portales de Clientes", icon: Users },
@@ -89,14 +79,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/quality-center", label: "Hub Principal", icon: ShieldCheck },
       { href: "/quality-center/incidents", label: "Incident Center", icon: Bug },
-      { href: "/quality-center/code-review", label: "Code Review", icon: Code2 },
-      { href: "/quality-center/qa-testing", label: "QA Testing", icon: TestTube2 },
-      { href: "/quality-center/performance", label: "Performance", icon: Gauge },
-      { href: "/quality-center/security", label: "Security", icon: Lock },
-      { href: "/quality-center/architecture", label: "Architecture", icon: Network },
-      { href: "/quality-center/health-check", label: "Health Check", icon: HeartPulse },
-      { href: "/quality-center/technical-debt", label: "Technical Debt", icon: ClipboardList },
-      { href: "/quality-center/recommendations", label: "Recommendations", icon: Lightbulb },
     ],
   },
   {
@@ -106,18 +88,6 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/integrations",  label: "Integration Hub",          icon: Plug },
       { href: "/automations",   label: "Automation Engine",        icon: Zap },
       { href: "/executions",    label: "AI Execution Engine",      icon: PlayCircle },
-    ],
-  },
-  {
-    label: "HQ Operations",
-    items: [
-      { href: "/hq", label: "Mission Control", icon: Target },
-      { href: "/backlog", label: "Product Backlog", icon: Layers },
-      { href: "/daily-sprint", label: "Daily Sprint", icon: Calendar },
-      { href: "/roadmap", label: "Roadmap", icon: Map },
-      { href: "/bugs", label: "Bug Tracker", icon: Bug },
-      { href: "/ideas", label: "Ideas", icon: Lightbulb },
-      { href: "/kpis", label: "KPIs", icon: BarChart3 },
     ],
   },
   {
