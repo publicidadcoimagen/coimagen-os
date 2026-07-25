@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 import { eq } from "drizzle-orm";
 import { db, prospectsTable, aiExecutionsTable, diagnosesTable, incidentsTable } from "@workspace/db";
 import { SubmitDigitalDiagnosisBody, GetPublicDigitalDiagnosisParams } from "@workspace/api-zod";
-import { scrapeUrl } from "../lib/digital-diagnosis/scrape";
+import { scrapeUrl, DigitalDiagnosisScrapeError } from "../lib/digital-diagnosis/scrape";
 import { generateDigitalDiagnosis } from "../lib/digital-diagnosis/analyze";
 import { sendDigitalDiagnosisEmail } from "../lib/digital-diagnosis/email";
 
@@ -103,11 +103,16 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     res.json({ diagnosisId: diagnosis.id, status: "completed", publicToken: diagnosis.publicToken });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error desconocido";
+    // Kept alongside the friendly message for staff-facing logs (incidents,
+    // ai_executions.errors) — e.g. the raw "getaddrinfo ENOTFOUND ..." behind
+    // a DigitalDiagnosisScrapeError's user-facing "verifica el dominio".
+    const causeDetail = err instanceof Error && err.cause instanceof Error ? err.cause.message : undefined;
+    const logMessage = causeDetail ? `${message} (${causeDetail})` : message;
 
     await db.insert(incidentsTable).values({
       type: "ai_error",
       title: `Fallo del Agente de Diagnóstico Digital: ${url}`,
-      description: `Prospecto: ${name} <${email}>\nURL analizada: ${url}\n\nError: ${message}`,
+      description: `Prospecto: ${name} <${email}>\nURL analizada: ${url}\n\nError: ${logMessage}`,
       severity: "high",
       priority: "high",
       status: "open",
@@ -117,14 +122,20 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     await db.update(aiExecutionsTable).set({
       status: "failed",
       result: "error",
-      errors: message,
+      errors: logMessage,
       durationMs: Date.now() - startedAt,
       updatedAt: new Date(),
     }).where(eq(aiExecutionsTable.id, execution.id));
 
-    res.status(502).json({
-      error: "No pudimos generar tu diagnóstico en este momento. Intenta de nuevo o contáctanos por WhatsApp.",
-    });
+    // A DigitalDiagnosisScrapeError's message is itself the vetted,
+    // user-safe text (see scrape.ts) — anything else (AI provider errors, DB
+    // errors) stays generic so internal detail never reaches this public,
+    // unauthenticated endpoint.
+    const responseMessage = err instanceof DigitalDiagnosisScrapeError
+      ? err.message
+      : "No pudimos generar tu diagnóstico en este momento. Intenta de nuevo o contáctanos por WhatsApp.";
+
+    res.status(502).json({ error: responseMessage });
   }
 });
 
