@@ -13,13 +13,27 @@ import { sendPasswordResetEmail } from "./reset-password-email";
 
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (!sessionSecret) {
+  // No fallback on purpose (P-38 security audit): a hardcoded fallback here
+  // previously bypassed Better Auth's own "you're using a default secret in
+  // production" safety check, since that check only compares against
+  // Better Auth's own internal default string — a *different* hardcoded
+  // fallback of ours was invisible to it. Every session, including CEO's,
+  // would have been signed with a secret sitting in plaintext in this repo.
+  throw new Error(
+    "SESSION_SECRET environment variable is required but was not provided.",
+  );
+}
+
 export async function isFirstUser(): Promise<boolean> {
   const existing = await db.select({ id: usersTable.id }).from(usersTable).limit(1);
   return existing.length === 0;
 }
 
 export const auth = betterAuth({
-  secret: process.env.SESSION_SECRET ?? "coimagen-default-secret-key-!!",
+  secret: sessionSecret,
   baseURL: process.env.API_BASE_URL ?? `http://localhost:${process.env.PORT ?? "8080"}`,
   basePath: "/api/auth",
   // The dashboard (artifacts/coimagen-os) is deployed as a separate origin
@@ -62,6 +76,14 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    // P-38: public self-registration was never how any real account got
+    // created here (all 3 real users were provisioned manually/by Code) —
+    // closing it off. Sign-in, password reset, and account provisioning by
+    // an admin (routes/admin.ts) are untouched; only the open POST
+    // /api/auth/sign-up/email endpoint is disabled. The automatic
+    // invitation flow (triggered from client onboarding, approval tied to
+    // that invitation) is a separate future design, not built here.
+    disableSignUp: true,
     sendResetPassword: async ({ user, url }) => {
       await sendPasswordResetEmail(user.email, url);
     },

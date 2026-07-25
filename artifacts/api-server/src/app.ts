@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { toNodeHandler } from "better-auth/node";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -19,6 +20,13 @@ const app: Express = express();
 // express-rate-limit refuses to start (it validates X-Forwarded-For usage
 // against this setting to prevent a spoofing bypass).
 app.set("trust proxy", 1);
+
+// P-38: this server only ever returns JSON (plus Better Auth's own
+// redirect for the password-reset callback) — it never renders HTML — so
+// helmet's default CSP and the rest of its defaults are safe to use as-is,
+// no per-directive tuning needed. Covers X-Content-Type-Options,
+// X-Frame-Options, HSTS, etc., none of which existed before this.
+app.use(helmet());
 
 app.use(
   pinoHttp({
