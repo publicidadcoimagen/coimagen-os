@@ -9,6 +9,7 @@ import {
   accountsTable,
   verificationsTable,
 } from "@workspace/db";
+import { sendPasswordResetEmail } from "./reset-password-email";
 
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
@@ -61,6 +62,23 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendPasswordResetEmail(user.email, url);
+    },
+    resetPasswordTokenExpiresIn: 3600,
+    // A reset is a stronger proof of ownership than whatever left the old
+    // sessions logged in — don't leave a stale/possibly-compromised session
+    // alive elsewhere after the password changes.
+    revokeSessionsOnPasswordReset: true,
+    onPasswordReset: async ({ user }) => {
+      // Mirrors the explicit clear in routes/account.ts's own
+      // change-password endpoint: a self-service reset is just as valid a
+      // proof of ownership as the in-app "forced" change flow, so it should
+      // clear the flag the same way — otherwise a user who resets via email
+      // still lands back on ForcePasswordResetScreen right after logging in
+      // with their new password.
+      await db.update(usersTable).set({ forcePasswordReset: false }).where(eq(usersTable.id, user.id));
+    },
   },
   user: {
     fields: {
