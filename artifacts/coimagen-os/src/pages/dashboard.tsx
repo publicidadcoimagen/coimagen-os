@@ -1,19 +1,25 @@
 import { Link } from "wouter";
+import { useAuth } from "@workspace/replit-auth-web";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   useGetDashboardSummary,
   useGetRecentActivity,
   useGetProjectsByStatus,
   useGetCostSummary,
+  useHealthCheck,
+  useListSystemCredentials,
   getGetDashboardSummaryQueryKey,
   getGetRecentActivityQueryKey,
   getGetProjectsByStatusQueryKey,
   getGetCostSummaryQueryKey,
+  getHealthCheckQueryKey,
+  getListSystemCredentialsQueryKey,
 } from "@workspace/api-client-react";
 import {
   Users, FolderKanban, CheckSquare, Activity,
   TrendingUp, AlertTriangle, DollarSign, BarChart2,
   ShieldCheck, CreditCard, Clock, UserX, Zap, Wallet,
+  Server, Database, KeyRound, Lock,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { formatDate, formatCurrency } from "@/lib/format";
@@ -73,6 +79,99 @@ function AlertItem({ icon: Icon, label, value, level = "warn" }: {
   );
 }
 
+// "ok" / "warn" / "error" are the only 3 states this widget can render — no
+// hardcoded "always ok" state exists. "loading" is a transient 4th while a
+// check's own query is in flight.
+type CheckState = "ok" | "warn" | "error" | "loading";
+
+const CHECK_DOT_COLOR: Record<CheckState, string> = {
+  ok: "bg-emerald-500",
+  warn: "bg-yellow-500",
+  error: "bg-destructive",
+  loading: "bg-muted-foreground/30 animate-pulse",
+};
+
+function SystemCheckRow({
+  icon: Icon, label, state, detail,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  state: CheckState;
+  detail: string;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-border last:border-0">
+      <div className="flex items-center gap-2 text-sm">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        <span>{label}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground">{detail}</span>
+        <span className={`inline-block h-2 w-2 rounded-full flex-shrink-0 ${CHECK_DOT_COLOR[state]}`} />
+      </div>
+    </div>
+  );
+}
+
+// Replaces Quality Center's old "Health Check" — that one was a hardcoded
+// array that always said "ok". Every row here comes from a real request:
+// /api/healthz (API + DB), the already-fetched auth session from
+// AuthProvider (no point re-fetching /api/auth/user — if this page is
+// rendering at all, that call already succeeded), and /api/system-credentials
+// for which providers are actually connected vs. just never configured.
+function SystemVerificationWidget() {
+  const { user, isAuthenticated } = useAuth();
+  const isCeoOrAdmin = user?.role === "ceo" || user?.role === "admin";
+
+  const { data: health, isLoading: isHealthLoading, isError: isHealthError } = useHealthCheck({
+    query: { queryKey: getHealthCheckQueryKey() },
+  });
+  const { data: credentials, isLoading: isCredsLoading, isError: isCredsError } = useListSystemCredentials({
+    query: { queryKey: getListSystemCredentialsQueryKey(), enabled: isCeoOrAdmin },
+  });
+
+  const apiState: CheckState = isHealthLoading ? "loading" : isHealthError ? "error" : health?.status === "ok" ? "ok" : "warn";
+  const apiDetail = isHealthLoading ? "Verificando..." : isHealthError ? "Sin respuesta" : health?.status === "ok" ? "Operativo" : "Degradado";
+
+  const authState: CheckState = isAuthenticated ? "ok" : "error";
+
+  const activeCredentials = (credentials ?? []).filter((c) => c.status === "active");
+  const credsState: CheckState = !isCeoOrAdmin
+    ? "warn"
+    : isCredsLoading
+    ? "loading"
+    : isCredsError
+    ? "error"
+    : activeCredentials.length > 0
+    ? "ok"
+    : "warn";
+  const credsDetail = !isCeoOrAdmin
+    ? "Sin permiso para ver"
+    : isCredsLoading
+    ? "Verificando..."
+    : isCredsError
+    ? "Sin respuesta"
+    : activeCredentials.length > 0
+    ? `${activeCredentials.length} conectada${activeCredentials.length !== 1 ? "s" : ""}`
+    : "Ninguna conectada";
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <ShieldCheck className="h-4 w-4 text-primary" /> Verificación del Sistema
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <SystemCheckRow icon={Server} label="API Server" state={apiState} detail={apiDetail} />
+        <SystemCheckRow icon={Database} label="Base de datos" state={apiState} detail={apiDetail} />
+        <SystemCheckRow icon={Lock} label="Autenticación" state={authState} detail={isAuthenticated ? "Sesión activa" : "Sin sesión"} />
+        <SystemCheckRow icon={KeyRound} label="Integraciones" state={credsState} detail={credsDetail} />
+      </CardContent>
+    </Card>
+  );
+}
+
 const STATUS_LABELS: Record<string, string> = {
   active: "Activo",
   planning: "Planificación",
@@ -123,6 +222,8 @@ export function Dashboard() {
           </div>
         )}
       </div>
+
+      <SystemVerificationWidget />
 
       {/* Financial KPIs */}
       <div>

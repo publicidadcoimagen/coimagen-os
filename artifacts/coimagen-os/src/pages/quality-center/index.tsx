@@ -4,8 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  ShieldCheck, Bug, Code2, TestTube2, Gauge, Lock, Network,
-  HeartPulse, ClipboardList, Lightbulb, AlertTriangle, CheckCircle2,
+  ShieldCheck, Bug, AlertTriangle, CheckCircle2,
   Clock, TrendingUp, Ticket, ChevronRight,
 } from "lucide-react";
 
@@ -19,6 +18,11 @@ const SEVERITY_COLOR: Record<string, string> = {
   critical: "bg-red-400/15 text-red-400 border-red-400/30",
 };
 
+// Trimmed to the one real submodule (P-40): the other 7 were decorative
+// (hardcoded "prep" cards with no backend behind them — see
+// submodules.tsx), and Health Check moved to the real "Verificación del
+// Sistema" widget on the main Dashboard. Their page components and routes
+// still exist, just unlinked from here and from the sidebar.
 const SUBMODULES = [
   {
     href: "/quality-center/incidents",
@@ -29,86 +33,6 @@ const SUBMODULES = [
     bg: "bg-red-400/10",
     border: "border-red-400/20",
     badge: "live",
-  },
-  {
-    href: "/quality-center/code-review",
-    label: "Code Review",
-    description: "Auditoría de código y buenas prácticas",
-    icon: Code2,
-    color: "text-blue-400",
-    bg: "bg-blue-400/10",
-    border: "border-blue-400/20",
-    badge: "prep",
-  },
-  {
-    href: "/quality-center/qa-testing",
-    label: "QA Testing",
-    description: "Registro de pruebas UI, backend y e2e",
-    icon: TestTube2,
-    color: "text-green-400",
-    bg: "bg-green-400/10",
-    border: "border-green-400/20",
-    badge: "prep",
-  },
-  {
-    href: "/quality-center/performance",
-    label: "Performance",
-    description: "Queries, render, Lighthouse y Core Web Vitals",
-    icon: Gauge,
-    color: "text-yellow-400",
-    bg: "bg-yellow-400/10",
-    border: "border-yellow-400/20",
-    badge: "prep",
-  },
-  {
-    href: "/quality-center/security",
-    label: "Security",
-    description: "Roles, permisos, endpoints y secretos",
-    icon: Lock,
-    color: "text-purple-400",
-    bg: "bg-purple-400/10",
-    border: "border-purple-400/20",
-    badge: "prep",
-  },
-  {
-    href: "/quality-center/architecture",
-    label: "Architecture",
-    description: "Dependencias, servicios y escalabilidad",
-    icon: Network,
-    color: "text-cyan-400",
-    bg: "bg-cyan-400/10",
-    border: "border-cyan-400/20",
-    badge: "prep",
-  },
-  {
-    href: "/quality-center/health-check",
-    label: "Health Check",
-    description: "Estado general del sistema en tiempo real",
-    icon: HeartPulse,
-    color: "text-emerald-400",
-    bg: "bg-emerald-400/10",
-    border: "border-emerald-400/20",
-    badge: "live",
-  },
-  {
-    href: "/quality-center/technical-debt",
-    label: "Technical Debt",
-    description: "Pendientes técnicos y refactorización",
-    icon: ClipboardList,
-    color: "text-orange-400",
-    bg: "bg-orange-400/10",
-    border: "border-orange-400/20",
-    badge: "prep",
-  },
-  {
-    href: "/quality-center/recommendations",
-    label: "Recommendations",
-    description: "Recomendaciones de mejora por prioridad",
-    icon: Lightbulb,
-    color: "text-amber-400",
-    bg: "bg-amber-400/10",
-    border: "border-amber-400/20",
-    badge: "prep",
   },
 ];
 
