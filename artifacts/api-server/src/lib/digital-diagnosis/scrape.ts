@@ -3,6 +3,22 @@ import * as cheerio from "cheerio";
 const MAX_TEXT_SAMPLE = 12000;
 const FETCH_TIMEOUT_MS = 10000;
 
+// Thrown for scrape failures whose cause is known well enough to tell the
+// prospect something actionable (bad domain, slow site, site-side error) —
+// as opposed to unexpected errors, which should stay generic rather than
+// leak internal detail to a public, unauthenticated endpoint.
+export class DigitalDiagnosisScrapeError extends Error {
+  constructor(userMessage: string, options?: { cause?: unknown }) {
+    super(userMessage, options);
+    this.name = "DigitalDiagnosisScrapeError";
+  }
+}
+
+function isDnsFailure(err: unknown): boolean {
+  const code = err instanceof Error ? (err.cause as { code?: string } | undefined)?.code : undefined;
+  return code === "ENOTFOUND" || code === "EAI_AGAIN";
+}
+
 export interface ScrapedSignals {
   title: string | null;
   titleLength: number;
@@ -25,15 +41,35 @@ export async function scrapeUrl(url: string): Promise<ScrapedSignals> {
 
   let html: string;
   try {
-    const response = await fetch(url, {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; CoimagenDiagnosisBot/1.0; +https://www.coimagenmedia.com)",
-      },
-    });
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        signal: controller.signal,
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; CoimagenDiagnosisBot/1.0; +https://www.coimagenmedia.com)",
+        },
+      });
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new DigitalDiagnosisScrapeError(
+          "El sitio tardó demasiado en responder. Intenta de nuevo en unos minutos.",
+          { cause: err },
+        );
+      }
+      if (isDnsFailure(err)) {
+        throw new DigitalDiagnosisScrapeError(
+          "No pudimos acceder a esa URL. Verifica que el dominio esté bien escrito.",
+          { cause: err },
+        );
+      }
+      throw err;
+    }
     if (!response.ok) {
-      throw new Error(`El sitio respondió con error HTTP ${response.status}`);
+      throw new DigitalDiagnosisScrapeError(
+        "El sitio respondió con un error. Verifica que la URL sea correcta.",
+        { cause: new Error(`HTTP ${response.status}`) },
+      );
     }
     html = await response.text();
   } finally {
