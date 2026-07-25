@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
+import rateLimit from "express-rate-limit";
 import { toNodeHandler } from "better-auth/node";
 import router from "./routes";
 import { logger } from "./lib/logger";
@@ -46,6 +47,22 @@ app.use(authMiddleware);
 // so it isn't shadowed by it. Better Auth's handler must run before
 // express.json() — see https://better-auth.com/docs/integrations/express.
 app.get("/api/auth/user", getCurrentAuthUser);
+
+// Better Auth's own routes are a single wildcard handler below, not
+// individual Express routes, so a route-scoped limiter (like the one on
+// /api/public/digital-diagnosis) can't attach directly to it — this runs
+// as its own middleware in front instead. Same reasoning as that endpoint:
+// without a cap, anyone could spam another person's inbox with reset
+// emails as a form of harassment. 5/hour/IP matches the existing pattern.
+const requestPasswordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Demasiadas solicitudes de restablecimiento. Intenta de nuevo más tarde." },
+});
+app.use("/api/auth/request-password-reset", requestPasswordResetLimiter);
+
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use(express.json());

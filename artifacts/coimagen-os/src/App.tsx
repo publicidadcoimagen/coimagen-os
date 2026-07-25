@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +6,8 @@ import { AppLayout } from "@/components/layout";
 import { useAuth, AuthProvider } from "@workspace/replit-auth-web";
 import { LoginForm } from "@/components/login-form";
 import { ForcePasswordResetScreen } from "@/components/force-password-reset-screen";
+import { ForgotPasswordScreen } from "@/components/forgot-password-screen";
+import { ResetPasswordScreen } from "@/components/reset-password-screen";
 
 import { Dashboard } from "@/pages/dashboard";
 import { Clients } from "@/pages/clients/index";
@@ -106,6 +108,7 @@ const queryClient = new QueryClient({
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated, user } = useAuth();
+  const [location] = useLocation();
 
   if (isLoading) {
     return (
@@ -113,6 +116,16 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         <div className="text-muted-foreground text-sm animate-pulse">Cargando...</div>
       </div>
     );
+  }
+
+  // Public, unauthenticated routes — must be checked before the auth gate
+  // below, or a signed-out visitor hitting either link never sees anything
+  // but the login screen regardless of the URL.
+  if (!isAuthenticated && location === "/forgot-password") {
+    return <ForgotPasswordScreen />;
+  }
+  if (!isAuthenticated && location === "/reset-password") {
+    return <ResetPasswordScreen />;
   }
 
   if (!isAuthenticated) {

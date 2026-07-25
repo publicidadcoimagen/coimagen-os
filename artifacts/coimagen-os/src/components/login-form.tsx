@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { Link } from "wouter";
 import { useAuth } from "@workspace/replit-auth-web";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +71,12 @@ export function LoginForm() {
               {isSubmitting && <Spinner />}
               Iniciar sesión
             </Button>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground hover:text-foreground text-center"
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
           </form>
         </CardContent>
       </Card>

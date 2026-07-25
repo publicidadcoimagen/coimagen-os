@@ -29,6 +29,8 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<{ error: string | null }>;
+  resetPassword: (newPassword: string, token: string) => Promise<{ error: string | null }>;
 }
 
 // A shared Context is essential here: multiple components (AuthGate,
@@ -82,6 +84,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authClient.signOut().finally(() => setUser(null));
   }, []);
 
+  // Unauthenticated actions — used by ForgotPasswordScreen and
+  // ResetPasswordScreen, which render outside the authenticated app tree,
+  // so neither touches `user` state.
+  const requestPasswordReset = useCallback(async (email: string) => {
+    const { error } = await authClient.requestPasswordReset({
+      email,
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      return { error: error.message ?? "No se pudo procesar tu solicitud" };
+    }
+    return { error: null };
+  }, []);
+
+  const resetPassword = useCallback(async (newPassword: string, token: string) => {
+    const { error } = await authClient.resetPassword({ newPassword, token });
+    if (error) {
+      return { error: error.message ?? "No se pudo restablecer la contraseña" };
+    }
+    return { error: null };
+  }, []);
+
   const value = useMemo<AuthState>(
     () => ({
       user,
@@ -90,8 +114,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signIn,
       logout,
       refreshUser: refetchUser,
+      requestPasswordReset,
+      resetPassword,
     }),
-    [user, isLoading, signIn, logout, refetchUser],
+    [user, isLoading, signIn, logout, refetchUser, requestPasswordReset, resetPassword],
   );
 
   return createElement(AuthContext.Provider, { value }, children);
