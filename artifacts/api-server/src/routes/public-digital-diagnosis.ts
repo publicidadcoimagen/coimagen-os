@@ -9,6 +9,29 @@ import { sendDigitalDiagnosisEmail } from "../lib/digital-diagnosis/email";
 
 const router: IRouter = Router();
 
+// Captures every own top-level property of an unclassified error (e.g. an
+// AI SDK APICallError's statusCode/data/isRetryable) for staff-facing logs.
+// Only err.message was ever persisted before, which meant a real production
+// miss in isInsufficientCreditError (2026-07-27 — the check didn't catch a
+// genuine "credit balance too low" error) left no way to recover the real
+// statusCode/data afterward; this exists so the next such miss has the
+// actual shape to inspect instead of guessing against provider docs.
+function extractErrorDetails(err: unknown): string | undefined {
+  if (!(err instanceof Error)) return undefined;
+  const details: Record<string, unknown> = {};
+  for (const key of Object.getOwnPropertyNames(err)) {
+    if (key === "message" || key === "stack" || key === "name") continue;
+    const value = (err as unknown as Record<string, unknown>)[key];
+    try {
+      JSON.stringify(value);
+      details[key] = value;
+    } catch {
+      details[key] = String(value);
+    }
+  }
+  return Object.keys(details).length > 0 ? JSON.stringify(details) : undefined;
+}
+
 // This endpoint is public and unauthenticated by design (no session to gate
 // on), and now calls a real, billed LLM provider — without a limit, a
 // script could hit it in a loop and run up a real Anthropic bill with no
@@ -107,7 +130,14 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     // ai_executions.errors) — e.g. the raw "getaddrinfo ENOTFOUND ..." behind
     // a DigitalDiagnosisScrapeError's user-facing "verifica el dominio".
     const causeDetail = err instanceof Error && err.cause instanceof Error ? err.cause.message : undefined;
-    const logMessage = causeDetail ? `${message} (${causeDetail})` : message;
+    // A DigitalDiagnosisScrapeError's message is already the full, vetted
+    // story (see scrape.ts) — everything else is unclassified (AI provider
+    // errors, DB errors, etc.) and is exactly where the raw shape matters
+    // for debugging later.
+    const rawDetails = err instanceof DigitalDiagnosisScrapeError ? undefined : extractErrorDetails(err);
+    const logMessage = [message, causeDetail && `(${causeDetail})`, rawDetails && `[details: ${rawDetails}]`]
+      .filter(Boolean)
+      .join(" ");
 
     await db.insert(incidentsTable).values({
       type: "ai_error",
