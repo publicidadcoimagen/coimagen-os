@@ -12,7 +12,7 @@ const router: IRouter = Router();
 // Captures every own top-level property of an unclassified error (e.g. an
 // AI SDK APICallError's statusCode/data/isRetryable) for staff-facing logs.
 // Only err.message was ever persisted before, which meant a real production
-// miss in isInsufficientCreditError (2026-07-27 — the check didn't catch a
+// miss in isInsufficientCreditError (2026-07-26 — the check didn't catch a
 // genuine "credit balance too low" error) left no way to recover the real
 // statusCode/data afterward; this exists so the next such miss has the
 // actual shape to inspect instead of guessing against provider docs.

@@ -15,7 +15,7 @@ export interface DigitalDiagnosisGeneration {
 // has no credit loaded. Anthropic documents this as a dedicated HTTP 402
 // billing_error (platform.claude.com/docs/en/api/errors) — but a real
 // production "credit balance is too low" failure was observed NOT matching
-// statusCode === 402 (see incident #6-9, 2026-07-27: the raw Anthropic
+// statusCode === 402 (see incident #6-9, 2026-07-26: the raw Anthropic
 // message reached the client unchanged, proving isInsufficientCreditError
 // returned false and the Gemini fallback never ran). Rather than trust the
 // HTTP status code alone, also check the parsed error body's own `type`
