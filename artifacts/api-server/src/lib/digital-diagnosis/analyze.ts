@@ -13,25 +13,28 @@ export interface DigitalDiagnosisGeneration {
 
 // The only condition that triggers the Gemini fallback: Anthropic's account
 // has no credit loaded. Anthropic documents this as a dedicated HTTP 402
-// billing_error (platform.claude.com/docs/en/api/errors) — but a real
-// production "credit balance is too low" failure was observed NOT matching
-// statusCode === 402 (see incident #6-9, 2026-07-26: the raw Anthropic
-// message reached the client unchanged, proving isInsufficientCreditError
-// returned false and the Gemini fallback never ran). Rather than trust the
-// HTTP status code alone, also check the parsed error body's own `type`
-// field — Anthropic's documented, status-code-independent signal for this
-// exact error class — so classification doesn't depend on getting the
-// status code right. Any other error (auth, rate limit, network, 5xx, or a
-// 400 for an actually malformed request) must NOT be caught here — it
-// propagates to the caller, which is what drives the existing
-// incident-on-error path in public-digital-diagnosis.ts. Silently falling
-// back on any error would hide real bugs (a bad API key, a broken prompt)
-// behind Gemini forever instead of surfacing them.
+// billing_error (platform.claude.com/docs/en/api/errors) — kept as the
+// first two checks below in case Anthropic ever does return that documented
+// shape for some future variant of this error. But the raw error captured
+// from a real production failure (exec #28, 2026-07-27, via the
+// extractErrorDetails logging in public-digital-diagnosis.ts) shows
+// Anthropic actually serves *this* specific error as a plain
+// statusCode: 400 / data.error.type: "invalid_request_error" — indistinguishable
+// from a genuinely malformed request by status code or type alone. The
+// message text is the only reliable signal left, so it's checked last, as
+// an OR alongside (not a replacement for) the documented checks. Any other
+// error (auth, rate limit, network, 5xx, or a 400 for an actually malformed
+// request whose message doesn't mention the credit balance) must NOT be
+// caught here — it propagates to the caller, which is what drives the
+// existing incident-on-error path in public-digital-diagnosis.ts. Silently
+// falling back on any error would hide real bugs (a bad API key, a broken
+// prompt) behind Gemini forever instead of surfacing them.
 export function isInsufficientCreditError(err: unknown): boolean {
   if (!APICallError.isInstance(err)) return false;
   if (err.statusCode === 402) return true;
   const data = err.data as { error?: { type?: string } } | undefined;
-  return data?.error?.type === "billing_error";
+  if (data?.error?.type === "billing_error") return true;
+  return /credit balance is too low/i.test(err.message);
 }
 
 // Below this word count, the page's real content is more likely hidden
