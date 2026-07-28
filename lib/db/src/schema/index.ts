@@ -49,3 +49,4 @@ export * from "./orchestration-rules";
 export * from "./integrations";
 export * from "./integration-logs";
 export * from "./ai-executions";
+export * from "./email-events";

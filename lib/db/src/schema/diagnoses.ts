@@ -22,6 +22,11 @@ export const diagnosesTable = pgTable("diagnoses", {
   // (/diagnostico/resultado/:publicToken) so IDs can't be enumerated to
   // browse other businesses' reports.
   publicToken: uuid("public_token").notNull().defaultRandom().unique(),
+  // Resend's message id for the lead-facing diagnosis email (not the
+  // internal new-lead notification), set once sendDigitalDiagnosisEmail
+  // resolves. Lets incoming Resend webhook events (delivered/bounced/
+  // complained) be correlated back to the diagnosis they belong to.
+  leadEmailId: text("lead_email_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });

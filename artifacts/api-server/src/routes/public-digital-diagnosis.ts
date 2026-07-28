@@ -117,6 +117,11 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     if (diagnosis.publicToken) {
       try {
         const emailId = await sendDigitalDiagnosisEmail(name, email, url, diagnosis.publicToken);
+        // Lets the /api/webhooks/resend handler correlate later delivery/
+        // bounce/complaint events back to this diagnosis (see email-events
+        // schema) — without this, a successful send here was indistinguishable
+        // from the recipient actually receiving it.
+        await db.update(diagnosesTable).set({ leadEmailId: emailId }).where(eq(diagnosesTable.id, diagnosis.id));
         req.log.info({ emailId, diagnosisId: diagnosis.id }, "Correo de diagnóstico digital enviado");
       } catch (err) {
         req.log.warn({ err, diagnosisId: diagnosis.id }, "No se pudo enviar el correo de diagnóstico digital");
