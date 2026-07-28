@@ -10,6 +10,7 @@ import { logger } from "./lib/logger";
 import { auth } from "./lib/auth";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { getCurrentAuthUser } from "./routes/auth";
+import { resendWebhookHandler } from "./routes/webhooks-resend";
 
 const app: Express = express();
 
@@ -72,6 +73,13 @@ const requestPasswordResetLimiter = rateLimit({
 app.use("/api/auth/request-password-reset", requestPasswordResetLimiter);
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
+
+// Needs the exact raw request bytes to verify Resend's Svix signature (see
+// webhooks-resend.ts) — must be registered ahead of express.json() below,
+// same reasoning as the Better Auth handler above, or the body would
+// already be parsed/re-serialized by the time it got there and every
+// signature check would fail.
+app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), resendWebhookHandler);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
