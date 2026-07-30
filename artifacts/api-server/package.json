@@ -8,10 +8,11 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps --env-file-if-exists=.env ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "sh -c 'export DATABASE_URL=postgres://unused:unused@localhost:5432/unused SESSION_SECRET=test-secret-not-for-real-use; tsx --test test/auth-flow.test.ts test/auth-config.test.ts test/digital-diagnosis-provider-fallback.test.ts test/webhooks-resend.test.ts'"
+    "test": "sh -c 'export DATABASE_URL=postgres://unused:unused@localhost:5432/unused SESSION_SECRET=test-secret-not-for-real-use; tsx --test test/auth-flow.test.ts test/auth-config.test.ts test/digital-diagnosis-provider-fallback.test.ts test/webhooks-resend.test.ts test/social-autopublisher.test.ts'"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.87",
+    "@ai-sdk/deepseek": "^1.0.49",
     "@ai-sdk/google": "^2.0.0",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",

@@ -17,6 +17,76 @@ export interface Publisher {
   publish(target: PublishTarget): Promise<PublishResult>;
 }
 
+const METRICOOL_API_BASE = "https://app.metricool.com/v2";
+
+// Metricool's timezone is required per-post (publicationDate.timezone) and
+// isn't tracked per-client anywhere yet — hardcoded to Coimagen's own base
+// until client-level timezones become a real need.
+const METRICOOL_DEFAULT_TIMEZONE = process.env.METRICOOL_DEFAULT_TIMEZONE ?? "America/Tijuana";
+
+// Metricool has no dedicated "publish now" endpoint — it's the scheduler API
+// with autoPublish:true and a publicationDate of right now
+// (https://help.metricool.com/en/article/basic-guide-for-api-integration-abukgf/).
+// Note: for Instagram/TikTok, autoPublish:true only actually auto-publishes
+// if the account is connected in Metricool as a proper Business/Creator
+// account — otherwise Metricool silently falls back to sending a human a
+// push notification to publish manually instead
+// (https://help.metricool.com/en/article/why-cant-i-enable-auto-publishing-qb77c0/).
+// This function can't detect that case from the API response alone; it's a
+// known gap to watch for once real credentials exist.
+function networkToMetricoolProvider(network: string): string {
+  switch (network) {
+    case "meta_facebook":
+      return "facebook";
+    case "meta_instagram":
+      return "instagram";
+    case "linkedin":
+      return "linkedin";
+    default:
+      throw new Error(`Red "${network}" no tiene mapeo a un provider de Metricool todavía`);
+  }
+}
+
+export interface MetricoolCredentials {
+  userToken: string;
+  userId: string;
+  blogId: string;
+}
+
+export interface MetricoolRequest {
+  url: string;
+  headers: Record<string, string>;
+  body: {
+    providers: string[];
+    text: string;
+    media: string[];
+    publicationDate: { dateTime: string; timezone: string };
+    autoPublish: true;
+  };
+}
+
+// Pure — no network I/O — so this can be unit-tested without spending real
+// Metricool API usage or needing real credentials.
+export function buildMetricoolPublishRequest(target: PublishTarget, creds: MetricoolCredentials): MetricoolRequest {
+  const url = `${METRICOOL_API_BASE}/scheduler/posts?userId=${encodeURIComponent(creds.userId)}&blogId=${encodeURIComponent(creds.blogId)}`;
+  return {
+    url,
+    headers: {
+      "X-Mc-Auth": creds.userToken,
+      "Content-Type": "application/json",
+    },
+    body: {
+      providers: [networkToMetricoolProvider(target.network)],
+      text: target.caption,
+      media: target.mediaUrls ?? [],
+      // ISO 8601 without a trailing "Z" — Metricool takes the offset from
+      // the separate "timezone" field, not from the dateTime string itself.
+      publicationDate: { dateTime: new Date().toISOString().slice(0, 19), timezone: METRICOOL_DEFAULT_TIMEZONE },
+      autoPublish: true,
+    },
+  };
+}
+
 // Coimagen's own Metricool subscription is one account shared across every
 // client — only the blogId (which brand within that account) is per-client,
 // so the token/userId live as env vars rather than in client_social_credentials.
@@ -29,11 +99,29 @@ class MetricoolPublisher implements Publisher {
     private readonly blogId: string,
   ) {}
 
-  async publish(_target: PublishTarget): Promise<PublishResult> {
-    // Auth: header X-Mc-Auth: <userToken>, query params userId + blogId
-    // (https://help.metricool.com/en/article/basic-guide-for-api-integration-abukgf/).
-    // Not wired to the real Metricool API yet — structure only.
-    throw new Error("MetricoolPublisher.publish no está conectado todavía — solo estructura, pendiente de credenciales reales");
+  async publish(target: PublishTarget): Promise<PublishResult> {
+    const { url, headers, body } = buildMetricoolPublishRequest(target, {
+      userToken: this.userToken,
+      userId: this.userId,
+      blogId: this.blogId,
+    });
+
+    const response = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`Metricool respondió ${response.status} al publicar en "${target.network}": ${errorBody}`);
+    }
+
+    // Field name unconfirmed — no successful real call has been made yet
+    // (no Metricool subscription contracted as of this writing). Verify
+    // this against a real response during the first end-to-end test and
+    // adjust here if the id comes back under a different key.
+    const data = await response.json() as { id?: string | number };
+    if (data.id === undefined) {
+      throw new Error(`Metricool no devolvió un id de post reconocible al publicar en "${target.network}": ${JSON.stringify(data)}`);
+    }
+
+    return { externalPostId: String(data.id), publishedAt: new Date() };
   }
 }
 
