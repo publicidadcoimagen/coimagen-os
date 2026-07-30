@@ -3129,6 +3129,11 @@ paths:
           name: clientId
           required: true
           schema: { type: integer }
+        - in: query
+          name: status
+          required: false
+          description: Filter to items in a single status, e.g. "pending_approval"
+          schema: { type: string }
       responses:
         "200":
           description: OK
@@ -3193,6 +3198,26 @@ paths:
         content:
           application/json:
             schema: { $ref: "#/components/schemas/ContentCalendarItemUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentCalendarItem" }
+
+  /clients/{clientId}/content-calendar/items/{id}/submit:
+    post:
+      operationId: submitContentCalendarItem
+      summary: Submit a draft content calendar item for approval (draft -> pending_approval)
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
       responses:
         "200":
           description: OK

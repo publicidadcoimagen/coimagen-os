@@ -110,13 +110,30 @@ router.patch("/items/:id", async (req, res): Promise<void> => {
   res.json(serializeItem(updated!.item, updated!.targets));
 });
 
-router.post("/items/:id/approve", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+router.post("/items/:id/submit", async (req, res): Promise<void> => {
   const clientId = parseInt((req.params as Record<string, string>).clientId);
   const id = parseInt(req.params.id as string);
   const found = await loadItemWithTargets(clientId, id);
   if (!found) { res.status(404).json({ error: "Not found" }); return; }
   if (found.item.status !== "draft") {
-    res.status(409).json({ error: `Solo se puede aprobar un item en estado "draft" (actual: "${found.item.status}")` });
+    res.status(409).json({ error: `Solo se puede enviar a aprobación un item en estado "draft" (actual: "${found.item.status}")` });
+    return;
+  }
+  await db.update(contentCalendarItemsTable).set({
+    status: "pending_approval",
+    updatedAt: new Date(),
+  }).where(eq(contentCalendarItemsTable.id, id));
+  const updated = await loadItemWithTargets(clientId, id);
+  res.json(serializeItem(updated!.item, updated!.targets));
+});
+
+router.post("/items/:id/approve", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const clientId = parseInt((req.params as Record<string, string>).clientId);
+  const id = parseInt(req.params.id as string);
+  const found = await loadItemWithTargets(clientId, id);
+  if (!found) { res.status(404).json({ error: "Not found" }); return; }
+  if (found.item.status !== "pending_approval") {
+    res.status(409).json({ error: `Solo se puede aprobar un item en estado "pending_approval" (actual: "${found.item.status}") — primero hay que enviarlo a aprobación con /submit` });
     return;
   }
   await db.update(contentCalendarItemsTable).set({
