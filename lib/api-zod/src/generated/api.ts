@@ -4284,6 +4284,41 @@ export const UpdateContentCalendarItemResponse = zod.object({
 
 
 /**
+ * @summary Submit a draft content calendar item for approval (draft -> pending_approval)
+ */
+export const SubmitContentCalendarItemParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "id": zod.coerce.number()
+})
+
+export const SubmitContentCalendarItemResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "caption": zod.string(),
+  "mediaUrls": zod.array(zod.string()).nullish(),
+  "scheduledAt": zod.string().nullish(),
+  "status": zod.string(),
+  "createdBy": zod.string().nullish(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish(),
+  "targets": zod.array(zod.object({
+  "id": zod.number(),
+  "calendarItemId": zod.number(),
+  "network": zod.string(),
+  "publisherMode": zod.string().nullish(),
+  "externalPostId": zod.string().nullish(),
+  "status": zod.string(),
+  "publishedAt": zod.string().nullish(),
+  "failureReason": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}))
+})
+
+
+/**
  * @summary Approve a content calendar item for publishing
  */
 export const ApproveContentCalendarItemParams = zod.object({

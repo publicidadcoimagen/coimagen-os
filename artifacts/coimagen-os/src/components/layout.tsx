@@ -7,7 +7,7 @@ import {
   Lock, Bot, Bell, Bug,
   Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
   FileSignature,
-  Brain, Plug, PlayCircle, LogOut,
+  Brain, Plug, PlayCircle, LogOut, Share2,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -87,6 +87,7 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/core-ai",       label: "Director General Digital", icon: Brain },
       { href: "/integrations",  label: "Integration Hub",          icon: Plug },
       { href: "/automations",   label: "Automation Engine",        icon: Zap },
+      { href: "/social-autopublisher", label: "Autopublicador Social", icon: Share2 },
       { href: "/executions",    label: "AI Execution Engine",      icon: PlayCircle },
     ],
   },

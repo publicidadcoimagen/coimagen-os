@@ -72,6 +72,7 @@ import { AiExecutionDetail } from "@/pages/executions/[id]";
 
 // COIMAGEN CORE AI
 import { CoreAIDashboard } from "@/pages/core-ai/index";
+import { SocialAutopublisher } from "@/pages/social-autopublisher/index";
 
 // Orchestration Engine
 import { OrchestrationHub } from "@/pages/orchestration/index";
@@ -225,6 +226,7 @@ function Router() {
 
             {/* COIMAGEN CORE AI */}
             <Route path="/core-ai" component={CoreAIDashboard} />
+            <Route path="/social-autopublisher" component={SocialAutopublisher} />
 
             {/* Orchestration Engine */}
             <Route path="/orchestration/events"   component={EventMonitor} />
