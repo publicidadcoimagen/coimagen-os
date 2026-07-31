@@ -3129,11 +3129,6 @@ paths:
           name: clientId
           required: true
           schema: { type: integer }
-        - in: query
-          name: status
-          required: false
-          description: Filter to items in a single status, e.g. "pending_approval"
-          schema: { type: string }
       responses:
         "200":
           description: OK

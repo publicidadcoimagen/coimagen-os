@@ -14334,6 +14334,78 @@ export const useUpdateContentCalendarItem = <TError = ErrorType<unknown>,
       return useMutation(getUpdateContentCalendarItemMutationOptions(options));
     }
 
+export const getSubmitContentCalendarItemUrl = (clientId: number,
+    id: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items/${id}/submit`
+}
+
+/**
+ * @summary Submit a draft content calendar item for approval (draft -> pending_approval)
+ */
+export const submitContentCalendarItem = async (clientId: number,
+    id: number, options?: RequestInit): Promise<ContentCalendarItem> => {
+
+  return customFetch<ContentCalendarItem>(getSubmitContentCalendarItemUrl(clientId,id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getSubmitContentCalendarItemMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitContentCalendarItem>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitContentCalendarItem>>, TError,{clientId: number;id: number}, TContext> => {
+
+const mutationKey = ['submitContentCalendarItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitContentCalendarItem>>, {clientId: number;id: number}> = (props) => {
+          const {clientId,id} = props ?? {};
+
+          return  submitContentCalendarItem(clientId,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitContentCalendarItemMutationResult = NonNullable<Awaited<ReturnType<typeof submitContentCalendarItem>>>
+
+    export type SubmitContentCalendarItemMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Submit a draft content calendar item for approval (draft -> pending_approval)
+ */
+export const useSubmitContentCalendarItem = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitContentCalendarItem>>, TError,{clientId: number;id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitContentCalendarItem>>,
+        TError,
+        {clientId: number;id: number},
+        TContext
+      > => {
+      return useMutation(getSubmitContentCalendarItemMutationOptions(options));
+    }
+
 export const getApproveContentCalendarItemUrl = (clientId: number,
     id: number,) => {
 
