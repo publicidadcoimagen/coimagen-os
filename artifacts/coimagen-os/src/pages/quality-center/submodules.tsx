@@ -3,9 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Code2, TestTube2, Gauge, Lock, Network, HeartPulse,
-  ClipboardList, Lightbulb, ChevronLeft, CheckCircle2,
-  AlertCircle, Construction,
+  Code2, TestTube2, Gauge, Lock, Network,
+  ClipboardList, Lightbulb, ChevronLeft, Construction,
 } from "lucide-react";
 
 // ─── Shared Layout ─────────────────────────────────────────────────────────────
@@ -155,107 +154,6 @@ export function Architecture() {
         {archCategories.map((cat) => <CategoryCard key={cat.title} {...cat} />)}
       </div>
     </SubmoduleLayout>
-  );
-}
-
-// ─── HEALTH CHECK ─────────────────────────────────────────────────────────────
-export function HealthCheck() {
-  const checks = [
-    { label: "API Server", status: "ok", detail: "Express respondiendo en /api/healthz" },
-    { label: "Base de datos", status: "ok", detail: "PostgreSQL conectado y operativo" },
-    { label: "Autenticación", status: "ok", detail: "Better Auth activo" },
-    { label: "Frontend", status: "ok", detail: "React + Vite sirviendo correctamente" },
-    { label: "Sesiones", status: "ok", detail: "Session store con PostgreSQL" },
-    { label: "Audit Log", status: "ok", detail: "Middleware de auditoría activo" },
-    { label: "OpenAPI / Codegen", status: "ok", detail: "Spec validada, hooks generados" },
-    { label: "TypeScript", status: "ok", detail: "0 errores en typecheck completo" },
-    { label: "Workflows", status: "ok", detail: "Workflow Engine operativo" },
-    { label: "Smart Onboarding", status: "ok", detail: "Wizard activo con AES-256-GCM" },
-  ];
-
-  const warnings = [
-    { label: "Herramientas externas", detail: "No conectadas — preparadas para integración" },
-    { label: "Code Review automático", detail: "Estructura preparada, sin herramienta activa" },
-    { label: "Performance monitoring", detail: "Métricas definidas, sin agente de recolección" },
-  ];
-
-  const healthy = checks.filter((c) => c.status === "ok").length;
-
-  return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" asChild>
-          <Link href="/quality-center"><ChevronLeft className="h-4 w-4" /></Link>
-        </Button>
-        <div className="h-9 w-9 rounded-lg bg-emerald-400/10 flex items-center justify-center">
-          <HeartPulse className="h-5 w-5 text-emerald-400" />
-        </div>
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold tracking-tight">Health Check</h1>
-            <Badge variant="outline" className="text-[9px] py-0 bg-green-400/10 text-green-400 border-green-400/30">LIVE</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">Estado general del sistema en tiempo real</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="border-green-400/30 bg-green-400/5 col-span-2">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-green-400/20 flex items-center justify-center">
-              <CheckCircle2 className="h-7 w-7 text-green-400" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-green-400">Sistema Saludable</p>
-              <p className="text-sm text-muted-foreground">{healthy}/{checks.length} servicios operativos</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-yellow-400/30 bg-yellow-400/5">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground mb-1">Advertencias</p>
-            <p className="text-2xl font-bold text-yellow-400">{warnings.length}</p>
-            <p className="text-[10px] text-muted-foreground">pendientes de integración</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div>
-        <h2 className="text-sm font-semibold text-muted-foreground mb-3">Servicios principales</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {checks.map((check) => (
-            <Card key={check.label} className="border-green-400/20">
-              <CardContent className="p-3 flex items-center gap-3">
-                <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium">{check.label}</p>
-                  <p className="text-[10px] text-muted-foreground truncate">{check.detail}</p>
-                </div>
-                <Badge variant="outline" className="text-[9px] py-0 bg-green-400/10 text-green-400 border-green-400/30 flex-shrink-0">OK</Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-sm font-semibold text-muted-foreground mb-3">Advertencias</h2>
-        <div className="space-y-2">
-          {warnings.map((w) => (
-            <Card key={w.label} className="border-yellow-400/20">
-              <CardContent className="p-3 flex items-center gap-3">
-                <AlertCircle className="h-4 w-4 text-yellow-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium">{w.label}</p>
-                  <p className="text-[10px] text-muted-foreground">{w.detail}</p>
-                </div>
-                <Badge variant="outline" className="text-[9px] py-0 bg-yellow-400/10 text-yellow-400 border-yellow-400/30 flex-shrink-0">WARN</Badge>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    </div>
   );
 }
 
