@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp, jsonb, unique } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, timestamp, jsonb, numeric, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { clientsTable } from "./clients";
@@ -17,6 +17,13 @@ export const contentCalendarItemsTable = pgTable("content_calendar_items", {
   createdBy: text("created_by"),
   approvedBy: text("approved_by"),
   approvedAt: timestamp("approved_at"),
+  // Populated only when the caption came from generateCaption() (AI-generated);
+  // null for manually-written drafts. Nullable/additive so existing rows are
+  // unaffected — for cost/usage projections (Camila, 2026-08-01).
+  generationModel: text("generation_model"),
+  generationInputTokens: integer("generation_input_tokens"),
+  generationOutputTokens: integer("generation_output_tokens"),
+  generationCostUsd: numeric("generation_cost_usd"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });
