@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Redirect, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -59,7 +59,7 @@ import { IncidentCenter } from "@/pages/quality-center/incidents/index";
 import { IncidentDetail } from "@/pages/quality-center/incidents/[id]";
 import {
   CodeReview, QATesting, Performance, Security, Architecture,
-  HealthCheck, TechnicalDebt, Recommendations,
+  TechnicalDebt, Recommendations,
 } from "@/pages/quality-center/submodules";
 
 // Integration Hub
@@ -212,7 +212,12 @@ function Router() {
             <Route path="/quality-center/performance" component={Performance} />
             <Route path="/quality-center/security" component={Security} />
             <Route path="/quality-center/architecture" component={Architecture} />
-            <Route path="/quality-center/health-check" component={HealthCheck} />
+            {/* Old hardcoded "always OK" Health Check — replaced by the real
+                SystemVerificationWidget on the Dashboard (/). Redirect instead
+                of a dead link, since this may still be bookmarked. */}
+            <Route path="/quality-center/health-check">
+              <Redirect to="/" />
+            </Route>
             <Route path="/quality-center/technical-debt" component={TechnicalDebt} />
             <Route path="/quality-center/recommendations" component={Recommendations} />
 
