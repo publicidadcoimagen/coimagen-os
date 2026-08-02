@@ -89,7 +89,7 @@ export function DailySprint() {
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 text-sm">
             {active.objective && <div><p className="text-xs text-muted-foreground mb-0.5">Objetivo</p><p>{active.objective}</p></div>}
-            {active.replitWorking && <div><p className="text-xs text-muted-foreground mb-0.5">Replit trabaja en</p><p>{active.replitWorking}</p></div>}
+            {active.replitWorking && <div><p className="text-xs text-muted-foreground mb-0.5">Agente IA trabaja en</p><p>{active.replitWorking}</p></div>}
             {active.todayPlan && <div><p className="text-xs text-muted-foreground mb-0.5">Plan hoy</p><p>{active.todayPlan}</p></div>}
             {active.blockers && <div><p className="text-xs text-muted-foreground mb-0.5 text-destructive">Bloqueos</p><p className="text-destructive">{active.blockers}</p></div>}
             {active.deliverables && <div><p className="text-xs text-muted-foreground mb-0.5">Entregables</p><p>{active.deliverables}</p></div>}
@@ -122,7 +122,7 @@ export function DailySprint() {
                 {expanded === s.id && (
                   <div className="mt-3 grid grid-cols-2 gap-3 text-sm border-t border-border/30 pt-3">
                     {s.doneYesterday && <div><p className="text-xs text-muted-foreground mb-0.5">Terminó ayer</p><p>{s.doneYesterday}</p></div>}
-                    {s.replitWorking && <div><p className="text-xs text-muted-foreground mb-0.5">Replit trabajó en</p><p>{s.replitWorking}</p></div>}
+                    {s.replitWorking && <div><p className="text-xs text-muted-foreground mb-0.5">Agente IA trabajó en</p><p>{s.replitWorking}</p></div>}
                     {s.result && <div><p className="text-xs text-muted-foreground mb-0.5">Resultado</p><p>{s.result}</p></div>}
                     {s.tomorrowPending && <div><p className="text-xs text-muted-foreground mb-0.5">Pendientes</p><p>{s.tomorrowPending}</p></div>}
                   </div>
@@ -145,7 +145,7 @@ export function DailySprint() {
             <div><Label className="text-xs">Fecha *</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="mt-1" /></div>
             {field("objective", "Objetivo del día")}
             {field("doneYesterday", "¿Qué terminó ayer?")}
-            {field("replitWorking", "¿Qué está trabajando Replit?")}
+            {field("replitWorking", "¿Qué está trabajando el Agente IA?")}
             {field("todayPlan", "¿Qué haremos hoy?")}
             {field("blockers", "Bloqueos")}
             {field("deliverables", "Entregables esperados")}

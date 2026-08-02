@@ -30,7 +30,7 @@ const PRIORITY_COLORS: Record<string, string> = {
   critical: "text-red-400", high: "text-orange-400", medium: "text-yellow-400", low: "text-blue-400"
 };
 const EPICS = ["Sitio Web", "COIMAGEN OS", "Marketing", "Productos", "Branding", "Automatización", "Ventas", "Agentes IA", "SEO", "Google Business"];
-const ASSIGNEES = ["Camila", "Replit", "ChatGPT CTO", "Agente IA"];
+const ASSIGNEES = ["Camila", "Agente IA", "ChatGPT CTO"];
 
 const EMPTY_FORM = { title: "", description: "", epic: "", priority: "medium", assignee: "", sprint: "", status: "backlog", dueDate: "", notes: "" };
 
