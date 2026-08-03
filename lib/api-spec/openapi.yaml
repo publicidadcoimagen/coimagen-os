@@ -3688,9 +3688,18 @@ components:
           type: string
     HealthStatus:
       type: object
-      required: [status]
+      required: [status, providers]
       properties:
         status: { type: string }
+        providers:
+          type: object
+          description: Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance.
+          required: [anthropic, gemini, deepseek, resend]
+          properties:
+            anthropic: { type: boolean }
+            gemini: { type: boolean }
+            deepseek: { type: boolean }
+            resend: { type: boolean }
 
     # ── CLIENT ────────────────────────────────────────────────────────────────
     Client:

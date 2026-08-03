@@ -5,7 +5,10 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { HealthStatusProviders } from './healthStatusProviders';
 
 export interface HealthStatus {
   status: string;
+  /** Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance. */
+  providers: HealthStatusProviders;
 }

@@ -121,6 +121,7 @@ export * from './directorProject';
 export * from './directorUpdate';
 export * from './errorEnvelope';
 export * from './healthStatus';
+export * from './healthStatusProviders';
 export * from './idea';
 export * from './ideaCreate';
 export * from './ideaUpdate';
