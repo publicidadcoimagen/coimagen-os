@@ -3157,6 +3157,29 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/ContentCalendarItem" }
 
+  /clients/{clientId}/content-calendar/items/generate:
+    post:
+      operationId: generateContentCalendarItem
+      summary: Generate a caption with DeepSeek and create its draft in one step, persisting real token usage and estimated cost on the item
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ContentCalendarItemGenerate" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContentCalendarItem" }
+        "502":
+          description: Generation failed (provider error)
+
   /clients/{clientId}/content-calendar/items/{id}:
     get:
       operationId: getContentCalendarItem
@@ -5537,6 +5560,14 @@ components:
         approvedAt: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
+        # Populated only when the caption was AI-generated via POST .../items/generate;
+        # null for manually-written drafts (see ContentCalendarItemCreate).
+        generationModel: { type: ["string", "null"] }
+        generationInputTokens: { type: ["integer", "null"] }
+        generationOutputTokens: { type: ["integer", "null"] }
+        generationCostUsd:
+          type: ["string", "null"]
+          description: Estimated cost in USD from a hardcoded provider price table — not billed truth.
         targets:
           type: array
           items: { $ref: "#/components/schemas/ContentCalendarTarget" }
@@ -5562,6 +5593,16 @@ components:
           type: array
           items: { type: string }
         scheduledAt: { type: string }
+    ContentCalendarItemGenerate:
+      type: object
+      required: [topic, networks]
+      properties:
+        topic: { type: string, description: "Brief/topic for the AI to write the caption about" }
+        networks:
+          type: array
+          minItems: 1
+          items: { type: string }
+        tone: { type: string }
     ClientSocialCredentialMeta:
       type: object
       required: [id, clientId, platform, credentialType, status, createdAt]

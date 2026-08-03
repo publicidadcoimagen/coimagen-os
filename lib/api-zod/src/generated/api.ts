@@ -4178,6 +4178,10 @@ export const ListContentCalendarItemsResponseItem = zod.object({
   "approvedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish(),
+  "generationModel": zod.string().nullish(),
+  "generationInputTokens": zod.number().nullish(),
+  "generationOutputTokens": zod.number().nullish(),
+  "generationCostUsd": zod.string().nullish().describe('Estimated cost in USD from a hardcoded provider price table — not billed truth.'),
   "targets": zod.array(zod.object({
   "id": zod.number(),
   "calendarItemId": zod.number(),
@@ -4214,6 +4218,23 @@ export const CreateContentCalendarItemBody = zod.object({
 
 
 /**
+ * @summary Generate a caption with DeepSeek and create its draft in one step, persisting real token usage and estimated cost on the item
+ */
+export const GenerateContentCalendarItemParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+
+
+
+export const GenerateContentCalendarItemBody = zod.object({
+  "topic": zod.string().describe('Brief\/topic for the AI to write the caption about'),
+  "networks": zod.array(zod.string()).min(1),
+  "tone": zod.string().optional()
+})
+
+
+/**
  * @summary Get a content calendar item by id
  */
 export const GetContentCalendarItemParams = zod.object({
@@ -4233,6 +4254,10 @@ export const GetContentCalendarItemResponse = zod.object({
   "approvedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish(),
+  "generationModel": zod.string().nullish(),
+  "generationInputTokens": zod.number().nullish(),
+  "generationOutputTokens": zod.number().nullish(),
+  "generationCostUsd": zod.string().nullish().describe('Estimated cost in USD from a hardcoded provider price table — not billed truth.'),
   "targets": zod.array(zod.object({
   "id": zod.number(),
   "calendarItemId": zod.number(),
@@ -4274,6 +4299,10 @@ export const UpdateContentCalendarItemResponse = zod.object({
   "approvedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish(),
+  "generationModel": zod.string().nullish(),
+  "generationInputTokens": zod.number().nullish(),
+  "generationOutputTokens": zod.number().nullish(),
+  "generationCostUsd": zod.string().nullish().describe('Estimated cost in USD from a hardcoded provider price table — not billed truth.'),
   "targets": zod.array(zod.object({
   "id": zod.number(),
   "calendarItemId": zod.number(),
@@ -4309,6 +4338,10 @@ export const SubmitContentCalendarItemResponse = zod.object({
   "approvedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish(),
+  "generationModel": zod.string().nullish(),
+  "generationInputTokens": zod.number().nullish(),
+  "generationOutputTokens": zod.number().nullish(),
+  "generationCostUsd": zod.string().nullish().describe('Estimated cost in USD from a hardcoded provider price table — not billed truth.'),
   "targets": zod.array(zod.object({
   "id": zod.number(),
   "calendarItemId": zod.number(),
@@ -4344,6 +4377,10 @@ export const ApproveContentCalendarItemResponse = zod.object({
   "approvedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish(),
+  "generationModel": zod.string().nullish(),
+  "generationInputTokens": zod.number().nullish(),
+  "generationOutputTokens": zod.number().nullish(),
+  "generationCostUsd": zod.string().nullish().describe('Estimated cost in USD from a hardcoded provider price table — not billed truth.'),
   "targets": zod.array(zod.object({
   "id": zod.number(),
   "calendarItemId": zod.number(),
@@ -4379,6 +4416,10 @@ export const PublishContentCalendarItemResponse = zod.object({
   "approvedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish(),
+  "generationModel": zod.string().nullish(),
+  "generationInputTokens": zod.number().nullish(),
+  "generationOutputTokens": zod.number().nullish(),
+  "generationCostUsd": zod.string().nullish().describe('Estimated cost in USD from a hardcoded provider price table — not billed truth.'),
   "targets": zod.array(zod.object({
   "id": zod.number(),
   "calendarItemId": zod.number(),

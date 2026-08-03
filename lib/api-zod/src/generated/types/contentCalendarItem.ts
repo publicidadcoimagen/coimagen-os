@@ -25,5 +25,16 @@ export interface ContentCalendarItem {
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
+  /** @nullable */
+  generationModel?: string | null;
+  /** @nullable */
+  generationInputTokens?: number | null;
+  /** @nullable */
+  generationOutputTokens?: number | null;
+  /**
+     * Estimated cost in USD from a hardcoded provider price table — not billed truth.
+     * @nullable
+     */
+  generationCostUsd?: string | null;
   targets: ContentCalendarTarget[];
 }
