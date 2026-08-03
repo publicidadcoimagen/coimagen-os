@@ -10,9 +10,11 @@ import {
 import {
   CreateContentCalendarItemBody,
   UpdateContentCalendarItemBody,
+  GenerateContentCalendarItemBody,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 import { getPublisherForClient } from "../lib/social-autopublisher/publisher";
+import { generateCaptionAndCreateDraft } from "../lib/social-autopublisher/caption";
 
 // Mounted at /clients/:clientId/content-calendar — mergeParams so :clientId
 // from the parent mount is visible on req.params here.
@@ -79,6 +81,28 @@ router.post("/items", async (req, res): Promise<void> => {
     d.targets.map((network) => ({ calendarItemId: item!.id, network, status: "pending" })),
   ).returning();
   res.status(201).json(serializeItem(item!, targets));
+});
+
+// Generates a caption with DeepSeek and creates its draft in one step — the
+// only path that actually populates the generation* usage/cost columns
+// (plain POST /items above stays for manually-written captions, unpriced).
+router.post("/items/generate", async (req, res): Promise<void> => {
+  const clientId = parseInt((req.params as Record<string, string>).clientId);
+  const body = GenerateContentCalendarItemBody.safeParse(req.body);
+  if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
+  const d = body.data;
+  try {
+    const { item, targets } = await generateCaptionAndCreateDraft({
+      clientId,
+      topic: d.topic,
+      networks: d.networks,
+      tone: d.tone,
+      createdBy: req.user?.email ?? undefined,
+    });
+    res.status(201).json(serializeItem(item, targets));
+  } catch (err) {
+    res.status(502).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 router.get("/items/:id", async (req, res): Promise<void> => {

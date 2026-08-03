@@ -2526,6 +2526,17 @@ export interface ContentCalendarItem {
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
+  /** @nullable */
+  generationModel?: string | null;
+  /** @nullable */
+  generationInputTokens?: number | null;
+  /** @nullable */
+  generationOutputTokens?: number | null;
+  /**
+     * Estimated cost in USD from a hardcoded provider price table — not billed truth.
+     * @nullable
+     */
+  generationCostUsd?: string | null;
   targets: ContentCalendarTarget[];
 }
 
@@ -2542,6 +2553,14 @@ export interface ContentCalendarItemUpdate {
   caption?: string;
   mediaUrls?: string[];
   scheduledAt?: string;
+}
+
+export interface ContentCalendarItemGenerate {
+  /** Brief/topic for the AI to write the caption about */
+  topic: string;
+  /** @minItems 1 */
+  networks: string[];
+  tone?: string;
 }
 
 export interface ClientSocialCredentialMeta {

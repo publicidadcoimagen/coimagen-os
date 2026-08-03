@@ -83,6 +83,7 @@ export * from './configEntry';
 export * from './configEntryInput';
 export * from './contentCalendarItem';
 export * from './contentCalendarItemCreate';
+export * from './contentCalendarItemGenerate';
 export * from './contentCalendarItemUpdate';
 export * from './contentCalendarTarget';
 export * from './contract';

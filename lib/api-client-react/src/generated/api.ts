@@ -75,6 +75,7 @@ import type {
   ConfigEntryInput,
   ContentCalendarItem,
   ContentCalendarItemCreate,
+  ContentCalendarItemGenerate,
   ContentCalendarItemUpdate,
   Contract,
   ContractCreate,
@@ -14176,6 +14177,78 @@ export const useCreateContentCalendarItem = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateContentCalendarItemMutationOptions(options));
+    }
+
+export const getGenerateContentCalendarItemUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/content-calendar/items/generate`
+}
+
+/**
+ * @summary Generate a caption with DeepSeek and create its draft in one step, persisting real token usage and estimated cost on the item
+ */
+export const generateContentCalendarItem = async (clientId: number,
+    contentCalendarItemGenerate: ContentCalendarItemGenerate, options?: RequestInit): Promise<ContentCalendarItem> => {
+
+  return customFetch<ContentCalendarItem>(getGenerateContentCalendarItemUrl(clientId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      contentCalendarItemGenerate,)
+  }
+);}
+
+
+
+
+export const getGenerateContentCalendarItemMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateContentCalendarItem>>, TError,{clientId: number;data: BodyType<ContentCalendarItemGenerate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateContentCalendarItem>>, TError,{clientId: number;data: BodyType<ContentCalendarItemGenerate>}, TContext> => {
+
+const mutationKey = ['generateContentCalendarItem'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateContentCalendarItem>>, {clientId: number;data: BodyType<ContentCalendarItemGenerate>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  generateContentCalendarItem(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateContentCalendarItemMutationResult = NonNullable<Awaited<ReturnType<typeof generateContentCalendarItem>>>
+    export type GenerateContentCalendarItemMutationBody = BodyType<ContentCalendarItemGenerate>
+    export type GenerateContentCalendarItemMutationError = ErrorType<void>
+
+    /**
+ * @summary Generate a caption with DeepSeek and create its draft in one step, persisting real token usage and estimated cost on the item
+ */
+export const useGenerateContentCalendarItem = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateContentCalendarItem>>, TError,{clientId: number;data: BodyType<ContentCalendarItemGenerate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateContentCalendarItem>>,
+        TError,
+        {clientId: number;data: BodyType<ContentCalendarItemGenerate>},
+        TContext
+      > => {
+      return useMutation(getGenerateContentCalendarItemMutationOptions(options));
     }
 
 export const getGetContentCalendarItemUrl = (clientId: number,
