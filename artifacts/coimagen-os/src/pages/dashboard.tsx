@@ -115,10 +115,11 @@ function SystemCheckRow({
 
 // Replaces Quality Center's old "Health Check" — that one was a hardcoded
 // array that always said "ok". Every row here comes from a real request:
-// /api/healthz (API + DB), the already-fetched auth session from
-// AuthProvider (no point re-fetching /api/auth/user — if this page is
-// rendering at all, that call already succeeded), and /api/system-credentials
-// for which providers are actually connected vs. just never configured.
+// /api/healthz (API + DB, and — P-65 — presence of the 4 provider API key
+// env vars), the already-fetched auth session from AuthProvider (no point
+// re-fetching /api/auth/user — if this page is rendering at all, that call
+// already succeeded), and /api/system-credentials for which self-managed
+// provider secrets are actually connected vs. just never configured.
 function SystemVerificationWidget() {
   const { user, isAuthenticated } = useAuth();
   const isCeoOrAdmin = user?.role === "ceo" || user?.role === "admin";
@@ -155,6 +156,28 @@ function SystemVerificationWidget() {
     ? `${activeCredentials.length} conectada${activeCredentials.length !== 1 ? "s" : ""}`
     : "Ninguna conectada";
 
+  // Presence-only check of the 4 provider API key env vars (Anthropic,
+  // Gemini, DeepSeek, Resend) — separate from "Integraciones" above, which
+  // checks the self-managed system_credentials table, not these env vars.
+  const providerEntries = health?.providers
+    ? (Object.entries(health.providers) as [string, boolean][])
+    : [];
+  const missingProviders = providerEntries.filter(([, ok]) => !ok).map(([name]) => name);
+  const providersState: CheckState = isHealthLoading
+    ? "loading"
+    : isHealthError
+    ? "error"
+    : missingProviders.length === 0
+    ? "ok"
+    : "warn";
+  const providersDetail = isHealthLoading
+    ? "Verificando..."
+    : isHealthError
+    ? "Sin respuesta"
+    : missingProviders.length === 0
+    ? `${providerEntries.length}/${providerEntries.length} configuradas`
+    : `Faltan: ${missingProviders.join(", ")}`;
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -167,6 +190,7 @@ function SystemVerificationWidget() {
         <SystemCheckRow icon={Database} label="Base de datos" state={apiState} detail={apiDetail} />
         <SystemCheckRow icon={Lock} label="Autenticación" state={authState} detail={isAuthenticated ? "Sesión activa" : "Sin sesión"} />
         <SystemCheckRow icon={KeyRound} label="Integraciones" state={credsState} detail={credsDetail} />
+        <SystemCheckRow icon={KeyRound} label="Proveedores IA / Email" state={providersState} detail={providersDetail} />
       </CardContent>
     </Card>
   );

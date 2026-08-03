@@ -52,8 +52,20 @@ export interface ErrorEnvelope {
   error: string;
 }
 
+/**
+ * Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance.
+ */
+export type HealthStatusProviders = {
+  anthropic: boolean;
+  gemini: boolean;
+  deepseek: boolean;
+  resend: boolean;
+};
+
 export interface HealthStatus {
   status: string;
+  /** Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance. */
+  providers: HealthStatusProviders;
 }
 
 export type ClientStatus = typeof ClientStatus[keyof typeof ClientStatus];

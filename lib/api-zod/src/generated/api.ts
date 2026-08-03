@@ -72,7 +72,13 @@ export const ChangeOwnPasswordResponse = zod.object({
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
-  "status": zod.string()
+  "status": zod.string(),
+  "providers": zod.object({
+  "anthropic": zod.boolean(),
+  "gemini": zod.boolean(),
+  "deepseek": zod.boolean(),
+  "resend": zod.boolean()
+}).describe('Whether each external provider\'s API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance.')
 })
 
 
