@@ -143,12 +143,18 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     const logMessage = [message, causeDetail && `(${causeDetail})`, rawDetails && `[details: ${rawDetails}]`]
       .filter(Boolean)
       .join(" ");
+    // A DigitalDiagnosisScrapeError is a known, expected failure mode (bad
+    // domain, slow site, HTTP error) — the prospect already got an
+    // actionable message for it, so it doesn't need "high" severity
+    // triage like a genuine unclassified failure (AI provider error, DB
+    // error) does.
+    const severity = err instanceof DigitalDiagnosisScrapeError ? "low" : "high";
 
     await db.insert(incidentsTable).values({
       type: "ai_error",
       title: `Fallo del Agente de Diagnóstico Digital: ${url}`,
       description: `Prospecto: ${name} <${email}>\nURL analizada: ${url}\n\nError: ${logMessage}`,
-      severity: "high",
+      severity,
       priority: "high",
       status: "open",
       module: "Digital Diagnosis Agent",

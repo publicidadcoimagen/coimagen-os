@@ -14,11 +14,6 @@ export class DigitalDiagnosisScrapeError extends Error {
   }
 }
 
-function isDnsFailure(err: unknown): boolean {
-  const code = err instanceof Error ? (err.cause as { code?: string } | undefined)?.code : undefined;
-  return code === "ENOTFOUND" || code === "EAI_AGAIN";
-}
-
 export interface ScrapedSignals {
   title: string | null;
   titleLength: number;
@@ -57,13 +52,19 @@ export async function scrapeUrl(url: string): Promise<ScrapedSignals> {
           { cause: err },
         );
       }
-      if (isDnsFailure(err)) {
-        throw new DigitalDiagnosisScrapeError(
-          "No pudimos acceder a esa URL. Verifica que el dominio esté bien escrito.",
-          { cause: err },
-        );
-      }
-      throw err;
+      // Any other fetch()-level rejection (DNS not resolving, connection
+      // refused, TLS failure, etc.) means the same thing to the prospect:
+      // we couldn't reach that URL. The underlying cause shape varies too
+      // much to enumerate reliably — undici's fetch() sometimes surfaces a
+      // plain ENOTFOUND/EAI_AGAIN code, but dual-stack lookups can wrap it
+      // in an AggregateError with no single top-level code (real prod case:
+      // incidents #4-#6, same typo'd domain, "fetch failed" with no
+      // matching code, fell through to a generic unhelpful message before
+      // this fix). Treat any non-abort fetch() failure as unreachable.
+      throw new DigitalDiagnosisScrapeError(
+        "No pudimos acceder a esa URL. Verifica que el dominio esté bien escrito.",
+        { cause: err },
+      );
     }
     if (!response.ok) {
       throw new DigitalDiagnosisScrapeError(
