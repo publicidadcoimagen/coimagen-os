@@ -525,6 +525,73 @@ export interface TaskUpdate {
   dueDate?: string;
 }
 
+export type BeckyBeckProductCategory = typeof BeckyBeckProductCategory[keyof typeof BeckyBeckProductCategory];
+
+
+export const BeckyBeckProductCategory = {
+  bolso: 'bolso',
+  mochila: 'mochila',
+  llavero: 'llavero',
+} as const;
+
+export interface BeckyBeckProduct {
+  id: string;
+  nameEs: string;
+  nameEn: string;
+  category: BeckyBeckProductCategory;
+  priceUsd: number;
+  available: boolean;
+  /** @nullable */
+  imageUrl?: string | null;
+  createdAt: string;
+  /** @nullable */
+  updatedAt?: string | null;
+}
+
+export type BeckyBeckProductInputCategory = typeof BeckyBeckProductInputCategory[keyof typeof BeckyBeckProductInputCategory];
+
+
+export const BeckyBeckProductInputCategory = {
+  bolso: 'bolso',
+  mochila: 'mochila',
+  llavero: 'llavero',
+} as const;
+
+export interface BeckyBeckProductInput {
+  /** @minLength 1 */
+  nameEs: string;
+  /** @minLength 1 */
+  nameEn: string;
+  category: BeckyBeckProductInputCategory;
+  /** @minimum 0 */
+  priceUsd: number;
+  available?: boolean;
+  /** data: URI — uploaded to Netlify Blobs on save */
+  imageBase64?: string;
+}
+
+export type BeckyBeckProductUpdateCategory = typeof BeckyBeckProductUpdateCategory[keyof typeof BeckyBeckProductUpdateCategory];
+
+
+export const BeckyBeckProductUpdateCategory = {
+  bolso: 'bolso',
+  mochila: 'mochila',
+  llavero: 'llavero',
+} as const;
+
+export interface BeckyBeckProductUpdate {
+  /** @minLength 1 */
+  nameEs?: string;
+  /** @minLength 1 */
+  nameEn?: string;
+  category?: BeckyBeckProductUpdateCategory;
+  /** @minimum 0 */
+  priceUsd?: number;
+  available?: boolean;
+  /** data: URI — replaces the existing image if provided */
+  imageBase64?: string;
+}
+
 export interface DashboardSummary {
   totalClients: number;
   activeClients: number;
