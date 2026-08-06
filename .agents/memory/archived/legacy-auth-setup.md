@@ -7,7 +7,7 @@ description: "ARCHIVED 2026-07-19: this OIDC/Replit Auth setup was fully replace
 > `/api/callback`, `/api/logout`, `REPL_ID`/`ISSUER_URL`) fue reemplazado
 > por Better Auth (email + contraseña) durante la migración de auth.
 > Ver `artifacts/api-server/src/lib/auth.ts` y
-> `lib/replit-auth-web/src/use-auth.ts` para el setup actual. Se conserva
+> `lib/better-auth-web/src/use-auth.ts` para el setup actual. Se conserva
 > este archivo solo como referencia histórica.
 
 Auth is fully integrated (V1.5 Security Hardening).
@@ -25,8 +25,8 @@ Auth is fully integrated (V1.5 Security Hardening).
 
 **requireRole middleware:** `requireRole('ceo', 'admin')` — use for write operations that viewers shouldn't access.
 
-**Frontend:** `useAuth()` from `@workspace/replit-auth-web` in App.tsx AuthGate. Shows login screen if not authenticated; redirects to `/api/login?returnTo=<BASE_URL>`.
+**Frontend:** `useAuth()` from `@workspace/better-auth-web` in App.tsx AuthGate. Shows login screen if not authenticated; redirects to `/api/login?returnTo=<BASE_URL>`.
 
-**vite/client types:** `lib/replit-auth-web` needs `vite: "catalog:"` in devDependencies and `"types": ["vite/client"]` in tsconfig so `import.meta.env.BASE_URL` compiles in the lib context.
+**vite/client types:** `lib/better-auth-web` needs `vite: "catalog:"` in devDependencies and `"types": ["vite/client"]` in tsconfig so `import.meta.env.BASE_URL` compiles in the lib context.
 
 **Why:** Needed role on AuthUser type (added to OpenAPI schema as required field). The template didn't include it — must be added to both SessionData construction points in auth.ts.
