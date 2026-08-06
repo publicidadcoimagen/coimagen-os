@@ -30,7 +30,7 @@ Sistema Operativo Interno de Coimagen Media Agency (CEO: Camila Segovia).
 - `lib/api-spec/openapi.yaml` — source of truth for all API contracts
 - `lib/api-zod/` — generated Zod schemas (don't edit manually)
 - `lib/api-client-react/` — generated TanStack Query hooks (don't edit manually)
-- `lib/replit-auth-web/` — `useAuth()`/`AuthProvider` hook for the frontend (package name predates the Better Auth migration; not renamed yet)
+- `lib/better-auth-web/` — `useAuth()`/`AuthProvider` hook for the frontend
 - `artifacts/api-server/src/` — Express server (routes, middlewares, lib)
 - `artifacts/coimagen-os/src/` — React frontend
 
@@ -55,10 +55,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 - Always run `pnpm run typecheck:libs` before `pnpm run typecheck` (lib declarations must be built first).
 - After editing `openapi.yaml`, run `pnpm --filter @workspace/api-spec run codegen` — it also rebuilds libs.
 - Do NOT use `console.log` in server code — use `req.log` in route handlers or `logger` singleton for non-request code.
-- The `/// <reference types="vite/client" />` directive is in `lib/replit-auth-web/src/use-auth.ts` so the lib can use `import.meta.env`.
+- The `/// <reference types="vite/client" />` directive is in `lib/better-auth-web/src/use-auth.ts` so the lib can use `import.meta.env`.
 - Generated hook signatures: `useListX(params, options)` — pass `{}` as first arg when there are no query/path params but you need to set `options.query`.
 
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
-- Auth setup (Better Auth): see `artifacts/api-server/src/lib/auth.ts` (server config, additionalFields) and `lib/replit-auth-web/src/use-auth.ts` (AuthProvider/useAuth). The old `.agents/memory/replit-auth-setup.md` note described the previous Replit Auth/OIDC setup and has been archived to `.agents/memory/archived/` — it no longer applies.
+- Auth setup (Better Auth): see `artifacts/api-server/src/lib/auth.ts` (server config, additionalFields) and `lib/better-auth-web/src/use-auth.ts` (AuthProvider/useAuth). The old auth setup note has been archived to `.agents/memory/archived/legacy-auth-setup.md` — it no longer applies.
