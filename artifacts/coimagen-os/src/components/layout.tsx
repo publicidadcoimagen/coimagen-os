@@ -13,7 +13,7 @@ import {
   useGetDashboardSummary,
   getGetDashboardSummaryQueryKey,
 } from "@workspace/api-client-react";
-import { useAuth } from "@workspace/replit-auth-web";
+import { useAuth } from "@workspace/better-auth-web";
 import logoUrl from "@assets/logo-coimagen_1781919063971.png";
 
 type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };

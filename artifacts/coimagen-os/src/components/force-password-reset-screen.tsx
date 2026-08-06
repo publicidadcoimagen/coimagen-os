@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { useAuth } from "@workspace/replit-auth-web";
+import { useAuth } from "@workspace/better-auth-web";
 import { useChangeOwnPassword } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

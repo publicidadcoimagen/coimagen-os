@@ -7,7 +7,7 @@ import {
   getListSystemUsersQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@workspace/replit-auth-web";
+import { useAuth } from "@workspace/better-auth-web";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
-import { useAuth, AuthProvider } from "@workspace/replit-auth-web";
+import { useAuth, AuthProvider } from "@workspace/better-auth-web";
 import { LoginForm } from "@/components/login-form";
 import { ForcePasswordResetScreen } from "@/components/force-password-reset-screen";
 import { ForgotPasswordScreen } from "@/components/forgot-password-screen";
