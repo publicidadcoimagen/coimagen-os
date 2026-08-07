@@ -4856,3 +4856,70 @@ export const TestIntegrationResponse = zod.object({
 })
 
 
+export const ListBeckyBeckProductsResponseItem = zod.object({
+  "id": zod.string(),
+  "nameEs": zod.string(),
+  "nameEn": zod.string(),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']),
+  "priceUsd": zod.number(),
+  "available": zod.boolean(),
+  "imageUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListBeckyBeckProductsResponse = zod.array(ListBeckyBeckProductsResponseItem)
+
+
+
+
+export const createBeckyBeckProductBodyPriceUsdMin = 0;
+
+export const createBeckyBeckProductBodyAvailableDefault = true;
+
+export const CreateBeckyBeckProductBody = zod.object({
+  "nameEs": zod.string().min(1),
+  "nameEn": zod.string().min(1),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']),
+  "priceUsd": zod.number().min(createBeckyBeckProductBodyPriceUsdMin),
+  "available": zod.boolean().default(createBeckyBeckProductBodyAvailableDefault),
+  "imageBase64": zod.string().optional().describe('data: URI — uploaded to Netlify Blobs on save')
+})
+
+
+export const UpdateBeckyBeckProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+export const updateBeckyBeckProductBodyPriceUsdMin = 0;
+
+
+
+export const UpdateBeckyBeckProductBody = zod.object({
+  "nameEs": zod.string().min(1).optional(),
+  "nameEn": zod.string().min(1).optional(),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']).optional(),
+  "priceUsd": zod.number().min(updateBeckyBeckProductBodyPriceUsdMin).optional(),
+  "available": zod.boolean().optional(),
+  "imageBase64": zod.string().optional().describe('data: URI — replaces the existing image if provided')
+})
+
+export const UpdateBeckyBeckProductResponse = zod.object({
+  "id": zod.string(),
+  "nameEs": zod.string(),
+  "nameEn": zod.string(),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']),
+  "priceUsd": zod.number(),
+  "available": zod.boolean(),
+  "imageUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteBeckyBeckProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+

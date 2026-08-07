@@ -3621,6 +3621,64 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/IntegrationTestResult" }
 
+  # ─── BECKY BECK CATALOG (P-77) ───────────────────────────────────────────────
+  /becky-beck/products:
+    get:
+      operationId: listBeckyBeckProducts
+      tags: [becky-beck]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BeckyBeckProduct"
+    post:
+      operationId: createBeckyBeckProduct
+      tags: [becky-beck]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BeckyBeckProductInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BeckyBeckProduct" }
+  /becky-beck/products/{id}:
+    patch:
+      operationId: updateBeckyBeckProduct
+      tags: [becky-beck]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BeckyBeckProductUpdate" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BeckyBeckProduct" }
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteBeckyBeckProduct
+      tags: [becky-beck]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -3967,6 +4025,40 @@ components:
         status: { type: string, enum: [todo, in_progress, review, done, cancelled] }
         priority: { type: string, enum: [low, medium, high, urgent] }
         dueDate: { type: string }
+
+    # ── BECKY BECK CATALOG (P-77) ─────────────────────────────────────────────
+    BeckyBeckProduct:
+      type: object
+      required: [id, nameEs, nameEn, category, priceUsd, available, createdAt]
+      properties:
+        id: { type: string }
+        nameEs: { type: string }
+        nameEn: { type: string }
+        category: { type: string, enum: [bolso, mochila, llavero] }
+        priceUsd: { type: number }
+        available: { type: boolean }
+        imageUrl: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: ["string", "null"] }
+    BeckyBeckProductInput:
+      type: object
+      required: [nameEs, nameEn, category, priceUsd]
+      properties:
+        nameEs: { type: string, minLength: 1 }
+        nameEn: { type: string, minLength: 1 }
+        category: { type: string, enum: [bolso, mochila, llavero] }
+        priceUsd: { type: number, minimum: 0 }
+        available: { type: boolean, default: true }
+        imageBase64: { type: string, description: "data: URI — uploaded to Netlify Blobs on save" }
+    BeckyBeckProductUpdate:
+      type: object
+      properties:
+        nameEs: { type: string, minLength: 1 }
+        nameEn: { type: string, minLength: 1 }
+        category: { type: string, enum: [bolso, mochila, llavero] }
+        priceUsd: { type: number, minimum: 0 }
+        available: { type: boolean }
+        imageBase64: { type: string, description: "data: URI — replaces the existing image if provided" }
 
     # ── DASHBOARD ─────────────────────────────────────────────────────────────
     DashboardSummary:
