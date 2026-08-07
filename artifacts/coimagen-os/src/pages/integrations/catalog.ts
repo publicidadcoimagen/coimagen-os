@@ -81,14 +81,6 @@ export const INTEGRATION_TEMPLATES: IntegrationTemplate[] = [
     envVars: ["N8N_URL", "N8N_API_KEY"],
   },
   {
-    name: "Replit",
-    platform: "Replit",
-    description: "Despliegue y gestión de proyectos de desarrollo en Replit desde COIMAGEN OS.",
-    type: "development",
-    credentialsRequired: ["API Token", "Team ID"],
-    envVars: ["REPLIT_API_TOKEN", "REPLIT_TEAM_ID"],
-  },
-  {
     name: "GitHub",
     platform: "GitHub",
     description: "Gestión de repositorios, issues, pull requests y despliegues automatizados.",

@@ -40,7 +40,7 @@ const SERVICES = [
 const ACCESS_PLATFORMS = [
   "Dominio", "Hosting", "Google", "Facebook", "Instagram",
   "TikTok", "LinkedIn", "YouTube", "Analytics", "Search Console",
-  "Google Business", "Jotform", "OpenAI", "Anthropic", "Replit",
+  "Google Business", "Jotform", "OpenAI", "Anthropic",
   "GitHub", "Otros",
 ] as const;
 
