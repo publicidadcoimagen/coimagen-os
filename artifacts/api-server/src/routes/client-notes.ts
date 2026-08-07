@@ -2,11 +2,13 @@ import { Router, type IRouter } from "express";
 import { db, clientNotesTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { requireRole } from "../middlewares/requireAuth";
+import { ownsClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router({ mergeParams: true });
 
 router.get("/", async (req, res): Promise<void> => {
   const clientId = parseInt((req.params as Record<string, string>).clientId);
+  if (!ownsClientId(req, clientId)) { res.status(404).json({ error: "Not found" }); return; }
   const rows = await db.select().from(clientNotesTable)
     .where(eq(clientNotesTable.clientId, clientId))
     .orderBy(desc(clientNotesTable.pinned), desc(clientNotesTable.updatedAt));

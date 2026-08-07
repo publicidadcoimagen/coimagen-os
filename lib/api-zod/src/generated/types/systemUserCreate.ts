@@ -12,4 +12,5 @@ export interface SystemUserCreate {
   email?: string;
   role: string;
   status?: string;
+  clientId?: number;
 }

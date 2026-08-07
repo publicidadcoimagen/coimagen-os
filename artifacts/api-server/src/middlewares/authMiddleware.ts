@@ -32,6 +32,7 @@ function toAuthUser(user: SessionUser): AuthUser {
     status: user.status ?? "active",
     forcePasswordReset: user.forcePasswordReset ?? false,
     lastLogin: user.lastLogin?.toISOString() ?? null,
+    clientId: user.clientId ?? null,
   };
 }
 

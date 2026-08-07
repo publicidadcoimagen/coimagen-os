@@ -20,6 +20,8 @@ export interface AuthUser {
   forcePasswordReset: boolean;
   /** @nullable */
   lastLogin: string | null;
+  /** @nullable */
+  clientId: number | null;
 }
 
 export interface AuthUserEnvelope {
@@ -1573,6 +1575,8 @@ export interface SystemUser {
   status: string;
   /** @nullable */
   lastLogin?: string | null;
+  /** @nullable */
+  clientId?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -1584,11 +1588,14 @@ export interface SystemUserCreate {
   email?: string;
   role: string;
   status?: string;
+  clientId?: number;
 }
 
 export interface SystemUserUpdate {
   role?: string;
   status?: string;
+  /** @nullable */
+  clientId?: number | null;
 }
 
 export type SmartOnboardingStep1 = { [key: string]: unknown } | null;

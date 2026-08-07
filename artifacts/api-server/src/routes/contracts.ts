@@ -10,6 +10,7 @@ import {
   DeleteContractParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { ownClientId, ownsClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
@@ -29,10 +30,12 @@ router.get("/contracts", async (req, res): Promise<void> => {
   if (!q.success) { res.status(400).json({ error: q.error.message }); return; }
 
   let query = db.select().from(contractsTable).$dynamic();
+  const forcedClientId = ownClientId(req);
   const conditions = [];
   if (q.data.status) conditions.push(eq(contractsTable.status, q.data.status));
   if (q.data.type) conditions.push(eq(contractsTable.type, q.data.type));
-  if (q.data.clientId) conditions.push(eq(contractsTable.clientId, q.data.clientId));
+  if (forcedClientId !== null) conditions.push(eq(contractsTable.clientId, forcedClientId));
+  else if (q.data.clientId) conditions.push(eq(contractsTable.clientId, q.data.clientId));
   if (q.data.projectId) conditions.push(eq(contractsTable.projectId, q.data.projectId));
   if (conditions.length > 0) query = query.where(and(...conditions));
 
@@ -75,7 +78,7 @@ router.get("/contracts/:id", async (req, res): Promise<void> => {
   const params = GetContractParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const [row] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
-  if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  if (!row || !ownsClientId(req, row.clientId)) { res.status(404).json({ error: "Not found" }); return; }
   res.json(serialize(row));
 });
 

@@ -114,6 +114,10 @@ export const auth = betterAuth({
       status: { type: "string", required: false, input: false, defaultValue: "active" },
       forcePasswordReset: { type: "boolean", required: false, input: false, defaultValue: false },
       lastLogin: { type: "date", required: false, input: false },
+      // Server-controlled: which client a role="cliente" account is scoped
+      // to. Set by an admin when provisioning the account, never by the
+      // user themselves.
+      clientId: { type: "number", required: false, input: false },
     },
   },
   session: {

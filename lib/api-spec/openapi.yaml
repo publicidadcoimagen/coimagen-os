@@ -3699,7 +3699,7 @@ components:
   schemas:
     AuthUser:
       type: object
-      required: [id, email, firstName, lastName, profileImageUrl, role, status, forcePasswordReset, lastLogin]
+      required: [id, email, firstName, lastName, profileImageUrl, role, status, forcePasswordReset, lastLogin, clientId]
       properties:
         id:
           type: string
@@ -3719,6 +3719,10 @@ components:
           type: boolean
         lastLogin:
           type: [string, 'null']
+        # Only set for role="cliente" accounts — the client this login is
+        # scoped to. Null for staff roles (ceo/admin/viewer).
+        clientId:
+          type: [integer, 'null']
     AuthUserEnvelope:
       type: object
       required: [user]
@@ -4658,6 +4662,7 @@ components:
         role: { type: string }
         status: { type: string }
         lastLogin: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     SystemUserCreate:
@@ -4669,11 +4674,15 @@ components:
         email: { type: string }
         role: { type: string }
         status: { type: string }
+        # Required when role="cliente" — which client this login is scoped
+        # to. Ignored for staff roles.
+        clientId: { type: integer }
     SystemUserUpdate:
       type: object
       properties:
         role: { type: string }
         status: { type: string }
+        clientId: { type: ["integer", "null"] }
 
     # ─── BACKLOG ──────────────────────────────────────────────────────────────
     SmartOnboarding:

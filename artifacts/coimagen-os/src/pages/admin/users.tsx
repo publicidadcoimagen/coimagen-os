@@ -5,6 +5,8 @@ import {
   useUpdateSystemUser,
   useDeleteSystemUser,
   getListSystemUsersQueryKey,
+  useListClients,
+  getListClientsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@workspace/better-auth-web";
@@ -45,7 +47,7 @@ const STATUS_COLORS: Record<string, string> = {
   invited:  "bg-yellow-400/15 text-yellow-400 border-yellow-400/30",
 };
 
-const EMPTY_FORM = { firstName: "", lastName: "", email: "", role: "viewer", status: "active" };
+const EMPTY_FORM = { firstName: "", lastName: "", email: "", role: "viewer", status: "active", clientId: undefined as number | undefined };
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -66,6 +68,9 @@ export function AdminUsers() {
 
   const { data: users, isLoading, error } = useListSystemUsers({
     query: { queryKey: getListSystemUsersQueryKey() }
+  });
+  const { data: clients = [] } = useListClients({
+    query: { queryKey: getListClientsQueryKey() }
   });
 
   const createUser = useCreateSystemUser({
@@ -153,7 +158,7 @@ export function AdminUsers() {
         <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground">
           Los accesos se gestionan mediante Better Auth (email y contraseña).
-          Las contraseñas <strong>no se asignan desde esta pantalla</strong> — se definen al crear la cuenta o en el primer inicio de sesión. El rol <strong>Cliente</strong> está preparado para el futuro Client Room — sin acceso al panel actual.
+          Las contraseñas <strong>no se asignan desde esta pantalla</strong> — se definen al crear la cuenta o en el primer inicio de sesión. El rol <strong>Cliente</strong> requiere un cliente vinculado — solo ve el Client Room de ese cliente, nunca los de otros.
         </p>
       </div>
 
@@ -213,19 +218,34 @@ export function AdminUsers() {
                       <TableCell className="text-sm text-muted-foreground">{u.email ?? "—"}</TableCell>
                       <TableCell>
                         {canEditRole ? (
-                          <Select
-                            value={u.role}
-                            onValueChange={(v) => updateUser.mutate({ id: u.id, data: { role: v } })}
-                          >
-                            <SelectTrigger className="h-7 w-28 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ROLES.map((r) => (
-                                <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center gap-1.5">
+                            <Select
+                              value={u.role}
+                              onValueChange={(v) => updateUser.mutate({ id: u.id, data: { role: v, ...(v !== "cliente" ? { clientId: null } : {}) } })}
+                            >
+                              <SelectTrigger className="h-7 w-28 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {ROLES.map((r) => (
+                                  <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {u.role === "cliente" && (
+                              <Select
+                                value={u.clientId ? String(u.clientId) : ""}
+                                onValueChange={(v) => updateUser.mutate({ id: u.id, data: { clientId: Number(v) } })}
+                              >
+                                <SelectTrigger className={`h-7 w-32 text-xs ${!u.clientId ? "border-destructive/50 text-destructive" : ""}`}>
+                                  <SelectValue placeholder="Sin cliente" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {clients.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
                         ) : (
                           <Badge variant="outline" className={`text-xs ${ROLE_COLORS[u.role] ?? ""}`}>
                             {ROLE_LABELS[u.role] ?? u.role}
@@ -332,6 +352,18 @@ export function AdminUsers() {
                 </Select>
               </div>
             </div>
+            {form.role === "cliente" && (
+              <div>
+                <Label className="text-xs">Cliente vinculado *</Label>
+                <Select value={form.clientId ? String(form.clientId) : ""} onValueChange={(v) => setForm({ ...form, clientId: Number(v) })}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="Selecciona un cliente" /></SelectTrigger>
+                  <SelectContent>
+                    {clients.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground mt-1">Define qué portal ve este usuario — obligatorio para el rol Cliente.</p>
+              </div>
+            )}
             <div className="flex items-start gap-2 p-2.5 rounded-md bg-muted/40 border border-border/40">
               <Info className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
               <p className="text-[11px] text-muted-foreground">
@@ -343,7 +375,7 @@ export function AdminUsers() {
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
             <Button
               onClick={() => createUser.mutate({ data: form })}
-              disabled={createUser.isPending}
+              disabled={createUser.isPending || (form.role === "cliente" && !form.clientId)}
             >
               Crear Usuario
             </Button>

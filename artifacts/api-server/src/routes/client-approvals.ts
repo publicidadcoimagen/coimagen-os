@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { db, clientApprovalsTable } from "@workspace/db";
 import {
   ListClientApprovalsQueryParams,
@@ -10,6 +10,7 @@ import {
   DeleteClientApprovalParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { ownOrgIds } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
@@ -24,9 +25,11 @@ function serialize(r: typeof clientApprovalsTable.$inferSelect) {
 router.get("/client-approvals", async (req, res): Promise<void> => {
   const q = ListClientApprovalsQueryParams.safeParse(req.query);
   if (!q.success) { res.status(400).json({ error: q.error.message }); return; }
+  const allowedOrgIds = await ownOrgIds(req);
   let query = db.select().from(clientApprovalsTable).$dynamic();
   const conditions = [];
-  if (q.data.orgId) conditions.push(eq(clientApprovalsTable.orgId, q.data.orgId));
+  if (allowedOrgIds !== null) conditions.push(inArray(clientApprovalsTable.orgId, allowedOrgIds.length > 0 ? allowedOrgIds : [-1]));
+  else if (q.data.orgId) conditions.push(eq(clientApprovalsTable.orgId, q.data.orgId));
   if (q.data.status) conditions.push(eq(clientApprovalsTable.status, q.data.status));
   if (q.data.type) conditions.push(eq(clientApprovalsTable.type, q.data.type));
   if (conditions.length > 0) query = query.where(and(...conditions));
@@ -55,6 +58,8 @@ router.get("/client-approvals/:id", async (req, res): Promise<void> => {
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const [row] = await db.select().from(clientApprovalsTable).where(eq(clientApprovalsTable.id, params.data.id));
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  const allowedOrgIds = await ownOrgIds(req);
+  if (allowedOrgIds !== null && !allowedOrgIds.includes(row.orgId)) { res.status(404).json({ error: "Not found" }); return; }
   res.json(serialize(row));
 });
 

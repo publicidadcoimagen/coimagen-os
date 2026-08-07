@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { db, organizationsTable } from "@workspace/db";
 import {
   CreateOrganizationBody,
@@ -9,6 +9,7 @@ import {
   DeleteOrganizationParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { ownOrgIds, ownsClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
@@ -20,8 +21,11 @@ function serialize(r: typeof organizationsTable.$inferSelect) {
   };
 }
 
-router.get("/organizations", async (_req, res): Promise<void> => {
-  const rows = await db.select().from(organizationsTable).orderBy(desc(organizationsTable.createdAt));
+router.get("/organizations", async (req, res): Promise<void> => {
+  const allowedOrgIds = await ownOrgIds(req);
+  let query = db.select().from(organizationsTable).$dynamic();
+  if (allowedOrgIds !== null) query = query.where(inArray(organizationsTable.id, allowedOrgIds.length > 0 ? allowedOrgIds : [-1]));
+  const rows = await query.orderBy(desc(organizationsTable.createdAt));
   res.json(rows.map(serialize));
 });
 
@@ -51,7 +55,7 @@ router.get("/organizations/:slug", async (req, res): Promise<void> => {
   const params = GetOrganizationParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid slug" }); return; }
   const [row] = await db.select().from(organizationsTable).where(eq(organizationsTable.slug, params.data.slug));
-  if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  if (!row || !ownsClientId(req, row.clientId)) { res.status(404).json({ error: "Not found" }); return; }
   res.json(serialize(row));
 });
 

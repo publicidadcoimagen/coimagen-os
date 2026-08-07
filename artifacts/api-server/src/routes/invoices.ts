@@ -10,11 +10,13 @@ import {
   ListInvoicesQueryParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { ownClientId, ownsClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
 router.get("/invoices", async (req, res): Promise<void> => {
   const qp = ListInvoicesQueryParams.safeParse(req.query);
+  const forcedClientId = ownClientId(req);
   let query = db.select({
     id: invoicesTable.id,
     number: invoicesTable.number,
@@ -29,7 +31,8 @@ router.get("/invoices", async (req, res): Promise<void> => {
     updatedAt: invoicesTable.updatedAt,
   }).from(invoicesTable).leftJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id)).$dynamic();
   const conditions = [];
-  if (qp.success && qp.data.clientId) conditions.push(eq(invoicesTable.clientId, qp.data.clientId));
+  if (forcedClientId !== null) conditions.push(eq(invoicesTable.clientId, forcedClientId));
+  else if (qp.success && qp.data.clientId) conditions.push(eq(invoicesTable.clientId, qp.data.clientId));
   if (qp.success && qp.data.status) conditions.push(eq(invoicesTable.status, qp.data.status));
   if (conditions.length > 0) query = query.where(and(...conditions));
   const rows = await query.orderBy(invoicesTable.createdAt);
@@ -65,7 +68,7 @@ router.get("/invoices/:id", async (req, res): Promise<void> => {
     issuedDate: invoicesTable.issuedDate, dueDate: invoicesTable.dueDate, description: invoicesTable.description,
     createdAt: invoicesTable.createdAt, updatedAt: invoicesTable.updatedAt,
   }).from(invoicesTable).leftJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id)).where(eq(invoicesTable.id, params.data.id));
-  if (!row) { res.status(404).json({ error: "Invoice not found" }); return; }
+  if (!row || !ownsClientId(req, row.clientId)) { res.status(404).json({ error: "Invoice not found" }); return; }
   res.json({ ...row, amount: parseFloat(row.amount), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null });
 });
 

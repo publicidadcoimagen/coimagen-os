@@ -25,7 +25,8 @@ export const GetCurrentAuthUserResponse = zod.object({
   "role": zod.string(),
   "status": zod.string(),
   "forcePasswordReset": zod.boolean(),
-  "lastLogin": zod.string().nullable()
+  "lastLogin": zod.string().nullable(),
+  "clientId": zod.number().nullable()
 }),zod.null()])
 })
 
@@ -2252,6 +2253,7 @@ export const ListSystemUsersResponseItem = zod.object({
   "role": zod.string(),
   "status": zod.string(),
   "lastLogin": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -2266,7 +2268,8 @@ export const CreateSystemUserBody = zod.object({
   "lastName": zod.string().optional(),
   "email": zod.string().optional(),
   "role": zod.string(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "clientId": zod.number().optional()
 })
 
 
@@ -2279,7 +2282,8 @@ export const UpdateSystemUserParams = zod.object({
 
 export const UpdateSystemUserBody = zod.object({
   "role": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "clientId": zod.number().nullish()
 })
 
 export const UpdateSystemUserResponse = zod.object({
@@ -2291,6 +2295,7 @@ export const UpdateSystemUserResponse = zod.object({
   "role": zod.string(),
   "status": zod.string(),
   "lastLogin": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })

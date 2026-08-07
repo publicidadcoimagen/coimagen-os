@@ -20,6 +20,8 @@ export interface SystemUser {
   status: string;
   /** @nullable */
   lastLogin?: string | null;
+  /** @nullable */
+  clientId?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
