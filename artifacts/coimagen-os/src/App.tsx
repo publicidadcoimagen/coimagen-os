@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
 import { useAuth, AuthProvider } from "@workspace/better-auth-web";
+import { useListOrganizations, getListOrganizationsQueryKey } from "@workspace/api-client-react";
 import { LoginForm } from "@/components/login-form";
 import { ForcePasswordResetScreen } from "@/components/force-password-reset-screen";
 import { ForgotPasswordScreen } from "@/components/forgot-password-screen";
@@ -112,6 +113,14 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const { isLoading, isAuthenticated, user } = useAuth();
   const [location] = useLocation();
 
+  // role="cliente" accounts are confined to their own /client/:slug — the
+  // API already scopes this list to the caller's own client, so this is
+  // just "which slug", not a second permission check.
+  const isCliente = isAuthenticated && user?.role === "cliente";
+  const { data: ownOrgs } = useListOrganizations({
+    query: { queryKey: getListOrganizationsQueryKey(), enabled: isCliente },
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -136,6 +145,27 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (user?.forcePasswordReset) {
     return <ForcePasswordResetScreen />;
+  }
+
+  if (isCliente) {
+    if (!ownOrgs) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-background">
+          <div className="text-muted-foreground text-sm animate-pulse">Cargando...</div>
+        </div>
+      );
+    }
+    const ownSlug = ownOrgs[0]?.slug;
+    if (!ownSlug) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-2 text-center px-4">
+          <p className="text-sm text-muted-foreground">Tu cuenta no tiene un cliente vinculado todavía. Contacta a tu agencia.</p>
+        </div>
+      );
+    }
+    if (!location.startsWith(`/client/${ownSlug}`)) {
+      return <Redirect to={`/client/${ownSlug}`} />;
+    }
   }
 
   return <>{children}</>;

@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { bearer } from "better-auth/plugins";
+import { bearer, captcha } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import {
   db,
@@ -152,7 +152,17 @@ export const auth = betterAuth({
       },
     },
   },
-  // Lets the mobile app authenticate with `Authorization: Bearer <token>`
-  // instead of a cookie.
-  plugins: [bearer()],
+  plugins: [
+    // Lets the mobile app authenticate with `Authorization: Bearer <token>`
+    // instead of a cookie.
+    bearer(),
+    // P-78: human verification on sign-in (portal login). Off until
+    // TURNSTILE_SECRET_KEY is set — unset means the site key hasn't been
+    // provisioned yet (Cloudflare Turnstile widget → Render/Vercel env),
+    // so signing in stays unaffected rather than breaking every login.
+    // Default `endpoints` already covers /sign-in/email.
+    ...(process.env.TURNSTILE_SECRET_KEY
+      ? [captcha({ provider: "cloudflare-turnstile", secretKey: process.env.TURNSTILE_SECRET_KEY })]
+      : []),
+  ],
 });

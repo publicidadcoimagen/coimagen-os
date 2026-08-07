@@ -7,7 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 import logoUrl from "@assets/logo-coimagen_1782794060071.png";
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
 export function LoginForm() {
   const { signIn } = useAuth();
@@ -16,17 +19,21 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    const result = await signIn(email, password);
+    const result = await signIn(email, password, turnstileToken ?? undefined);
     setIsSubmitting(false);
     if (result.error) {
       setError(result.error);
+      setTurnstileToken(null); // a used/expired token can't be replayed — force a fresh solve
     }
   };
+
+  const turnstileBlocking = !!TURNSTILE_SITE_KEY && !turnstileToken;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background gap-8">
@@ -79,8 +86,17 @@ export function LoginForm() {
                 </button>
               </div>
             </div>
+            {TURNSTILE_SITE_KEY && (
+              <div className="flex justify-center">
+                <TurnstileWidget
+                  siteKey={TURNSTILE_SITE_KEY}
+                  onVerify={setTurnstileToken}
+                  onExpire={() => setTurnstileToken(null)}
+                />
+              </div>
+            )}
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" size="lg" disabled={isSubmitting}>
+            <Button type="submit" size="lg" disabled={isSubmitting || turnstileBlocking}>
               {isSubmitting && <Spinner />}
               Iniciar sesión
             </Button>
