@@ -851,11 +851,20 @@ export interface DiagnosisUpdate {
   type?: string;
 }
 
+export type DigitalDiagnosisSubmissionLang = typeof DigitalDiagnosisSubmissionLang[keyof typeof DigitalDiagnosisSubmissionLang];
+
+
+export const DigitalDiagnosisSubmissionLang = {
+  es: 'es',
+  en: 'en',
+} as const;
+
 export interface DigitalDiagnosisSubmission {
   url: string;
   /** @minLength 1 */
   name: string;
   email: string;
+  lang?: DigitalDiagnosisSubmissionLang;
 }
 
 export type DigitalDiagnosisResultStatus = typeof DigitalDiagnosisResultStatus[keyof typeof DigitalDiagnosisResultStatus];

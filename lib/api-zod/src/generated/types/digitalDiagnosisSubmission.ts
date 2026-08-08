@@ -5,10 +5,12 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DigitalDiagnosisSubmissionLang } from './digitalDiagnosisSubmissionLang';
 
 export interface DigitalDiagnosisSubmission {
   url: string;
   /** @minLength 1 */
   name: string;
   email: string;
+  lang?: DigitalDiagnosisSubmissionLang;
 }

@@ -91,7 +91,8 @@ export const HealthCheckResponse = zod.object({
 export const SubmitDigitalDiagnosisBody = zod.object({
   "url": zod.string().url(),
   "name": zod.string().min(1),
-  "email": zod.string().email()
+  "email": zod.string().email(),
+  "lang": zod.enum(['es', 'en']).optional()
 })
 
 export const SubmitDigitalDiagnosisResponse = zod.object({

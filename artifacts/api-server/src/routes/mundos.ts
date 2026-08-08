@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import {
   db,
   mundosTable,
@@ -8,6 +8,7 @@ import {
   directorProjectsTable,
   clientsTable,
   projectsTable,
+  agentsTable,
 } from "@workspace/db";
 import { GetMundoParams, UpdateMundoParams, UpdateMundoBody, CreateMundoBody } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
@@ -91,6 +92,11 @@ async function seedMundos() {
   );
 }
 
+async function getAgentCount(mundoId: number): Promise<number> {
+  const [row] = await db.select({ value: count() }).from(agentsTable).where(eq(agentsTable.mundoId, mundoId));
+  return Number(row?.value ?? 0);
+}
+
 async function getMundoWithRelations(mundoId: number) {
   const [mundo] = await db.select().from(mundosTable).where(eq(mundosTable.id, mundoId));
   if (!mundo) return null;
@@ -110,7 +116,7 @@ async function getMundoWithRelations(mundoId: number) {
   return {
     ...mundo,
     director: director ?? null,
-    agentCount: 0,
+    agentCount: await getAgentCount(mundo.id),
     automationCount: 0,
     taskCount: 0,
     assignedClients,
@@ -161,7 +167,7 @@ router.get("/mundos", async (req, res): Promise<void> => {
     return {
       ...m,
       director: director ?? null,
-      agentCount: 0,
+      agentCount: await getAgentCount(m.id),
       automationCount: 0,
       taskCount: 0,
       assignedClients,
