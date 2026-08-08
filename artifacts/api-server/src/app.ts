@@ -9,6 +9,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { auth } from "./lib/auth";
 import { authMiddleware } from "./middlewares/authMiddleware";
+import { verifyTurnstile } from "./middlewares/turnstile";
 import { getCurrentAuthUser } from "./routes/auth";
 import { resendWebhookHandler } from "./routes/webhooks-resend";
 
@@ -71,6 +72,13 @@ const requestPasswordResetLimiter = rateLimit({
   message: { error: "Demasiadas solicitudes de restablecimiento. Intenta de nuevo más tarde." },
 });
 app.use("/api/auth/request-password-reset", requestPasswordResetLimiter);
+
+// P-81: human verification on the portal login form. Same "own middleware
+// in front, can't attach to the wildcard directly" reasoning as the limiter
+// above. The frontend sends the Turnstile token as a header rather than in
+// the JSON body, because Better Auth's handler needs the raw unparsed body
+// — see the express.json() comment below.
+app.use("/api/auth/sign-in/email", verifyTurnstile);
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 

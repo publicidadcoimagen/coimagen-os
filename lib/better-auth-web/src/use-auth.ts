@@ -26,7 +26,7 @@ interface AuthState {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (email: string, password: string, turnstileToken?: string) => Promise<{ error: string | null }>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   requestPasswordReset: (email: string) => Promise<{ error: string | null }>;
@@ -69,8 +69,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refetchUser]);
 
   const signIn = useCallback(
-    async (email: string, password: string) => {
-      const { error } = await authClient.signIn.email({ email, password });
+    async (email: string, password: string, turnstileToken?: string) => {
+      const { error } = await authClient.signIn.email(
+        { email, password },
+        turnstileToken ? { headers: { "x-turnstile-token": turnstileToken } } : undefined,
+      );
       if (error) {
         return { error: error.message ?? "No se pudo iniciar sesión" };
       }
