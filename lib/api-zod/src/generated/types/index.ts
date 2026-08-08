@@ -120,6 +120,7 @@ export * from './digitalDiagnosisPublicViewResult';
 export * from './digitalDiagnosisResult';
 export * from './digitalDiagnosisResultStatus';
 export * from './digitalDiagnosisSubmission';
+export * from './digitalDiagnosisSubmissionLang';
 export * from './director';
 export * from './directorAssignClient';
 export * from './directorAssignProject';

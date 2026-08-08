@@ -53,7 +53,8 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const { url, name, email } = parsed.data;
+  const { url, name, email, lang } = parsed.data;
+  const language = lang ?? "es";
 
   // 1. Create or update the prospect by email
   const [existingProspect] = await db.select().from(prospectsTable).where(eq(prospectsTable.email, email)).limit(1);
@@ -61,6 +62,7 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     ? await db.update(prospectsTable).set({
         name,
         source: "diagnostico_digital",
+        language,
         updatedAt: new Date(),
       }).where(eq(prospectsTable.id, existingProspect.id)).returning()
     : await db.insert(prospectsTable).values({
@@ -68,6 +70,7 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
         email,
         source: "diagnostico_digital",
         status: "lead",
+        language,
       }).returning();
 
   // 2. Create the ai_execution record up front, so a mid-flow crash still leaves a trace
@@ -116,7 +119,7 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     // failure is logged as a warning and must not affect the response.
     if (diagnosis.publicToken) {
       try {
-        const emailId = await sendDigitalDiagnosisEmail(name, email, url, diagnosis.publicToken);
+        const emailId = await sendDigitalDiagnosisEmail(name, email, url, diagnosis.publicToken, language);
         // Lets the /api/webhooks/resend handler correlate later delivery/
         // bounce/complaint events back to this diagnosis (see email-events
         // schema) — without this, a successful send here was indistinguishable

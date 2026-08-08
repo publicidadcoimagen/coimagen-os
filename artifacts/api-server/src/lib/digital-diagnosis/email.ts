@@ -15,9 +15,9 @@ const TEAM_ADDRESS = "info@coimagenmedia.com";
 // for HTML bodies — without an explicit <meta charset>, accented characters
 // (á, é, í, ó, ú, ñ) were rendering as "�" in some inboxes. Every email HTML
 // body must be a full document with this meta tag, not a bare fragment.
-function wrapEmailHtml(bodyHtml: string): string {
+function wrapEmailHtml(bodyHtml: string, lang: "es" | "en"): string {
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="${lang}">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -28,28 +28,40 @@ function wrapEmailHtml(bodyHtml: string): string {
 </html>`;
 }
 
-function buildLeadEmailHtml(name: string, resultUrl: string): string {
+// This function used to be Spanish-only, with no lang parameter at all — the
+// lead's language (chosen via the ES/EN toggle on /diagnostico) was never
+// sent to the backend, so every lead got the Spanish version regardless of
+// which language they used on the site. Fixed alongside P-80, which needs
+// the same prospect.language field to pick correo 2/3/4 consistently.
+function buildLeadEmailHtml(name: string, resultUrl: string, lang: "es" | "en"): string {
+  const greeting = lang === "es"
+    ? `¡Hola${name ? ` ${name}` : ""}! Tu diagnóstico digital está listo.`
+    : `Hi${name ? ` ${name}` : ""}! Your digital diagnostic is ready.`;
+  const body = lang === "es"
+    ? "Analizamos tu sitio web y preparamos un reporte con tu puntaje digital y un plan de acción priorizado para mejorar tu presencia en línea."
+    : "We analyzed your website and put together a report with your digital score and a prioritized action plan to improve your online presence.";
+  const cta = lang === "es" ? "Ver mi diagnóstico →" : "See my diagnostic →";
+
   return wrapEmailHtml(`
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; color: #1a1a1a;">
       <p style="font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #00cfff; margin: 0 0 16px;">
         Coimagen Media Agency
       </p>
-      <h1 style="font-size: 20px; margin: 0 0 16px;">¡Hola${name ? ` ${name}` : ""}! Tu diagnóstico digital está listo.</h1>
+      <h1 style="font-size: 20px; margin: 0 0 16px;">${greeting}</h1>
       <p style="font-size: 14px; line-height: 1.6; color: #444; margin: 0 0 24px;">
-        Analizamos tu sitio web y preparamos un reporte con tu puntaje digital y un plan de acción
-        priorizado para mejorar tu presencia en línea.
+        ${body}
       </p>
       <a
         href="${resultUrl}"
         style="display: inline-block; background: #00cfff; color: #06060f; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 10px; font-size: 14px;"
       >
-        Ver mi diagnóstico →
+        ${cta}
       </a>
       <p style="font-size: 12px; color: #999; margin: 32px 0 0;">
         Coimagen Media Agency · Tijuana / San Diego
       </p>
     </div>
-  `);
+  `, lang);
 }
 
 function buildInternalNotificationHtml(name: string, email: string, url: string, resultUrl: string): string {
@@ -70,7 +82,7 @@ function buildInternalNotificationHtml(name: string, email: string, url: string,
         Ver diagnóstico →
       </a>
     </div>
-  `);
+  `, "es");
 }
 
 // Best-effort — the caller decides how to handle a thrown error (the
@@ -80,7 +92,7 @@ function buildInternalNotificationHtml(name: string, email: string, url: string,
 // correlation. The internal new-lead notification is sent afterward and its
 // own failure is swallowed here (logged, not thrown) — it must never affect
 // whether the lead's email is considered sent.
-export async function sendDigitalDiagnosisEmail(name: string, email: string, url: string, publicToken: string): Promise<string> {
+export async function sendDigitalDiagnosisEmail(name: string, email: string, url: string, publicToken: string, lang: "es" | "en" = "es"): Promise<string> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error("RESEND_API_KEY no está configurada");
@@ -89,12 +101,16 @@ export async function sendDigitalDiagnosisEmail(name: string, email: string, url
   const resultUrl = `${RESULTS_PAGE_BASE_URL}/${publicToken}`;
   const resend = new Resend(apiKey);
 
+  const subject = lang === "es"
+    ? "Tu diagnóstico digital de Coimagen está listo"
+    : "Your Coimagen digital diagnostic is ready";
+
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
     to: email,
     replyTo: TEAM_ADDRESS,
-    subject: "Tu diagnóstico digital de Coimagen está listo",
-    html: buildLeadEmailHtml(name, resultUrl),
+    subject,
+    html: buildLeadEmailHtml(name, resultUrl, lang),
   });
 
   if (error) {

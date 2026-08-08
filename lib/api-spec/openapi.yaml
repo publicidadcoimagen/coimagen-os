@@ -4229,6 +4229,11 @@ components:
         url:   { type: string, format: uri }
         name:  { type: string, minLength: 1 }
         email: { type: string, format: email }
+        # Which language the lead used on the site — drives correo 1's
+        # language today, and the prospect's saved language for every P-80
+        # follow-up after it. Optional because older callers won't send it;
+        # the backend defaults to "es" when absent.
+        lang:  { type: string, enum: [es, en] }
     DigitalDiagnosisResult:
       type: object
       required: [diagnosisId, status, publicToken]
