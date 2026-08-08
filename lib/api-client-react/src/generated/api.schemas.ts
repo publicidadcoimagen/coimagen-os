@@ -745,6 +745,8 @@ export interface Prospect {
   source?: string | null;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  clientId?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -770,6 +772,7 @@ export interface ProspectInput {
   status?: ProspectInputStatus;
   source?: string;
   notes?: string;
+  clientId?: number;
 }
 
 export type ProspectUpdateStatus = typeof ProspectUpdateStatus[keyof typeof ProspectUpdateStatus];
@@ -792,6 +795,7 @@ export interface ProspectUpdate {
   status?: ProspectUpdateStatus;
   source?: string;
   notes?: string;
+  clientId?: number;
 }
 
 export type DiagnosisStatus = typeof DiagnosisStatus[keyof typeof DiagnosisStatus];
@@ -964,6 +968,7 @@ export interface Proposal {
   notes?: string | null;
   /** @nullable */
   validUntil?: string | null;
+  publicToken?: string;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -1009,6 +1014,27 @@ export interface ProposalUpdate {
   status?: ProposalUpdateStatus;
   notes?: string;
   validUntil?: string;
+}
+
+export type ProposalPublicViewStatus = typeof ProposalPublicViewStatus[keyof typeof ProposalPublicViewStatus];
+
+
+export const ProposalPublicViewStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  accepted: 'accepted',
+  rejected: 'rejected',
+} as const;
+
+export interface ProposalPublicView {
+  title: string;
+  status: ProposalPublicViewStatus;
+  /** @nullable */
+  amount?: number | null;
+  /** @nullable */
+  notes?: string | null;
+  /** @nullable */
+  validUntil?: string | null;
 }
 
 export type ApprovalType = typeof ApprovalType[keyof typeof ApprovalType];

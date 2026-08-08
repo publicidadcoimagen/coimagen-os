@@ -1,7 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db, agentsTable, mundosTable, directorsTable } from "@workspace/db";
 
-const AGENT_NAME = "Agente de Seguimiento Comercial";
+// Exported so repository.ts can look up which clients have this agent
+// assigned (agent_clients) without duplicating the name string — P-81 Fase
+// A made this agent multi-tenant: same code/cron/logic, scoped by
+// prospect.clientId, rather than a separate agent per client.
+export const AGENT_NAME = "Agente de Seguimiento Comercial";
 
 // Idempotent, same pattern as seedMundos()/seedDirectors() in mundos.ts —
 // safe to call on every server boot. Looks up Mundo Comercial / Director
@@ -16,12 +20,12 @@ export async function ensureCommercialFollowupAgent(): Promise<void> {
 
   await db.insert(agentsTable).values({
     name: AGENT_NAME,
-    role: "Seguimiento automático de prospectos del Diagnóstico Digital",
+    role: "Seguimiento automático de prospectos — Coimagen y clientes con este módulo activo",
     category: "Ventas",
     mundoId: mundo?.id ?? null,
     directorId: director?.id ?? null,
     specialty: "Email de seguimiento comercial",
-    objetivo: "Reactivar prospectos en estado Lead que no han recibido seguimiento desde el Diagnóstico Digital, enviando correo 2/3/4 según días transcurridos.",
+    objetivo: "Reactivar prospectos en estado Lead sin seguimiento reciente, enviando correo 2/3/4 según días transcurridos. Opera sobre los leads propios de Coimagen (Diagnóstico Digital) y, para cada cliente con este módulo en su plan, únicamente sobre los prospectos de ese cliente.",
     status: "active",
     priority: "high",
   });

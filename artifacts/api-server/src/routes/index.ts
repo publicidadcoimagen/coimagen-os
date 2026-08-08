@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import authRouter from "./auth";
 import publicDigitalDiagnosisRouter from "./public-digital-diagnosis";
 import publicFoundersRouter from "./public-founders";
+import publicProposalsRouter from "./public-proposals";
 import clientsRouter from "./clients";
 import clientAccessRouter from "./client-access";
 import clientBrandRouter from "./client-brand";
@@ -61,6 +62,7 @@ router.use(healthRouter);
 router.use(authRouter);
 router.use(publicDigitalDiagnosisRouter);
 router.use(publicFoundersRouter);
+router.use(publicProposalsRouter);
 
 router.use(requireAuth);
 router.use(clientRoleGate);

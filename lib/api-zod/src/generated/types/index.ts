@@ -199,6 +199,8 @@ export * from './projectUpdateStatus';
 export * from './proposal';
 export * from './proposalInput';
 export * from './proposalInputStatus';
+export * from './proposalPublicView';
+export * from './proposalPublicViewStatus';
 export * from './proposalStatus';
 export * from './proposalUpdate';
 export * from './proposalUpdateStatus';

@@ -17,4 +17,5 @@ export interface ProspectUpdate {
   status?: ProspectUpdateStatus;
   source?: string;
   notes?: string;
+  clientId?: number;
 }

@@ -39,6 +39,7 @@ router.post("/prospects", requireRole("ceo", "admin"), async (req, res): Promise
     status: parsed.data.status ?? "lead",
     source: parsed.data.source ?? null,
     notes: parsed.data.notes ?? null,
+    clientId: parsed.data.clientId ?? null,
   }).returning();
   res.status(201).json(fmt(row));
 });

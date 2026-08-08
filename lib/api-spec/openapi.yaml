@@ -170,6 +170,40 @@ paths:
                 $ref: "#/components/schemas/DigitalDiagnosisPublicView"
         "404":
           description: Not found
+  /public/proposals/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getPublicProposal
+      tags: [public]
+      summary: Fetch a proposal by its public token (no auth required, powers correo 3/4's link)
+      responses:
+        "200":
+          description: Proposal found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalPublicView"
+        "404":
+          description: Not found
+    post:
+      operationId: approvePublicProposal
+      tags: [public]
+      summary: Approve a proposal from its public page (no auth required)
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalPublicView"
+        "404":
+          description: Not found
+        "409":
+          description: Proposal is already in a terminal state
 
   /public/founders/count:
     get:
@@ -4221,6 +4255,9 @@ components:
         status: { type: string, enum: [lead, qualified, disqualified, converted] }
         source: { type: ["string", "null"] }
         notes: { type: ["string", "null"] }
+        # Null = Coimagen's own leads (the internal tenant). Set = belongs to
+        # a client whose plan includes prospect tracking (P-81 Fase A).
+        clientId: { type: ["integer", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     ProspectInput:
@@ -4235,6 +4272,7 @@ components:
         status: { type: string, enum: [lead, qualified, disqualified, converted], default: lead }
         source: { type: string }
         notes: { type: string }
+        clientId: { type: integer }
     ProspectUpdate:
       type: object
       properties:
@@ -4246,6 +4284,7 @@ components:
         status: { type: string, enum: [lead, qualified, disqualified, converted] }
         source: { type: string }
         notes: { type: string }
+        clientId: { type: integer }
 
     # ── DIAGNOSIS ─────────────────────────────────────────────────────────────
     Diagnosis:
@@ -4335,6 +4374,7 @@ components:
         status: { type: string, enum: [draft, sent, accepted, rejected] }
         notes: { type: ["string", "null"] }
         validUntil: { type: ["string", "null"] }
+        publicToken: { type: string, format: uuid }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     ProposalInput:
@@ -4358,6 +4398,15 @@ components:
         status: { type: string, enum: [draft, sent, accepted, rejected] }
         notes: { type: string }
         validUntil: { type: string }
+    ProposalPublicView:
+      type: object
+      required: [title, status]
+      properties:
+        title:      { type: string }
+        status:     { type: string, enum: [draft, sent, accepted, rejected] }
+        amount:     { type: ["number", "null"] }
+        notes:      { type: ["string", "null"] }
+        validUntil: { type: ["string", "null"] }
 
     # ── APPROVAL ──────────────────────────────────────────────────────────────
     Approval:

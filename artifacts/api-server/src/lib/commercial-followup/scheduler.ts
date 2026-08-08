@@ -13,10 +13,13 @@ export async function runCommercialFollowupJob(now = new Date()): Promise<{ sent
   let sent = 0;
   let failed = 0;
 
-  for (const { prospect, stage } of due) {
+  for (const { prospect, stage, proposalPublicToken } of due) {
+    // findDueFollowups already filters out emailless prospects — this is
+    // just narrowing the type for sendFollowupEmail, not a real branch.
+    if (!prospect.email) continue;
     try {
       const lang = prospect.language === "en" ? "en" : "es";
-      const emailId = await sendFollowupEmail(stage, prospect.name, prospect.email, prospect.company, lang);
+      const emailId = await sendFollowupEmail(stage, prospect.name, prospect.email, prospect.company, lang, proposalPublicToken);
       await recordFollowupSent(prospect.id, stage, emailId);
       logger.info({ prospectId: prospect.id, email: prospect.email, stage, emailId }, "Correo de seguimiento comercial enviado");
       sent++;
