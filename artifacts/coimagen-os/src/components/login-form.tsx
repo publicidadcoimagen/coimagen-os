@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@workspace/better-auth-web";
@@ -7,7 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { TurnstileWidget, type TurnstileWidgetHandle } from "@/components/turnstile-widget";
 import logoUrl from "@assets/logo-coimagen_1782794060071.png";
+
+// Only enforced once VITE_TURNSTILE_SITE_KEY is set (Vercel) — until then
+// TurnstileWidget renders nothing and this stays false, so login isn't
+// blocked during the rollout window before Camila creates the widget.
+const TURNSTILE_ENABLED = Boolean(import.meta.env.VITE_TURNSTILE_SITE_KEY);
 
 export function LoginForm() {
   const { signIn } = useAuth();
@@ -16,13 +22,21 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
-    const result = await signIn(email, password);
+    const result = await signIn(email, password, turnstileToken ?? undefined);
     setIsSubmitting(false);
+    // A Turnstile token is single-use — whether the sign-in succeeded or
+    // failed (wrong password), the token was already consumed by the
+    // siteverify call, so the widget needs to mint a fresh one before the
+    // next attempt.
+    turnstileRef.current?.reset();
+    setTurnstileToken(null);
     if (result.error) {
       setError(result.error);
     }
@@ -79,8 +93,13 @@ export function LoginForm() {
                 </button>
               </div>
             </div>
+            <TurnstileWidget ref={turnstileRef} onToken={setTurnstileToken} />
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" size="lg" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isSubmitting || (TURNSTILE_ENABLED && !turnstileToken)}
+            >
               {isSubmitting && <Spinner />}
               Iniciar sesión
             </Button>
