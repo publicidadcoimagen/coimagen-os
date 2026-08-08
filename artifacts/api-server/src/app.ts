@@ -12,6 +12,7 @@ import { authMiddleware } from "./middlewares/authMiddleware";
 import { verifyTurnstile } from "./middlewares/turnstile";
 import { getCurrentAuthUser } from "./routes/auth";
 import { resendWebhookHandler } from "./routes/webhooks-resend";
+import { jotformWebhookHandler } from "./routes/webhooks-jotform";
 
 const app: Express = express();
 
@@ -96,6 +97,19 @@ app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), rese
 // phone photo.
 app.use(express.json({ limit: "5mb" }));
 app.use(express.urlencoded({ extended: true, limit: "5mb" }));
+
+// P-81: the Jotform assistant (WhatsApp/Facebook) posts conversation leads
+// here via its "Send API Request" action. Ordinary JSON body, unlike
+// Resend's raw-bytes requirement above — auth is a shared secret header
+// instead of HMAC (see webhooks-jotform.ts), checked inside the handler.
+const jotformWebhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Demasiadas solicitudes." },
+});
+app.post("/api/webhooks/jotform", jotformWebhookLimiter, jotformWebhookHandler);
 
 app.use("/api", router);
 
