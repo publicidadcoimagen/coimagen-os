@@ -10,6 +10,7 @@ export interface ClientBrandInput {
   logoUrl?: string;
   brandColors?: string;
   fonts?: string;
+  brandManualUrl?: string;
   brandNotes?: string;
   websiteUrl?: string;
   facebookUrl?: string;

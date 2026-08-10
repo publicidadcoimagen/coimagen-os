@@ -4594,6 +4594,7 @@ components:
         logoUrl: { type: ["string", "null"] }
         brandColors: { type: ["string", "null"] }
         fonts: { type: ["string", "null"] }
+        brandManualUrl: { type: ["string", "null"] }
         brandNotes: { type: ["string", "null"] }
         websiteUrl: { type: ["string", "null"] }
         facebookUrl: { type: ["string", "null"] }
@@ -4608,6 +4609,7 @@ components:
         logoUrl: { type: string }
         brandColors: { type: string }
         fonts: { type: string }
+        brandManualUrl: { type: string }
         brandNotes: { type: string }
         websiteUrl: { type: string }
         facebookUrl: { type: string }

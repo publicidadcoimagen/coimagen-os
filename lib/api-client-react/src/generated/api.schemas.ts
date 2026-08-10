@@ -1506,6 +1506,8 @@ export interface ClientBrand {
   /** @nullable */
   fonts?: string | null;
   /** @nullable */
+  brandManualUrl?: string | null;
+  /** @nullable */
   brandNotes?: string | null;
   /** @nullable */
   websiteUrl?: string | null;
@@ -1526,6 +1528,7 @@ export interface ClientBrandInput {
   logoUrl?: string;
   brandColors?: string;
   fonts?: string;
+  brandManualUrl?: string;
   brandNotes?: string;
   websiteUrl?: string;
   facebookUrl?: string;

@@ -16,6 +16,8 @@ export interface ClientBrand {
   /** @nullable */
   fonts?: string | null;
   /** @nullable */
+  brandManualUrl?: string | null;
+  /** @nullable */
   brandNotes?: string | null;
   /** @nullable */
   websiteUrl?: string | null;

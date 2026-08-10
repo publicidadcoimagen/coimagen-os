@@ -176,7 +176,7 @@ export function ClientDetail() {
 
   /* ── Brand state ── */
   const [brandForm, setBrandForm] = useState({
-    logoUrl: "", brandColors: "", fonts: "", brandNotes: "",
+    logoUrl: "", brandColors: "", fonts: "", brandManualUrl: "", brandNotes: "",
     websiteUrl: "", facebookUrl: "", instagramUrl: "", googleBusinessUrl: "", youtubeUrl: "",
   });
   const [brandEditing, setBrandEditing] = useState(false);
@@ -234,7 +234,7 @@ export function ClientDetail() {
   };
 
   /* ── Brand handlers ── */
-  const startEditBrand = () => { setBrandForm({ logoUrl: brand?.logoUrl ?? "", brandColors: brand?.brandColors ?? "", fonts: brand?.fonts ?? "", brandNotes: brand?.brandNotes ?? "", websiteUrl: brand?.websiteUrl ?? "", facebookUrl: brand?.facebookUrl ?? "", instagramUrl: brand?.instagramUrl ?? "", googleBusinessUrl: brand?.googleBusinessUrl ?? "", youtubeUrl: brand?.youtubeUrl ?? "" }); setBrandEditing(true); };
+  const startEditBrand = () => { setBrandForm({ logoUrl: brand?.logoUrl ?? "", brandColors: brand?.brandColors ?? "", fonts: brand?.fonts ?? "", brandManualUrl: brand?.brandManualUrl ?? "", brandNotes: brand?.brandNotes ?? "", websiteUrl: brand?.websiteUrl ?? "", facebookUrl: brand?.facebookUrl ?? "", instagramUrl: brand?.instagramUrl ?? "", googleBusinessUrl: brand?.googleBusinessUrl ?? "", youtubeUrl: brand?.youtubeUrl ?? "" }); setBrandEditing(true); };
   const saveBrand = () => { upsertBrand.mutate({ clientId: id, data: brandForm } as Parameters<typeof upsertBrand.mutate>[0], { onSuccess: () => { invalidateBrand(); setBrandEditing(false); } }); };
 
   /* ── Onboarding handlers ── */
@@ -484,6 +484,7 @@ export function ClientDetail() {
                     <div className="space-y-1.5"><Label>URL del Logo</Label><Input placeholder="https://..." value={brandForm.logoUrl} onChange={(e) => setBrandForm((f) => ({ ...f, logoUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Colores (HEX, separados por coma)</Label><Input placeholder="#7c3aed, #0891b2" value={brandForm.brandColors} onChange={(e) => setBrandForm((f) => ({ ...f, brandColors: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Tipografías</Label><Input placeholder="Inter, Playfair Display" value={brandForm.fonts} onChange={(e) => setBrandForm((f) => ({ ...f, fonts: e.target.value }))} /></div>
+                    <div className="space-y-1.5"><Label>Manual de marca (URL)</Label><Input placeholder="https://..." value={brandForm.brandManualUrl} onChange={(e) => setBrandForm((f) => ({ ...f, brandManualUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Sitio Web</Label><Input placeholder="https://cliente.com" value={brandForm.websiteUrl} onChange={(e) => setBrandForm((f) => ({ ...f, websiteUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Facebook</Label><Input placeholder="https://facebook.com/..." value={brandForm.facebookUrl} onChange={(e) => setBrandForm((f) => ({ ...f, facebookUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Instagram</Label><Input placeholder="https://instagram.com/..." value={brandForm.instagramUrl} onChange={(e) => setBrandForm((f) => ({ ...f, instagramUrl: e.target.value }))} /></div>
@@ -527,6 +528,7 @@ export function ClientDetail() {
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {[
                       { label: "Sitio Web", value: brand.websiteUrl, icon: Globe },
+                      { label: "Manual de marca", value: brand.brandManualUrl, icon: Link2 },
                       { label: "Facebook", value: brand.facebookUrl, icon: Link2 },
                       { label: "Instagram", value: brand.instagramUrl, icon: Link2 },
                       { label: "Google Business", value: brand.googleBusinessUrl, icon: Link2 },

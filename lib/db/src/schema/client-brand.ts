@@ -9,6 +9,7 @@ export const clientBrandTable = pgTable("client_brand", {
   logoUrl: text("logo_url"),
   brandColors: text("brand_colors"),
   fonts: text("fonts"),
+  brandManualUrl: text("brand_manual_url"),
   brandNotes: text("brand_notes"),
   websiteUrl: text("website_url"),
   facebookUrl: text("facebook_url"),
