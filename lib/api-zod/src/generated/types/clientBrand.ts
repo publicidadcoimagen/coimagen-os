@@ -26,6 +26,10 @@ export interface ClientBrand {
   /** @nullable */
   instagramUrl?: string | null;
   /** @nullable */
+  tiktokUrl?: string | null;
+  /** @nullable */
+  linkedinUrl?: string | null;
+  /** @nullable */
   googleBusinessUrl?: string | null;
   /** @nullable */
   youtubeUrl?: string | null;

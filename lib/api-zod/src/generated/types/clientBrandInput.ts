@@ -15,6 +15,8 @@ export interface ClientBrandInput {
   websiteUrl?: string;
   facebookUrl?: string;
   instagramUrl?: string;
+  tiktokUrl?: string;
+  linkedinUrl?: string;
   googleBusinessUrl?: string;
   youtubeUrl?: string;
 }

@@ -1516,6 +1516,10 @@ export interface ClientBrand {
   /** @nullable */
   instagramUrl?: string | null;
   /** @nullable */
+  tiktokUrl?: string | null;
+  /** @nullable */
+  linkedinUrl?: string | null;
+  /** @nullable */
   googleBusinessUrl?: string | null;
   /** @nullable */
   youtubeUrl?: string | null;
@@ -1533,6 +1537,8 @@ export interface ClientBrandInput {
   websiteUrl?: string;
   facebookUrl?: string;
   instagramUrl?: string;
+  tiktokUrl?: string;
+  linkedinUrl?: string;
   googleBusinessUrl?: string;
   youtubeUrl?: string;
 }

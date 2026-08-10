@@ -14,6 +14,8 @@ export const clientBrandTable = pgTable("client_brand", {
   websiteUrl: text("website_url"),
   facebookUrl: text("facebook_url"),
   instagramUrl: text("instagram_url"),
+  tiktokUrl: text("tiktok_url"),
+  linkedinUrl: text("linkedin_url"),
   googleBusinessUrl: text("google_business_url"),
   youtubeUrl: text("youtube_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

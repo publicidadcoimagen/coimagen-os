@@ -177,7 +177,7 @@ export function ClientDetail() {
   /* ── Brand state ── */
   const [brandForm, setBrandForm] = useState({
     logoUrl: "", brandColors: "", fonts: "", brandManualUrl: "", brandNotes: "",
-    websiteUrl: "", facebookUrl: "", instagramUrl: "", googleBusinessUrl: "", youtubeUrl: "",
+    websiteUrl: "", facebookUrl: "", instagramUrl: "", tiktokUrl: "", linkedinUrl: "", googleBusinessUrl: "", youtubeUrl: "",
   });
   const [brandEditing, setBrandEditing] = useState(false);
 
@@ -234,7 +234,7 @@ export function ClientDetail() {
   };
 
   /* ── Brand handlers ── */
-  const startEditBrand = () => { setBrandForm({ logoUrl: brand?.logoUrl ?? "", brandColors: brand?.brandColors ?? "", fonts: brand?.fonts ?? "", brandManualUrl: brand?.brandManualUrl ?? "", brandNotes: brand?.brandNotes ?? "", websiteUrl: brand?.websiteUrl ?? "", facebookUrl: brand?.facebookUrl ?? "", instagramUrl: brand?.instagramUrl ?? "", googleBusinessUrl: brand?.googleBusinessUrl ?? "", youtubeUrl: brand?.youtubeUrl ?? "" }); setBrandEditing(true); };
+  const startEditBrand = () => { setBrandForm({ logoUrl: brand?.logoUrl ?? "", brandColors: brand?.brandColors ?? "", fonts: brand?.fonts ?? "", brandManualUrl: brand?.brandManualUrl ?? "", brandNotes: brand?.brandNotes ?? "", websiteUrl: brand?.websiteUrl ?? "", facebookUrl: brand?.facebookUrl ?? "", instagramUrl: brand?.instagramUrl ?? "", tiktokUrl: brand?.tiktokUrl ?? "", linkedinUrl: brand?.linkedinUrl ?? "", googleBusinessUrl: brand?.googleBusinessUrl ?? "", youtubeUrl: brand?.youtubeUrl ?? "" }); setBrandEditing(true); };
   const saveBrand = () => { upsertBrand.mutate({ clientId: id, data: brandForm } as Parameters<typeof upsertBrand.mutate>[0], { onSuccess: () => { invalidateBrand(); setBrandEditing(false); } }); };
 
   /* ── Onboarding handlers ── */
@@ -488,6 +488,8 @@ export function ClientDetail() {
                     <div className="space-y-1.5"><Label>Sitio Web</Label><Input placeholder="https://cliente.com" value={brandForm.websiteUrl} onChange={(e) => setBrandForm((f) => ({ ...f, websiteUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Facebook</Label><Input placeholder="https://facebook.com/..." value={brandForm.facebookUrl} onChange={(e) => setBrandForm((f) => ({ ...f, facebookUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Instagram</Label><Input placeholder="https://instagram.com/..." value={brandForm.instagramUrl} onChange={(e) => setBrandForm((f) => ({ ...f, instagramUrl: e.target.value }))} /></div>
+                    <div className="space-y-1.5"><Label>TikTok</Label><Input placeholder="https://tiktok.com/@..." value={brandForm.tiktokUrl} onChange={(e) => setBrandForm((f) => ({ ...f, tiktokUrl: e.target.value }))} /></div>
+                    <div className="space-y-1.5"><Label>LinkedIn</Label><Input placeholder="https://linkedin.com/company/..." value={brandForm.linkedinUrl} onChange={(e) => setBrandForm((f) => ({ ...f, linkedinUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Google Business</Label><Input placeholder="https://business.google.com/..." value={brandForm.googleBusinessUrl} onChange={(e) => setBrandForm((f) => ({ ...f, googleBusinessUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>YouTube</Label><Input placeholder="https://youtube.com/..." value={brandForm.youtubeUrl} onChange={(e) => setBrandForm((f) => ({ ...f, youtubeUrl: e.target.value }))} /></div>
                   </div>
@@ -531,6 +533,8 @@ export function ClientDetail() {
                       { label: "Manual de marca", value: brand.brandManualUrl, icon: Link2 },
                       { label: "Facebook", value: brand.facebookUrl, icon: Link2 },
                       { label: "Instagram", value: brand.instagramUrl, icon: Link2 },
+                      { label: "TikTok", value: brand.tiktokUrl, icon: Link2 },
+                      { label: "LinkedIn", value: brand.linkedinUrl, icon: Link2 },
                       { label: "Google Business", value: brand.googleBusinessUrl, icon: Link2 },
                       { label: "YouTube", value: brand.youtubeUrl, icon: Link2 },
                     ].map(({ label, value, icon: Icon }) => value ? (

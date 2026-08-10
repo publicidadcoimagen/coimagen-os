@@ -205,8 +205,8 @@ router.post("/onboardings/:id/complete", requireRole("ceo", "admin"), async (req
     backlogItemIds.push(item.id);
   }
 
-  if (s5.logoUrl || s5.colors || s5.typography || s5.brandManualUrl) {
-    const sm = (s1.socialMedia ?? {}) as Record<string, string>;
+  const sm = (s1.socialMedia ?? {}) as Record<string, string>;
+  if (s5.logoUrl || s5.colors || s5.typography || s5.brandManualUrl || sm.tiktok || sm.linkedin) {
     await db.insert(clientBrandTable).values({
       clientId: client.id,
       logoUrl: (s5.logoUrl as string) || null,
@@ -217,6 +217,8 @@ router.post("/onboardings/:id/complete", requireRole("ceo", "admin"), async (req
       websiteUrl: (s1.website as string) || null,
       facebookUrl: sm.facebook || null,
       instagramUrl: sm.instagram || null,
+      tiktokUrl: sm.tiktok || null,
+      linkedinUrl: sm.linkedin || null,
       youtubeUrl: sm.youtube || null,
     }).onConflictDoNothing();
   }

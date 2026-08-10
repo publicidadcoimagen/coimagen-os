@@ -331,6 +331,8 @@ export const GetClientBrandResponse = zod.object({
   "websiteUrl": zod.string().nullish(),
   "facebookUrl": zod.string().nullish(),
   "instagramUrl": zod.string().nullish(),
+  "tiktokUrl": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
   "googleBusinessUrl": zod.string().nullish(),
   "youtubeUrl": zod.string().nullish(),
   "createdAt": zod.string(),
@@ -354,6 +356,8 @@ export const UpsertClientBrandBody = zod.object({
   "websiteUrl": zod.string().optional(),
   "facebookUrl": zod.string().optional(),
   "instagramUrl": zod.string().optional(),
+  "tiktokUrl": zod.string().optional(),
+  "linkedinUrl": zod.string().optional(),
   "googleBusinessUrl": zod.string().optional(),
   "youtubeUrl": zod.string().optional()
 })
@@ -369,6 +373,8 @@ export const UpsertClientBrandResponse = zod.object({
   "websiteUrl": zod.string().nullish(),
   "facebookUrl": zod.string().nullish(),
   "instagramUrl": zod.string().nullish(),
+  "tiktokUrl": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
   "googleBusinessUrl": zod.string().nullish(),
   "youtubeUrl": zod.string().nullish(),
   "createdAt": zod.string(),
