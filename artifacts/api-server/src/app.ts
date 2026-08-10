@@ -89,8 +89,13 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 // signature check would fail.
 app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), resendWebhookHandler);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Express's default json() limit is 100kb — a single product photo from
+// Becky Beck's catalog editor (base64-encoded, ~33% larger than the raw
+// file) blows past that on anything but a tiny thumbnail, silently 413'ing
+// before the route handler ever runs. 5mb comfortably covers a normal
+// phone photo.
+app.use(express.json({ limit: "5mb" }));
+app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 
 app.use("/api", router);
 

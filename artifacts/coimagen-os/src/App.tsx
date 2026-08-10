@@ -1,6 +1,7 @@
 import { Switch, Route, Redirect, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { toast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
 import { useAuth, AuthProvider } from "@workspace/better-auth-web";
@@ -104,6 +105,21 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+    },
+    // Fallback for any mutation that doesn't handle its own error: without
+    // this, a failed save/create/delete anywhere in the portal was
+    // completely silent (no toast, no error, button just stops loading) —
+    // found via the Becky Beck "Guardar does nothing" bug. This only fires
+    // when a mutation's own onError doesn't already handle it — both run,
+    // this one doesn't replace anything.
+    mutations: {
+      onError: (error) => {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "Ocurrió un error inesperado.",
+        });
+      },
     },
   },
 });
