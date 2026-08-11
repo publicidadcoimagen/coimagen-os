@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
-import { boolean, index, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { clientsTable } from "./clients";
 
 export const usersTable = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -11,6 +12,10 @@ export const usersTable = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").notNull().default("viewer"),
   status: varchar("status").notNull().default("active"),
+  // Only set for role="cliente" accounts — links the login to the client
+  // whose data they may see. clientScope middleware treats a cliente
+  // account without this as owning nothing (P-79).
+  clientId: integer("client_id").references(() => clientsTable.id, { onDelete: "set null" }),
   // Set on admin-seeded accounts so the user is required to set their own
   // password on first login instead of keeping the seeded temporary one.
   forcePasswordReset: boolean("force_password_reset").notNull().default(false),

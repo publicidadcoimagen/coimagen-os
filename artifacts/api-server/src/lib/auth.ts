@@ -114,6 +114,9 @@ export const auth = betterAuth({
       status: { type: "string", required: false, input: false, defaultValue: "active" },
       forcePasswordReset: { type: "boolean", required: false, input: false, defaultValue: false },
       lastLogin: { type: "date", required: false, input: false },
+      // Only meaningful for role="cliente" — set by staff, never by the
+      // user themselves (P-79 module matrix / clientScope).
+      clientId: { type: "number", required: false, input: false },
     },
   },
   session: {

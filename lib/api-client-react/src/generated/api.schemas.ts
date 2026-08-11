@@ -20,6 +20,9 @@ export interface AuthUser {
   forcePasswordReset: boolean;
   /** @nullable */
   lastLogin: string | null;
+  /** @nullable */
+  clientId: number | null;
+  enabledModules?: string[];
 }
 
 export interface AuthUserEnvelope {

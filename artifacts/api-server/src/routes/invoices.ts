@@ -10,6 +10,7 @@ import {
   ListInvoicesQueryParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
@@ -29,7 +30,11 @@ router.get("/invoices", async (req, res): Promise<void> => {
     updatedAt: invoicesTable.updatedAt,
   }).from(invoicesTable).leftJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id)).$dynamic();
   const conditions = [];
-  if (qp.success && qp.data.clientId) conditions.push(eq(invoicesTable.clientId, qp.data.clientId));
+  if (isClienteRole(req)) {
+    conditions.push(eq(invoicesTable.clientId, ownClientId(req)!));
+  } else if (qp.success && qp.data.clientId) {
+    conditions.push(eq(invoicesTable.clientId, qp.data.clientId));
+  }
   if (qp.success && qp.data.status) conditions.push(eq(invoicesTable.status, qp.data.status));
   if (conditions.length > 0) query = query.where(and(...conditions));
   const rows = await query.orderBy(invoicesTable.createdAt);
@@ -65,7 +70,7 @@ router.get("/invoices/:id", async (req, res): Promise<void> => {
     issuedDate: invoicesTable.issuedDate, dueDate: invoicesTable.dueDate, description: invoicesTable.description,
     createdAt: invoicesTable.createdAt, updatedAt: invoicesTable.updatedAt,
   }).from(invoicesTable).leftJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id)).where(eq(invoicesTable.id, params.data.id));
-  if (!row) { res.status(404).json({ error: "Invoice not found" }); return; }
+  if (!row || (isClienteRole(req) && row.clientId !== ownClientId(req))) { res.status(404).json({ error: "Invoice not found" }); return; }
   res.json({ ...row, amount: parseFloat(row.amount), createdAt: row.createdAt.toISOString(), updatedAt: row.updatedAt ? row.updatedAt.toISOString() : null });
 });
 

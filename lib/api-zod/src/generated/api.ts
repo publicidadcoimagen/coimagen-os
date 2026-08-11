@@ -25,7 +25,9 @@ export const GetCurrentAuthUserResponse = zod.object({
   "role": zod.string(),
   "status": zod.string(),
   "forcePasswordReset": zod.boolean(),
-  "lastLogin": zod.string().nullable()
+  "lastLogin": zod.string().nullable(),
+  "clientId": zod.number().nullable(),
+  "enabledModules": zod.array(zod.string()).optional()
 }),zod.null()])
 })
 

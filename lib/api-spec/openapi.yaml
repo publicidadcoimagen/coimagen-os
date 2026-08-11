@@ -3737,7 +3737,7 @@ components:
   schemas:
     AuthUser:
       type: object
-      required: [id, email, firstName, lastName, profileImageUrl, role, status, forcePasswordReset, lastLogin]
+      required: [id, email, firstName, lastName, profileImageUrl, role, status, forcePasswordReset, lastLogin, clientId]
       properties:
         id:
           type: string
@@ -3757,6 +3757,12 @@ components:
           type: boolean
         lastLogin:
           type: [string, 'null']
+        clientId:
+          type: [integer, 'null']
+        enabledModules:
+          type: array
+          items:
+            type: string
     AuthUserEnvelope:
       type: object
       required: [user]

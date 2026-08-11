@@ -3,13 +3,14 @@ import { Link, useLocation } from "wouter";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
 } from "@workspace/api-client-react";
+import { useAuth } from "@workspace/better-auth-web";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   LayoutDashboard, FolderKanban, GitBranch, CheckSquare,
   FileSignature, Receipt, FileText, Calendar, MessageSquare,
-  Bot, User, ArrowLeft, Building2, ChevronRight,
+  Bot, User, ArrowLeft, Building2, ChevronRight, ClipboardCheck,
 } from "lucide-react";
 
 type Org = {
@@ -18,19 +19,38 @@ type Org = {
   contactEmail?: string | null;
 };
 
-const NAV_ITEMS = [
-  { sub: "",           label: "Dashboard",   icon: LayoutDashboard },
-  { sub: "projects",   label: "Proyectos",   icon: FolderKanban },
+// The 6 base modules every client always sees, scoped to their own
+// clientId (P-79) — order matches the spec. "" is the dashboard's own
+// route (/client/:slug with no trailing segment).
+const BASE_NAV_ITEMS = [
+  { sub: "onboarding", label: "Onboarding",   icon: ClipboardCheck },
+  { sub: "",           label: "Dashboard",    icon: LayoutDashboard },
+  { sub: "projects",   label: "Estado del proyecto", icon: FolderKanban },
+  { sub: "contracts",  label: "Contratos",    icon: FileSignature },
+  { sub: "invoices",   label: "Facturas",     icon: Receipt },
+  { sub: "approvals",  label: "Aprobaciones", icon: CheckSquare },
+];
+
+// Nav entries unlocked per enabledModules key (P-79). None of these have a
+// real page wired yet — "ecommerce" needs a real catalog/sales module
+// (Becky's case) and "autopublicador" needs a real content-calendar
+// integration, not a relabeled placeholder — so the map intentionally
+// starts empty. Enabling a module for a client today changes nothing in
+// the nav until its page ships; this is the seam where it plugs in.
+const MODULE_NAV_ITEMS: Record<string, { sub: string; label: string; icon: typeof LayoutDashboard }[]> = {};
+
+// Staff-only extras: scaffolded client-room pages not in the P-79 base
+// list. Still useful when staff previews a client room, hidden for actual
+// cliente-role logins so the nav matches the approved module matrix.
+const STAFF_EXTRA_ITEMS = [
   { sub: "workflow",   label: "Workflow",    icon: GitBranch },
-  { sub: "approvals",  label: "Aprobaciones",icon: CheckSquare },
-  { sub: "contracts",  label: "Contratos",   icon: FileSignature },
-  { sub: "invoices",   label: "Facturas",    icon: Receipt },
   { sub: "documents",  label: "Documentos",  icon: FileText },
   { sub: "calendar",   label: "Calendario",  icon: Calendar },
   { sub: "messages",   label: "Mensajes",    icon: MessageSquare },
   { sub: "ai",         label: "Asistente IA",icon: Bot },
-  { sub: "profile",    label: "Perfil",      icon: User },
 ];
+
+const PROFILE_ITEM = { sub: "profile", label: "Perfil", icon: User };
 
 function NavItem({ href, icon: Icon, label, active }: {
   href: string; icon: React.ComponentType<{ className?: string }>; label: string; active: boolean;
@@ -52,6 +72,8 @@ function NavItem({ href, icon: Icon, label, active }: {
 
 export function ClientRoomLayout({ slug, children }: { slug: string; children: ReactNode }) {
   const [location] = useLocation();
+  const { user } = useAuth();
+  const isCliente = user?.role === "cliente";
   const { data: rawOrg } = useGetOrganization(slug, {
     query: { queryKey: getGetOrganizationQueryKey(slug) },
   });
@@ -63,6 +85,15 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
     if (sub === "") return location === base || location === `${base}/`;
     return location.startsWith(`${base}/${sub}`);
   }
+
+  // A cliente-role login only ever sees the approved module matrix: the 6
+  // base modules + whatever their client's enabledModules unlocks, plus
+  // their own profile. Staff previewing a client room still see everything,
+  // including the not-yet-in-the-matrix scaffolded pages (P-79).
+  const moduleItems = (user?.enabledModules ?? []).flatMap((m) => MODULE_NAV_ITEMS[m] ?? []);
+  const navItems = isCliente
+    ? [...BASE_NAV_ITEMS, ...moduleItems, PROFILE_ITEM]
+    : [...BASE_NAV_ITEMS, ...STAFF_EXTRA_ITEMS, PROFILE_ITEM];
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -89,7 +120,7 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
 
         {/* Nav */}
         <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavItem
               key={item.sub}
               href={item.sub ? `${base}/${item.sub}` : base}
@@ -100,7 +131,10 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
           ))}
         </nav>
 
-        {/* Footer */}
+        {/* Footer — internal-OS links are staff-only; a cliente login has
+            nowhere else in the app to go, and the backend blocks those
+            routes for them anyway. */}
+        {!isCliente && (
         <div className="p-3 border-t border-border/60">
           <Separator className="mb-3" />
           <Button variant="ghost" size="sm" className="w-full justify-start gap-2 h-8 text-xs text-muted-foreground hover:text-foreground" asChild>
@@ -118,6 +152,7 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
             </Button>
           )}
         </div>
+        )}
       </aside>
 
       {/* Main content */}
