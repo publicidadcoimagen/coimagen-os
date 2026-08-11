@@ -45,6 +45,7 @@ router.patch("/admin/users/:id", requireRole("ceo"), async (req, res): Promise<v
   const updateData: Partial<typeof usersTable.$inferInsert> & { updatedAt: Date } = { updatedAt: new Date() };
   if (parsed.data.role !== undefined) updateData.role = parsed.data.role;
   if (parsed.data.status !== undefined) updateData.status = parsed.data.status;
+  if (parsed.data.clientId !== undefined) updateData.clientId = parsed.data.clientId;
 
   const [user] = await db.update(usersTable)
     .set(updateData)

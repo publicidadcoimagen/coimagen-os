@@ -5,6 +5,8 @@ import {
   useUpdateSystemUser,
   useDeleteSystemUser,
   getListSystemUsersQueryKey,
+  useListClients,
+  getListClientsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@workspace/better-auth-web";
@@ -66,6 +68,10 @@ export function AdminUsers() {
 
   const { data: users, isLoading, error } = useListSystemUsers({
     query: { queryKey: getListSystemUsersQueryKey() }
+  });
+
+  const { data: clients } = useListClients({
+    query: { queryKey: getListClientsQueryKey() }
   });
 
   const createUser = useCreateSystemUser({
@@ -153,7 +159,7 @@ export function AdminUsers() {
         <Info className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground">
           Los accesos se gestionan mediante Better Auth (email y contraseña).
-          Las contraseñas <strong>no se asignan desde esta pantalla</strong> — se definen al crear la cuenta o en el primer inicio de sesión. El rol <strong>Cliente</strong> está preparado para el futuro Client Room — sin acceso al panel actual.
+          Las contraseñas <strong>no se asignan desde esta pantalla</strong> — se definen al crear la cuenta o en el primer inicio de sesión. El rol <strong>Cliente</strong> entra directo a su Client Room (sin acceso al panel interno) — vincúlalo a un cliente en la columna "Cliente vinculado" para que vea sus propios datos.
         </p>
       </div>
 
@@ -174,6 +180,7 @@ export function AdminUsers() {
                   <TableHead>Usuario</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Rol</TableHead>
+                  <TableHead>Cliente vinculado</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Último acceso</TableHead>
                   <TableHead>Creado</TableHead>
@@ -233,6 +240,30 @@ export function AdminUsers() {
                         )}
                       </TableCell>
                       <TableCell>
+                        {u.role !== "cliente" ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : canEditRole ? (
+                          <Select
+                            value={u.clientId != null ? String(u.clientId) : "none"}
+                            onValueChange={(v) => updateUser.mutate({ id: u.id, data: { clientId: v === "none" ? null : Number(v) } })}
+                          >
+                            <SelectTrigger className="h-7 w-36 text-xs">
+                              <SelectValue placeholder="Sin vincular" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sin vincular</SelectItem>
+                              {clients?.map((c) => (
+                                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            {clients?.find((c) => c.id === u.clientId)?.name ?? "Sin vincular"}
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                         {isCeo && !isCurrentUser ? (
                           <Select
                             value={u.status}
@@ -278,7 +309,7 @@ export function AdminUsers() {
                   );
                 }) : (
                   <TableRow>
-                    <TableCell colSpan={isCeo ? 7 : 6} className="text-center py-8 text-muted-foreground text-sm">
+                    <TableCell colSpan={isCeo ? 8 : 7} className="text-center py-8 text-muted-foreground text-sm">
                       No hay usuarios registrados aún. Al iniciar sesión, los usuarios aparecen automáticamente.
                     </TableCell>
                   </TableRow>

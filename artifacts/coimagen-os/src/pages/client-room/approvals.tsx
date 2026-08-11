@@ -8,6 +8,7 @@ import {
   useUpdateClientApproval,
   useDeleteClientApproval,
 } from "@workspace/api-client-react";
+import { useAuth } from "@workspace/better-auth-web";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -164,6 +165,8 @@ function CreateApprovalDialog({ orgId, open, onClose }: { orgId: number; open: b
 export function ClientApprovals() {
   const [, params] = useRoute("/client/:slug/approvals");
   const slug = params?.slug ?? "";
+  const { user } = useAuth();
+  const isCliente = user?.role === "cliente";
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [action, setAction] = useState<{ approval: Approval; type: "approve" | "changes" | "comment" } | null>(null);
@@ -233,9 +236,11 @@ export function ClientApprovals() {
                 </div>
               )}
             </div>
-            <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" onClick={() => setDeleteId(a.id)}>
-              <Trash2 className="h-3 w-3" />
-            </Button>
+            {!isCliente && (
+              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive" onClick={() => setDeleteId(a.id)}>
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
           </div>
           {a.status === "pending" && (
             <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/40">

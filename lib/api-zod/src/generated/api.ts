@@ -25,7 +25,9 @@ export const GetCurrentAuthUserResponse = zod.object({
   "role": zod.string(),
   "status": zod.string(),
   "forcePasswordReset": zod.boolean(),
-  "lastLogin": zod.string().nullable()
+  "lastLogin": zod.string().nullable(),
+  "clientId": zod.number().nullable(),
+  "enabledModules": zod.array(zod.string()).optional()
 }),zod.null()])
 })
 
@@ -143,6 +145,7 @@ export const ListClientsResponseItem = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -181,6 +184,7 @@ export const GetClientResponse = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -200,7 +204,8 @@ export const UpdateClientBody = zod.object({
   "company": zod.string().optional(),
   "industry": zod.string().optional(),
   "status": zod.enum(['active', 'inactive', 'prospect']).optional(),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional()
 })
 
 export const UpdateClientResponse = zod.object({
@@ -214,6 +219,7 @@ export const UpdateClientResponse = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -250,6 +256,7 @@ export const MarkClientFounderResponse = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 }),
@@ -2302,6 +2309,7 @@ export const ListSystemUsersResponseItem = zod.object({
   "role": zod.string(),
   "status": zod.string(),
   "lastLogin": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -2329,7 +2337,8 @@ export const UpdateSystemUserParams = zod.object({
 
 export const UpdateSystemUserBody = zod.object({
   "role": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "clientId": zod.number().nullish()
 })
 
 export const UpdateSystemUserResponse = zod.object({
@@ -2341,6 +2350,7 @@ export const UpdateSystemUserResponse = zod.object({
   "role": zod.string(),
   "status": zod.string(),
   "lastLogin": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })

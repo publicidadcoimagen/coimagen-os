@@ -51,6 +51,7 @@ import systemCredentialsRouter from "./system-credentials";
 import beckyBeckRouter from "./becky-beck";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
+import { clientRoleGate } from "../middlewares/clientRoleGate";
 
 const router: IRouter = Router();
 
@@ -62,6 +63,7 @@ router.use(publicDigitalDiagnosisRouter);
 router.use(publicFoundersRouter);
 
 router.use(requireAuth);
+router.use(clientRoleGate);
 
 router.use(clientsRouter);
 router.use(clientAccessRouter);

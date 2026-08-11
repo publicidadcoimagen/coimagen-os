@@ -1,11 +1,14 @@
 import { useRoute } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
   useListContracts, getListContractsQueryKey,
+  useUpdateContract,
 } from "@workspace/api-client-react";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { FileSignature, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 type Org = { id: number; slug: string; clientId?: number | null };
@@ -38,10 +41,17 @@ export function ClientContracts() {
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
   const org = rawOrg as Org | undefined;
 
+  const queryClient = useQueryClient();
   const { data: rawContracts = [], isLoading } = useListContracts(
     {},
     { query: { queryKey: getListContractsQueryKey() } },
   );
+
+  const { mutate: signContract, isPending: isSigning, variables: signingVars } = useUpdateContract({
+    mutation: {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListContractsQueryKey() }),
+    },
+  });
 
   const contracts = (rawContracts as Contract[]).filter((c) => org?.clientId ? c.clientId === org.clientId : false);
 
@@ -87,6 +97,16 @@ export function ClientContracts() {
                         {c.expiresAt && <span>Vence: {new Date(c.expiresAt).toLocaleDateString("es-MX")}</span>}
                       </div>
                     </div>
+                    {c.status === "sent" && (
+                      <Button
+                        size="sm"
+                        className="h-7 text-xs bg-green-500 hover:bg-green-600 text-white flex-shrink-0"
+                        disabled={isSigning && signingVars?.id === c.id}
+                        onClick={() => signContract({ id: c.id, data: { status: "signed" } })}
+                      >
+                        {isSigning && signingVars?.id === c.id ? "Firmando..." : "Firmar"}
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               );

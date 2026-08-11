@@ -10,6 +10,7 @@ import {
   DeleteContractParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
@@ -32,7 +33,11 @@ router.get("/contracts", async (req, res): Promise<void> => {
   const conditions = [];
   if (q.data.status) conditions.push(eq(contractsTable.status, q.data.status));
   if (q.data.type) conditions.push(eq(contractsTable.type, q.data.type));
-  if (q.data.clientId) conditions.push(eq(contractsTable.clientId, q.data.clientId));
+  if (isClienteRole(req)) {
+    conditions.push(eq(contractsTable.clientId, ownClientId(req)!));
+  } else if (q.data.clientId) {
+    conditions.push(eq(contractsTable.clientId, q.data.clientId));
+  }
   if (q.data.projectId) conditions.push(eq(contractsTable.projectId, q.data.projectId));
   if (conditions.length > 0) query = query.where(and(...conditions));
 
@@ -75,15 +80,35 @@ router.get("/contracts/:id", async (req, res): Promise<void> => {
   const params = GetContractParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const [row] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
-  if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  if (!row || (isClienteRole(req) && row.clientId !== ownClientId(req))) { res.status(404).json({ error: "Not found" }); return; }
   res.json(serialize(row));
 });
 
-router.patch("/contracts/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+// A cliente-role caller may PATCH only their own contract, and only to sign
+// it: status "sent" -> "signed", nothing else. Staff (ceo/admin) can edit
+// any field on any contract, as before.
+router.patch("/contracts/:id", async (req, res): Promise<void> => {
   const params = UpdateContractParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const body = UpdateContractBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
+
+  if (isClienteRole(req)) {
+    const [existing] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
+    if (!existing || existing.clientId !== ownClientId(req)) { res.status(404).json({ error: "Not found" }); return; }
+    const onlySigning = body.data.status === "signed"
+      && Object.keys(body.data).every((k) => ["status", "signedAt", "signedBy"].includes(k));
+    if (!onlySigning || existing.status !== "sent") { res.status(403).json({ error: "Insufficient permissions" }); return; }
+    const [signed] = await db.update(contractsTable)
+      .set({ status: "signed", signedAt: new Date(), signedBy: req.user?.id ?? null, updatedAt: new Date() })
+      .where(eq(contractsTable.id, params.data.id))
+      .returning();
+    res.json(serialize(signed));
+    return;
+  }
+
+  const staffRole = (req.user as { role?: string })?.role ?? "viewer";
+  if (!["ceo", "admin"].includes(staffRole)) { res.status(403).json({ error: "Insufficient permissions" }); return; }
 
   const d = body.data;
   const update: Record<string, unknown> = { updatedAt: new Date() };

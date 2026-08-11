@@ -2,6 +2,8 @@ import { useRoute } from "wouter";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
   useListClientApprovals, getListClientApprovalsQueryKey,
+  useListInvoices, getListInvoicesQueryKey,
+  useListContracts, getListContractsQueryKey,
 } from "@workspace/api-client-react";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,12 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, FolderKanban, CheckSquare, Receipt,
-  Clock, TrendingUp, AlertCircle, ChevronRight,
+  Clock, TrendingUp, AlertCircle, ChevronRight, FileSignature,
 } from "lucide-react";
 import { Link } from "wouter";
 
 type Org = { id: number; slug: string; name: string; clientId?: number | null; description?: string | null };
 type Approval = { id: number; type: string; title: string; status: string; createdAt: string };
+type Invoice = { id: number; amount: number; status: string; dueDate?: string | null };
+type ContractRow = { id: number; title: string; status: string };
 
 const WORKFLOW_STAGES = [
   "Lead", "Diagnóstico", "Propuesta", "Contrato",
@@ -53,15 +57,28 @@ export function ClientDashboard() {
     {},
     { query: { queryKey: getListClientApprovalsQueryKey({}) } },
   );
+  const { data: rawInvoices = [] } = useListInvoices(
+    {},
+    { query: { queryKey: getListInvoicesQueryKey({}) } },
+  );
+  const { data: rawContracts = [] } = useListContracts(
+    {},
+    { query: { queryKey: getListContractsQueryKey() } },
+  );
 
   const org = rawOrg as Org | undefined;
   const pendingApprovals = (rawApprovals as Approval[]).filter((a) => a.status === "pending");
+  const unsignedContracts = (rawContracts as ContractRow[]).filter((c) => c.status === "sent");
+  const pendingInvoices = (rawInvoices as Invoice[])
+    .filter((i) => i.status === "sent" || i.status === "draft")
+    .sort((a, b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? ""));
+  const nextDue = pendingInvoices.find((i) => i.dueDate)?.dueDate;
 
   const kpiCards = [
     { label: "Aprobaciones pendientes", value: pendingApprovals.length, icon: CheckSquare, color: "text-orange-400", href: `/client/${slug}/approvals` },
     { label: "Estado del proyecto", value: "En producción", icon: TrendingUp, color: "text-green-400", href: `/client/${slug}/projects` },
-    { label: "Próxima entrega", value: "—", icon: Clock, color: "text-blue-400", href: `/client/${slug}/calendar` },
-    { label: "Facturas pendientes", value: "—", icon: Receipt, color: "text-yellow-400", href: `/client/${slug}/invoices` },
+    { label: "Próximo pago", value: nextDue ? new Date(nextDue).toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) : "—", icon: Clock, color: "text-blue-400", href: `/client/${slug}/invoices` },
+    { label: "Facturas pendientes", value: pendingInvoices.length, icon: Receipt, color: "text-yellow-400", href: `/client/${slug}/invoices` },
   ];
 
   return (
@@ -106,6 +123,30 @@ export function ClientDashboard() {
             <p className="text-[11px] text-muted-foreground mt-2">Etapa actual: <strong>Producción</strong> — En proceso</p>
           </CardContent>
         </Card>
+
+        {/* Tareas pendientes de su parte — contratos sin firmar */}
+        {unsignedContracts.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <FileSignature className="h-4 w-4 text-orange-400" />
+              <h2 className="text-sm font-semibold">Contratos por firmar</h2>
+              <Badge variant="outline" className="text-[9px] py-0 bg-orange-400/10 text-orange-400 border-orange-400/30">{unsignedContracts.length}</Badge>
+            </div>
+            <div className="space-y-2">
+              {unsignedContracts.map((c) => (
+                <Card key={c.id} className="border-orange-400/20 bg-orange-400/5">
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <FileSignature className="h-4 w-4 text-orange-400 flex-shrink-0" />
+                    <p className="text-sm font-medium flex-1">{c.title}</p>
+                    <Button size="sm" className="h-7 text-xs" asChild>
+                      <Link href={`/client/${slug}/contracts`}>Firmar</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Pending approvals */}
         {pendingApprovals.length > 0 && (

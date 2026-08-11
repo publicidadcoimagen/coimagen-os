@@ -10,6 +10,7 @@ import {
   ListProjectsQueryParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
@@ -32,7 +33,13 @@ router.get("/projects", async (req, res): Promise<void> => {
     .leftJoin(clientsTable, eq(projectsTable.clientId, clientsTable.id))
     .$dynamic();
   const conditions = [];
-  if (qp.success && qp.data.clientId) conditions.push(eq(projectsTable.clientId, qp.data.clientId));
+  // A cliente-role caller is always forced to their own clientId, ignoring
+  // whatever query param they supplied (P-79 clientScope).
+  if (isClienteRole(req)) {
+    conditions.push(eq(projectsTable.clientId, ownClientId(req)!));
+  } else {
+    if (qp.success && qp.data.clientId) conditions.push(eq(projectsTable.clientId, qp.data.clientId));
+  }
   if (qp.success && qp.data.status) conditions.push(eq(projectsTable.status, qp.data.status));
   if (conditions.length > 0) query = query.where(and(...conditions));
   const projects = await query.orderBy(projectsTable.createdAt);
@@ -99,7 +106,7 @@ router.get("/projects/:id", async (req, res): Promise<void> => {
     .leftJoin(clientsTable, eq(projectsTable.clientId, clientsTable.id))
     .where(eq(projectsTable.id, params.data.id));
 
-  if (!row) {
+  if (!row || (isClienteRole(req) && row.clientId !== ownClientId(req))) {
     res.status(404).json({ error: "Project not found" });
     return;
   }
