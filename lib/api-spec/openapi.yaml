@@ -3841,6 +3841,9 @@ components:
         notes: { type: ["string", "null"] }
         isFounder: { type: boolean }
         founderNumber: { type: ["integer", "null"] }
+        enabledModules:
+          type: array
+          items: { type: string, enum: [ecommerce, autopublicador, seo] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     ClientInput:
@@ -3864,6 +3867,9 @@ components:
         industry: { type: string }
         status: { type: string, enum: [active, inactive, prospect] }
         notes: { type: string }
+        enabledModules:
+          type: array
+          items: { type: string, enum: [ecommerce, autopublicador, seo] }
     MarkClientFounderInput:
       type: object
       required: [packageName]
@@ -4728,6 +4734,7 @@ components:
         role: { type: string }
         status: { type: string }
         lastLogin: { type: ["string", "null"] }
+        clientId: { type: ["integer", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     SystemUserCreate:
@@ -4744,6 +4751,7 @@ components:
       properties:
         role: { type: string }
         status: { type: string }
+        clientId: { type: ["integer", "null"] }
 
     # ─── BACKLOG ──────────────────────────────────────────────────────────────
     SmartOnboarding:

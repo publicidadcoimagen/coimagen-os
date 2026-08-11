@@ -9,4 +9,6 @@
 export interface SystemUserUpdate {
   role?: string;
   status?: string;
+  /** @nullable */
+  clientId?: number | null;
 }

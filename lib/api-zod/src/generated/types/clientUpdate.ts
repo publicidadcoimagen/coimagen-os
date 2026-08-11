@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ClientUpdateEnabledModulesItem } from './clientUpdateEnabledModulesItem';
 import type { ClientUpdateStatus } from './clientUpdateStatus';
 
 export interface ClientUpdate {
@@ -16,4 +17,5 @@ export interface ClientUpdate {
   industry?: string;
   status?: ClientUpdateStatus;
   notes?: string;
+  enabledModules?: ClientUpdateEnabledModulesItem[];
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRoute } from "wouter";
 import {
   useGetClient,
+  useUpdateClient,
   useMarkClientFounder,
   useListProjects,
   useListClientAccess,
@@ -49,6 +50,13 @@ import {
 import { formatDate } from "@/lib/format";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+
+const CLIENT_MODULES = ["ecommerce", "autopublicador", "seo"] as const;
+const CLIENT_MODULE_LABELS: Record<string, string> = {
+  ecommerce: "E-commerce",
+  autopublicador: "Autopublicador Social",
+  seo: "SEO",
+};
 
 const ACCESS_TYPES = [
   "social_media", "google_business", "website", "domain", "hosting",
@@ -170,6 +178,9 @@ export function ClientDetail() {
   const updateNote = useUpdateClientNote();
   const deleteNote = useDeleteClientNote();
   const markFounder = useMarkClientFounder();
+  const updateClient = useUpdateClient({
+    mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getGetClientQueryKey(id) }) },
+  });
 
   /* ── Access state ── */
   const [accessModal, setAccessModal] = useState(false);
@@ -393,6 +404,33 @@ export function ClientDetail() {
           </Card>
         </div>
       </div>
+
+      {/* ── PORTAL MODULES ── */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2"><Layers className="h-4 w-4" />Módulos del Portal</CardTitle>
+          <CardDescription>Módulos opcionales visibles para este cliente en su Client Room, además de los 6 módulos base</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {CLIENT_MODULES.map((m) => {
+            const enabled = (client.enabledModules ?? []).includes(m);
+            return (
+              <div key={m} className="flex items-center justify-between gap-2 p-3 rounded-lg border border-border/50">
+                <Label className="text-sm font-normal">{CLIENT_MODULE_LABELS[m]}</Label>
+                <Switch
+                  checked={enabled}
+                  disabled={updateClient.isPending}
+                  onCheckedChange={(checked) => {
+                    const current = client.enabledModules ?? [];
+                    const next = checked ? [...current, m] : current.filter((x) => x !== m);
+                    updateClient.mutate({ id, data: { enabledModules: next } });
+                  }}
+                />
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
 
       {/* ── TABS ── */}
       <Tabs defaultValue="projects">

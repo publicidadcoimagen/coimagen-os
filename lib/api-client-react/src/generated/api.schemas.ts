@@ -80,6 +80,15 @@ export const ClientStatus = {
   prospect: 'prospect',
 } as const;
 
+export type ClientEnabledModulesItem = typeof ClientEnabledModulesItem[keyof typeof ClientEnabledModulesItem];
+
+
+export const ClientEnabledModulesItem = {
+  ecommerce: 'ecommerce',
+  autopublicador: 'autopublicador',
+  seo: 'seo',
+} as const;
+
 export interface Client {
   id: number;
   name: string;
@@ -97,6 +106,7 @@ export interface Client {
   isFounder: boolean;
   /** @nullable */
   founderNumber?: number | null;
+  enabledModules?: ClientEnabledModulesItem[];
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -131,6 +141,15 @@ export const ClientUpdateStatus = {
   prospect: 'prospect',
 } as const;
 
+export type ClientUpdateEnabledModulesItem = typeof ClientUpdateEnabledModulesItem[keyof typeof ClientUpdateEnabledModulesItem];
+
+
+export const ClientUpdateEnabledModulesItem = {
+  ecommerce: 'ecommerce',
+  autopublicador: 'autopublicador',
+  seo: 'seo',
+} as const;
+
 export interface ClientUpdate {
   /** @minLength 1 */
   name?: string;
@@ -140,6 +159,7 @@ export interface ClientUpdate {
   industry?: string;
   status?: ClientUpdateStatus;
   notes?: string;
+  enabledModules?: ClientUpdateEnabledModulesItem[];
 }
 
 export interface MarkClientFounderInput {
@@ -1605,6 +1625,8 @@ export interface SystemUser {
   status: string;
   /** @nullable */
   lastLogin?: string | null;
+  /** @nullable */
+  clientId?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -1621,6 +1643,8 @@ export interface SystemUserCreate {
 export interface SystemUserUpdate {
   role?: string;
   status?: string;
+  /** @nullable */
+  clientId?: number | null;
 }
 
 export type SmartOnboardingStep1 = { [key: string]: unknown } | null;
