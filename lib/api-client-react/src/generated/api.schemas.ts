@@ -1549,6 +1549,8 @@ export interface ClientBrand {
   /** @nullable */
   fonts?: string | null;
   /** @nullable */
+  brandManualUrl?: string | null;
+  /** @nullable */
   brandNotes?: string | null;
   /** @nullable */
   websiteUrl?: string | null;
@@ -1556,6 +1558,10 @@ export interface ClientBrand {
   facebookUrl?: string | null;
   /** @nullable */
   instagramUrl?: string | null;
+  /** @nullable */
+  tiktokUrl?: string | null;
+  /** @nullable */
+  linkedinUrl?: string | null;
   /** @nullable */
   googleBusinessUrl?: string | null;
   /** @nullable */
@@ -1569,10 +1575,13 @@ export interface ClientBrandInput {
   logoUrl?: string;
   brandColors?: string;
   fonts?: string;
+  brandManualUrl?: string;
   brandNotes?: string;
   websiteUrl?: string;
   facebookUrl?: string;
   instagramUrl?: string;
+  tiktokUrl?: string;
+  linkedinUrl?: string;
   googleBusinessUrl?: string;
   youtubeUrl?: string;
 }

@@ -16,6 +16,8 @@ export interface ClientBrand {
   /** @nullable */
   fonts?: string | null;
   /** @nullable */
+  brandManualUrl?: string | null;
+  /** @nullable */
   brandNotes?: string | null;
   /** @nullable */
   websiteUrl?: string | null;
@@ -23,6 +25,10 @@ export interface ClientBrand {
   facebookUrl?: string | null;
   /** @nullable */
   instagramUrl?: string | null;
+  /** @nullable */
+  tiktokUrl?: string | null;
+  /** @nullable */
+  linkedinUrl?: string | null;
   /** @nullable */
   googleBusinessUrl?: string | null;
   /** @nullable */

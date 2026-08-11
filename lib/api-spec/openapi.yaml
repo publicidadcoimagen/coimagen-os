@@ -4665,10 +4665,13 @@ components:
         logoUrl: { type: ["string", "null"] }
         brandColors: { type: ["string", "null"] }
         fonts: { type: ["string", "null"] }
+        brandManualUrl: { type: ["string", "null"] }
         brandNotes: { type: ["string", "null"] }
         websiteUrl: { type: ["string", "null"] }
         facebookUrl: { type: ["string", "null"] }
         instagramUrl: { type: ["string", "null"] }
+        tiktokUrl: { type: ["string", "null"] }
+        linkedinUrl: { type: ["string", "null"] }
         googleBusinessUrl: { type: ["string", "null"] }
         youtubeUrl: { type: ["string", "null"] }
         createdAt: { type: string }
@@ -4679,10 +4682,13 @@ components:
         logoUrl: { type: string }
         brandColors: { type: string }
         fonts: { type: string }
+        brandManualUrl: { type: string }
         brandNotes: { type: string }
         websiteUrl: { type: string }
         facebookUrl: { type: string }
         instagramUrl: { type: string }
+        tiktokUrl: { type: string }
+        linkedinUrl: { type: string }
         googleBusinessUrl: { type: string }
         youtubeUrl: { type: string }
 
