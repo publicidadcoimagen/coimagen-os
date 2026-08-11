@@ -68,11 +68,23 @@ catalog:
 
 autoInstallPeers: false
 
+# `onlyBuiltDependencies` is for pnpm 10.15.0 (the version pinned in
+# package.json's "packageManager" field). `allowBuilds` is its pnpm
+# 11+ replacement (onlyBuiltDependencies was removed entirely in v11).
+# allowBuilds itself only exists from pnpm 10.26+, so it's a no-op on
+# our pinned 10.15.0 — both keys are kept so the build-script allowlist
+# works regardless of which pnpm version actually ends up running.
 onlyBuiltDependencies:
   - '@swc/core'
   - esbuild
   - msw
   - unrs-resolver
+
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
+  msw: true
+  unrs-resolver: true
 
 overrides:
   # replit uses linux-x64 only, we can exclude all other platforms

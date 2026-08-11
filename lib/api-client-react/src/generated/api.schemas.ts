@@ -674,7 +674,14 @@ export const DiagnosisStatus = {
   rejected: 'rejected',
   executed: 'executed',
   archived: 'archived',
+  completed: 'completed',
+  failed: 'failed',
 } as const;
+
+/**
+ * @nullable
+ */
+export type DiagnosisResult = { [key: string]: unknown } | null;
 
 export interface Diagnosis {
   id: number;
@@ -687,6 +694,18 @@ export interface Diagnosis {
   content?: string | null;
   status: DiagnosisStatus;
   type: string;
+  /** @nullable */
+  executionId?: number | null;
+  /** @nullable */
+  sourceUrl?: string | null;
+  /** @nullable */
+  result?: DiagnosisResult;
+  /** @nullable */
+  pdfUrl?: string | null;
+  /** @nullable */
+  pdfGeneratedAt?: string | null;
+  /** @nullable */
+  publicToken?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -702,6 +721,8 @@ export const DiagnosisInputStatus = {
   rejected: 'rejected',
   executed: 'executed',
   archived: 'archived',
+  completed: 'completed',
+  failed: 'failed',
 } as const;
 
 export interface DiagnosisInput {
@@ -724,6 +745,8 @@ export const DiagnosisUpdateStatus = {
   rejected: 'rejected',
   executed: 'executed',
   archived: 'archived',
+  completed: 'completed',
+  failed: 'failed',
 } as const;
 
 export interface DiagnosisUpdate {
@@ -734,6 +757,43 @@ export interface DiagnosisUpdate {
   content?: string;
   status?: DiagnosisUpdateStatus;
   type?: string;
+}
+
+export interface DigitalDiagnosisSubmission {
+  url: string;
+  /** @minLength 1 */
+  name: string;
+  email: string;
+}
+
+export type DigitalDiagnosisResultStatus = typeof DigitalDiagnosisResultStatus[keyof typeof DigitalDiagnosisResultStatus];
+
+
+export const DigitalDiagnosisResultStatus = {
+  completed: 'completed',
+  failed: 'failed',
+} as const;
+
+export interface DigitalDiagnosisResult {
+  diagnosisId: number;
+  status: DigitalDiagnosisResultStatus;
+  /** @nullable */
+  publicToken: string | null;
+}
+
+/**
+ * @nullable
+ */
+export type DigitalDiagnosisPublicViewResult = { [key: string]: unknown } | null;
+
+export interface DigitalDiagnosisPublicView {
+  title: string;
+  status: string;
+  /** @nullable */
+  sourceUrl: string | null;
+  /** @nullable */
+  result: DigitalDiagnosisPublicViewResult;
+  createdAt: string;
 }
 
 export type ProposalStatus = typeof ProposalStatus[keyof typeof ProposalStatus];

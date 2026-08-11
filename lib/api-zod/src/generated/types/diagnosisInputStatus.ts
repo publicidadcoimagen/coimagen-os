@@ -16,4 +16,6 @@ export const DiagnosisInputStatus = {
   rejected: 'rejected',
   executed: 'executed',
   archived: 'archived',
+  completed: 'completed',
+  failed: 'failed',
 } as const;

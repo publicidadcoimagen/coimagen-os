@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DiagnosisResult } from './diagnosisResult';
 import type { DiagnosisStatus } from './diagnosisStatus';
 
 export interface Diagnosis {
@@ -18,6 +19,18 @@ export interface Diagnosis {
   content?: string | null;
   status: DiagnosisStatus;
   type: string;
+  /** @nullable */
+  executionId?: number | null;
+  /** @nullable */
+  sourceUrl?: string | null;
+  /** @nullable */
+  result?: DiagnosisResult;
+  /** @nullable */
+  pdfUrl?: string | null;
+  /** @nullable */
+  pdfGeneratedAt?: string | null;
+  /** @nullable */
+  publicToken?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
