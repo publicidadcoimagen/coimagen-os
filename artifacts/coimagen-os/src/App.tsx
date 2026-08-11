@@ -88,6 +88,7 @@ import { EventCatalogPage } from "@/pages/orchestration/catalog-page";
 import { ClientRoomAdmin } from "@/pages/client-room/admin";
 import { ClientDashboard } from "@/pages/client-room/dashboard";
 import { ClientOnboarding } from "@/pages/client-room/onboarding";
+import { ClientCatalog } from "@/pages/client-room/catalog";
 import { ClientProjects } from "@/pages/client-room/projects";
 import { ClientWorkflow } from "@/pages/client-room/workflow";
 import { ClientApprovals } from "@/pages/client-room/approvals";
@@ -194,6 +195,7 @@ function Router() {
     <Switch>
       {/* ── Client Room — own layout, no AppLayout ─────────────────────── */}
       <Route path="/client/:slug/onboarding" component={ClientOnboarding} />
+      <Route path="/client/:slug/catalog"   component={ClientCatalog} />
       <Route path="/client/:slug/projects"  component={ClientProjects} />
       <Route path="/client/:slug/workflow"  component={ClientWorkflow} />
       <Route path="/client/:slug/approvals" component={ClientApprovals} />

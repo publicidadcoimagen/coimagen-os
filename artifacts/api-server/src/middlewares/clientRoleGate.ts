@@ -27,6 +27,14 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   { method: "GET", pattern: /^\/clients\/\d+\/onboarding$/ },
   { method: "GET", pattern: /^\/account(\/|$)/ },
   { method: "POST", pattern: /^\/account(\/|$)/ },
+  // Becky Beck catalog ("ecommerce" module, P-79) — becky-beck.ts itself
+  // further gates these behind the caller's client having "ecommerce"
+  // enabled, so listing them here doesn't open the catalog to every
+  // cliente account, only to route-class reachability.
+  { method: "GET", pattern: /^\/becky-beck\/products$/ },
+  { method: "POST", pattern: /^\/becky-beck\/products$/ },
+  { method: "PATCH", pattern: /^\/becky-beck\/products\/[^/]+$/ },
+  { method: "DELETE", pattern: /^\/becky-beck\/products\/[^/]+$/ },
 ];
 
 export function clientRoleGate(req: Request, res: Response, next: NextFunction): void {

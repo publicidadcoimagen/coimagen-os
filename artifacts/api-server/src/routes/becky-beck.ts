@@ -13,10 +13,20 @@ import {
   deleteBeckyBeckProductImage,
   type BeckyBeckProductRecord,
 } from "../lib/becky-beck-blobs";
+import { ownsModule } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
 const BECKY_BECK_SITE_URL = process.env.BECKY_BECK_SITE_URL ?? "https://beckybech.netlify.app";
+
+// The catalog is a single Netlify Blobs store, not scoped per client — fine
+// while Becky is the only "ecommerce" client, but this gate is what stops a
+// future second ecommerce client's cliente-role login from reading or
+// editing Becky's catalog (P-79).
+router.use(async (req, res, next): Promise<void> => {
+  if (!(await ownsModule(req, "ecommerce"))) { res.status(403).json({ error: "Not available for this account" }); return; }
+  next();
+});
 
 function toApiShape(product: BeckyBeckProductRecord) {
   return {
