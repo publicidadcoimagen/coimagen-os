@@ -8,18 +8,20 @@ import {
   useGetCostSummary,
   useHealthCheck,
   useListSystemCredentials,
+  useListIncidents,
   getGetDashboardSummaryQueryKey,
   getGetRecentActivityQueryKey,
   getGetProjectsByStatusQueryKey,
   getGetCostSummaryQueryKey,
   getHealthCheckQueryKey,
   getListSystemCredentialsQueryKey,
+  getListIncidentsQueryKey,
 } from "@workspace/api-client-react";
 import {
   Users, FolderKanban, CheckSquare, Activity,
   TrendingUp, AlertTriangle, DollarSign, BarChart2,
   ShieldCheck, CreditCard, Clock, UserX, Zap, Wallet,
-  Server, Database, KeyRound, Lock,
+  Server, Database, KeyRound, Lock, Siren,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { formatDate, formatCurrency } from "@/lib/format";
@@ -220,6 +222,9 @@ export function Dashboard() {
   const { data: costSummary, isLoading: isLoadingCosts } = useGetCostSummary(currentMonth, {
     query: { queryKey: getGetCostSummaryQueryKey(currentMonth) }
   });
+  const { data: openIncidents } = useListIncidents({ status: "open" }, {
+    query: { queryKey: getListIncidentsQueryKey({ status: "open" }) }
+  });
 
   if (isLoadingSummary || isLoadingActivity || isLoadingProjects) {
     return <div className="flex items-center justify-center h-full text-muted-foreground">Cargando Mission Control...</div>;
@@ -232,7 +237,8 @@ export function Dashboard() {
     value: stat.count,
   })) || [];
 
-  const totalAlerts = (summary?.pendingApprovals ?? 0) + (summary?.overdueInvoices ?? 0) + (summary?.overdueTasks ?? 0);
+  const openIncidentsCount = openIncidents?.length ?? 0;
+  const totalAlerts = (summary?.pendingApprovals ?? 0) + (summary?.overdueInvoices ?? 0) + (summary?.overdueTasks ?? 0) + openIncidentsCount;
   const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
   return (
@@ -246,6 +252,15 @@ export function Dashboard() {
           </div>
         )}
       </div>
+
+      {openIncidentsCount > 0 && (
+        <Link href="/quality-center/incidents" className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-destructive/10 border border-destructive/20 hover:bg-destructive/15 transition-colors w-fit">
+          <Siren className="h-4 w-4 text-destructive" />
+          <span className="text-sm font-medium text-destructive">
+            {openIncidentsCount} incidente{openIncidentsCount !== 1 ? "s" : ""} técnico{openIncidentsCount !== 1 ? "s" : ""} abierto{openIncidentsCount !== 1 ? "s" : ""} — revisar
+          </span>
+        </Link>
+      )}
 
       <SystemVerificationWidget />
 

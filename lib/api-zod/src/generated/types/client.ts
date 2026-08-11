@@ -21,6 +21,9 @@ export interface Client {
   status: ClientStatus;
   /** @nullable */
   notes?: string | null;
+  isFounder: boolean;
+  /** @nullable */
+  founderNumber?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

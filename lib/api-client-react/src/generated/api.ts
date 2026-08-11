@@ -137,6 +137,8 @@ import type {
   ListTasksParams,
   ListWorkflowsParams,
   LogoutSuccess,
+  MarkClientFounderInput,
+  MarkClientFounderResult,
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
   MrrDataPoint,
@@ -161,6 +163,7 @@ import type {
   Prospect,
   ProspectInput,
   ProspectUpdate,
+  PublicFoundersCount,
   QcTicket,
   QcTicketCreate,
   QcTicketUpdate,
@@ -718,6 +721,83 @@ export function useGetPublicDigitalDiagnosis<TData = Awaited<ReturnType<typeof g
 
 
 
+export const getGetPublicFoundersCountUrl = () => {
+
+
+
+
+  return `/api/public/founders/count`
+}
+
+/**
+ * @summary Live count of Founder clients and the fixed max (no auth required — powers the counter on coimagenmedia.com)
+ */
+export const getPublicFoundersCount = async ( options?: RequestInit): Promise<PublicFoundersCount> => {
+
+  return customFetch<PublicFoundersCount>(getGetPublicFoundersCountUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicFoundersCountQueryKey = () => {
+    return [
+    `/api/public/founders/count`
+    ] as const;
+    }
+
+
+export const getGetPublicFoundersCountQueryOptions = <TData = Awaited<ReturnType<typeof getPublicFoundersCount>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicFoundersCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicFoundersCountQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicFoundersCount>>> = ({ signal }) => getPublicFoundersCount({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicFoundersCount>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicFoundersCountQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicFoundersCount>>>
+export type GetPublicFoundersCountQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Live count of Founder clients and the fixed max (no auth required — powers the counter on coimagenmedia.com)
+ */
+
+export function useGetPublicFoundersCount<TData = Awaited<ReturnType<typeof getPublicFoundersCount>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicFoundersCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicFoundersCountQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
 export const getListClientsUrl = () => {
 
 
@@ -1065,6 +1145,78 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteClientMutationOptions(options));
+    }
+
+export const getMarkClientFounderUrl = (id: number,) => {
+
+
+
+
+  return `/api/clients/${id}/mark-founder`
+}
+
+/**
+ * @summary Mark a client as a numbered Founder and send the founder welcome email
+ */
+export const markClientFounder = async (id: number,
+    markClientFounderInput: MarkClientFounderInput, options?: RequestInit): Promise<MarkClientFounderResult> => {
+
+  return customFetch<MarkClientFounderResult>(getMarkClientFounderUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      markClientFounderInput,)
+  }
+);}
+
+
+
+
+export const getMarkClientFounderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markClientFounder>>, TError,{id: number;data: BodyType<MarkClientFounderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markClientFounder>>, TError,{id: number;data: BodyType<MarkClientFounderInput>}, TContext> => {
+
+const mutationKey = ['markClientFounder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markClientFounder>>, {id: number;data: BodyType<MarkClientFounderInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  markClientFounder(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkClientFounderMutationResult = NonNullable<Awaited<ReturnType<typeof markClientFounder>>>
+    export type MarkClientFounderMutationBody = BodyType<MarkClientFounderInput>
+    export type MarkClientFounderMutationError = ErrorType<void>
+
+    /**
+ * @summary Mark a client as a numbered Founder and send the founder welcome email
+ */
+export const useMarkClientFounder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markClientFounder>>, TError,{id: number;data: BodyType<MarkClientFounderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markClientFounder>>,
+        TError,
+        {id: number;data: BodyType<MarkClientFounderInput>},
+        TContext
+      > => {
+      return useMutation(getMarkClientFounderMutationOptions(options));
     }
 
 export const getListClientAccessUrl = (clientId: number,) => {
