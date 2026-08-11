@@ -912,6 +912,11 @@ export interface DigitalDiagnosisPublicView {
   createdAt: string;
 }
 
+export interface PublicFoundersCount {
+  count: number;
+  max: number;
+}
+
 export type ProposalStatus = typeof ProposalStatus[keyof typeof ProposalStatus];
 
 

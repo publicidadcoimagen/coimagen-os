@@ -171,6 +171,19 @@ paths:
         "404":
           description: Not found
 
+  /public/founders/count:
+    get:
+      operationId: getPublicFoundersCount
+      tags: [public]
+      summary: Live count of Founder clients and the fixed max (no auth required — powers the counter on coimagenmedia.com)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicFoundersCount"
+
   # ─── CLIENTS ───────────────────────────────────────────────────────────────
   /clients:
     get:
@@ -4289,6 +4302,13 @@ components:
         sourceUrl: { type: ["string", "null"] }
         result:    { type: ["object", "null"] }
         createdAt: { type: string }
+
+    PublicFoundersCount:
+      type: object
+      required: [count, max]
+      properties:
+        count: { type: integer }
+        max: { type: integer }
 
     # ── PROPOSAL ──────────────────────────────────────────────────────────────
     Proposal:

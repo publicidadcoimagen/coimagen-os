@@ -206,6 +206,7 @@ export * from './prospectInputStatus';
 export * from './prospectStatus';
 export * from './prospectUpdate';
 export * from './prospectUpdateStatus';
+export * from './publicFoundersCount';
 export * from './qcTicket';
 export * from './qcTicketCreate';
 export * from './qcTicketUpdate';

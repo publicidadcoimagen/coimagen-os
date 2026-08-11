@@ -163,6 +163,7 @@ import type {
   Prospect,
   ProspectInput,
   ProspectUpdate,
+  PublicFoundersCount,
   QcTicket,
   QcTicketCreate,
   QcTicketUpdate,
@@ -708,6 +709,83 @@ export function useGetPublicDigitalDiagnosis<TData = Awaited<ReturnType<typeof g
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetPublicDigitalDiagnosisQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetPublicFoundersCountUrl = () => {
+
+
+
+
+  return `/api/public/founders/count`
+}
+
+/**
+ * @summary Live count of Founder clients and the fixed max (no auth required — powers the counter on coimagenmedia.com)
+ */
+export const getPublicFoundersCount = async ( options?: RequestInit): Promise<PublicFoundersCount> => {
+
+  return customFetch<PublicFoundersCount>(getGetPublicFoundersCountUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicFoundersCountQueryKey = () => {
+    return [
+    `/api/public/founders/count`
+    ] as const;
+    }
+
+
+export const getGetPublicFoundersCountQueryOptions = <TData = Awaited<ReturnType<typeof getPublicFoundersCount>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicFoundersCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicFoundersCountQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicFoundersCount>>> = ({ signal }) => getPublicFoundersCount({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicFoundersCount>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicFoundersCountQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicFoundersCount>>>
+export type GetPublicFoundersCountQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Live count of Founder clients and the fixed max (no auth required — powers the counter on coimagenmedia.com)
+ */
+
+export function useGetPublicFoundersCount<TData = Awaited<ReturnType<typeof getPublicFoundersCount>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicFoundersCount>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicFoundersCountQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

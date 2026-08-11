@@ -121,6 +121,15 @@ export const GetPublicDigitalDiagnosisResponse = zod.object({
 
 
 /**
+ * @summary Live count of Founder clients and the fixed max (no auth required — powers the counter on coimagenmedia.com)
+ */
+export const GetPublicFoundersCountResponse = zod.object({
+  "count": zod.number(),
+  "max": zod.number()
+})
+
+
+/**
  * @summary List all clients
  */
 export const ListClientsResponseItem = zod.object({

@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import authRouter from "./auth";
 import publicDigitalDiagnosisRouter from "./public-digital-diagnosis";
+import publicFoundersRouter from "./public-founders";
 import clientsRouter from "./clients";
 import clientAccessRouter from "./client-access";
 import clientBrandRouter from "./client-brand";
@@ -58,6 +59,7 @@ router.use(auditMiddleware);
 router.use(healthRouter);
 router.use(authRouter);
 router.use(publicDigitalDiagnosisRouter);
+router.use(publicFoundersRouter);
 
 router.use(requireAuth);
 

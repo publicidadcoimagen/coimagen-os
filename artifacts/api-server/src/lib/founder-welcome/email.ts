@@ -103,13 +103,7 @@ const SUBJECTS: Record<"es" | "en", (n: number) => string> = {
   en: (n) => `🎉 Welcome, Founder #${n} of Coimagen!`,
 };
 
-export async function sendFounderWelcomeEmail(
-  name: string,
-  email: string,
-  founderNumber: number,
-  packageName: string,
-  lang: "es" | "en",
-): Promise<string> {
+async function sendOnce(name: string, email: string, founderNumber: number, packageName: string, lang: "es" | "en"): Promise<string> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error("RESEND_API_KEY no está configurada");
@@ -131,7 +125,37 @@ export async function sendFounderWelcomeEmail(
     throw new Error(error.message);
   }
 
-  const emailId = data?.id ?? "(sin id)";
-  logger.info({ email, founderNumber, emailId }, "Correo de bienvenida de Fundador enviado");
-  return emailId;
+  return data?.id ?? "(sin id)";
+}
+
+const RETRY_ATTEMPTS = 3;
+const RETRY_DELAYS_MS = [1000, 2000]; // wait before attempt 2, then before attempt 3
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// A single Resend outage or transient network blip shouldn't turn into a
+// visible "founder welcome failed" incident on the first try — retries
+// silently, and only the caller sees a failure once every attempt is spent.
+export async function sendFounderWelcomeEmail(
+  name: string,
+  email: string,
+  founderNumber: number,
+  packageName: string,
+  lang: "es" | "en",
+): Promise<string> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= RETRY_ATTEMPTS; attempt++) {
+    try {
+      const emailId = await sendOnce(name, email, founderNumber, packageName, lang);
+      logger.info({ email, founderNumber, emailId, attempt }, "Correo de bienvenida de Fundador enviado");
+      return emailId;
+    } catch (err) {
+      lastError = err;
+      logger.warn({ err, email, founderNumber, attempt }, "Intento de envío de correo de bienvenida de Fundador falló");
+      if (attempt < RETRY_ATTEMPTS) await sleep(RETRY_DELAYS_MS[attempt - 1]);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }

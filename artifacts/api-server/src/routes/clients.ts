@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, sql } from "drizzle-orm";
-import { db, clientsTable, prospectsTable, clientTimelineTable } from "@workspace/db";
+import { db, clientsTable, prospectsTable, clientTimelineTable, incidentsTable } from "@workspace/db";
 import {
   GetClientParams,
   UpdateClientParams,
@@ -15,6 +15,10 @@ import { sendFounderWelcomeEmail } from "../lib/founder-welcome/email";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
+
+// Confirmed by Camila 2026-08-11. Change here (and only here) if the offer
+// size ever changes — every "how many spots left" check reads this.
+export const MAX_FOUNDERS = 20;
 
 router.get("/clients", async (req, res): Promise<void> => {
   const clients = await db.select().from(clientsTable).orderBy(clientsTable.createdAt);
@@ -117,6 +121,10 @@ router.post("/clients/:id/mark-founder", requireRole("ceo", "admin"), async (req
     .select({ count: sql<number>`count(*)::int` })
     .from(clientsTable)
     .where(eq(clientsTable.isFounder, true));
+  if (count >= MAX_FOUNDERS) {
+    res.status(400).json({ error: `Ya se alcanzó el máximo de ${MAX_FOUNDERS} Fundadores` });
+    return;
+  }
   const founderNumber = count + 1;
 
   const [client] = await db.update(clientsTable)
@@ -153,12 +161,27 @@ router.post("/clients/:id/mark-founder", requireRole("ceo", "admin"), async (req
       });
     } catch (err) {
       emailError = err instanceof Error ? err.message : String(err);
-      logger.warn({ err, clientId: client.id, founderNumber }, "No se pudo enviar el correo de bienvenida de Fundador");
+      logger.warn({ err, clientId: client.id, founderNumber }, "No se pudo enviar el correo de bienvenida de Fundador (reintentos agotados)");
       await db.insert(clientTimelineTable).values({
         clientId: client.id,
         eventType: "founder_marked",
         title: `Marcado como Fundador #${founderNumber}`,
         description: `Plan: ${parsed.data.packageName}. Correo de bienvenida NO se pudo enviar: ${emailError}`,
+      });
+      // Reintentos agotados en sendFounderWelcomeEmail — esto ya no es un
+      // problema de "un correo se perdió", es una falla técnica real
+      // (Resend caído, API key inválida/vencida) que necesita ser visible
+      // a nivel de sistema, no solo enterrada en el timeline de un cliente.
+      // Mismo patrón que ya usa el Agente de Diagnóstico Digital.
+      await db.insert(incidentsTable).values({
+        type: "email_delivery_failure",
+        title: `No se pudo enviar el correo de bienvenida de Fundador #${founderNumber}`,
+        description: `Cliente: ${client.name} <${client.email}>\nPlan: ${parsed.data.packageName}\n\nError tras 3 intentos: ${emailError}`,
+        severity: "high",
+        priority: "high",
+        status: "open",
+        module: "Founder Welcome Email",
+        clientId: client.id,
       });
     }
   } else {
