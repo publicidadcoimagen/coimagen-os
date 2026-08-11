@@ -91,6 +91,9 @@ export interface Client {
   status: ClientStatus;
   /** @nullable */
   notes?: string | null;
+  isFounder: boolean;
+  /** @nullable */
+  founderNumber?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -134,6 +137,18 @@ export interface ClientUpdate {
   industry?: string;
   status?: ClientUpdateStatus;
   notes?: string;
+}
+
+export interface MarkClientFounderInput {
+  /** @minLength 1 */
+  packageName: string;
+}
+
+export interface MarkClientFounderResult {
+  client: Client;
+  emailSent: boolean;
+  /** @nullable */
+  emailError?: string | null;
 }
 
 export type ProjectStatus = typeof ProjectStatus[keyof typeof ProjectStatus];

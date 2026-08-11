@@ -167,6 +167,8 @@ export * from './listSubscriptionsParams';
 export * from './listTasksParams';
 export * from './listWorkflowsParams';
 export * from './logoutSuccess';
+export * from './markClientFounderInput';
+export * from './markClientFounderResult';
 export * from './mobileTokenExchangeRequest';
 export * from './mobileTokenExchangeSuccess';
 export * from './mrrDataPoint';

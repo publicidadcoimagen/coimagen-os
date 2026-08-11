@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useRoute } from "wouter";
 import {
   useGetClient,
+  useMarkClientFounder,
   useListProjects,
   useListClientAccess,
   useCreateClientAccess,
@@ -43,7 +44,7 @@ import { StatusBadge, PriorityBadge } from "@/components/status-badge";
 import {
   Building2, Mail, Phone, Calendar, Briefcase, Plus, Key, Eye, EyeOff,
   Pencil, Trash2, Globe, Shield, CheckCircle2, XCircle, Lock, ExternalLink,
-  Palette, Image, Link2, AlignLeft, Layers, Clock, StickyNote, Pin,
+  Palette, Image, Link2, AlignLeft, Layers, Clock, StickyNote, Pin, Crown,
 } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { Link } from "wouter";
@@ -168,11 +169,16 @@ export function ClientDetail() {
   const createNote = useCreateClientNote();
   const updateNote = useUpdateClientNote();
   const deleteNote = useDeleteClientNote();
+  const markFounder = useMarkClientFounder();
 
   /* ── Access state ── */
   const [accessModal, setAccessModal] = useState(false);
   const [editingAccess, setEditingAccess] = useState<(typeof emptyAccess & { id?: number }) | null>(null);
   const [accessForm, setAccessForm] = useState({ ...emptyAccess });
+
+  /* ── Founder state ── */
+  const [founderModal, setFounderModal] = useState(false);
+  const [founderPackageName, setFounderPackageName] = useState("");
 
   /* ── Brand state ── */
   const [brandForm, setBrandForm] = useState({
@@ -237,6 +243,29 @@ export function ClientDetail() {
   const startEditBrand = () => { setBrandForm({ logoUrl: brand?.logoUrl ?? "", brandColors: brand?.brandColors ?? "", fonts: brand?.fonts ?? "", brandNotes: brand?.brandNotes ?? "", websiteUrl: brand?.websiteUrl ?? "", facebookUrl: brand?.facebookUrl ?? "", instagramUrl: brand?.instagramUrl ?? "", googleBusinessUrl: brand?.googleBusinessUrl ?? "", youtubeUrl: brand?.youtubeUrl ?? "" }); setBrandEditing(true); };
   const saveBrand = () => { upsertBrand.mutate({ clientId: id, data: brandForm } as Parameters<typeof upsertBrand.mutate>[0], { onSuccess: () => { invalidateBrand(); setBrandEditing(false); } }); };
 
+  /* ── Founder handlers ── */
+  const submitFounder = () => {
+    if (!founderPackageName.trim()) return;
+    markFounder.mutate(
+      { id, data: { packageName: founderPackageName.trim() } },
+      {
+        onSuccess: (result) => {
+          qc.invalidateQueries({ queryKey: getGetClientQueryKey(id) });
+          setFounderModal(false);
+          setFounderPackageName("");
+          if (result.emailSent) {
+            toast({ title: `Marcado como Fundador #${result.client.founderNumber}`, description: "Correo de bienvenida enviado." });
+          } else {
+            toast({ title: `Marcado como Fundador #${result.client.founderNumber}`, description: `No se pudo enviar el correo: ${result.emailError}`, variant: "destructive" });
+          }
+        },
+        onError: (err) => {
+          toast({ title: "No se pudo marcar como Fundador", description: err instanceof Error ? err.message : String(err), variant: "destructive" });
+        },
+      },
+    );
+  };
+
   /* ── Onboarding handlers ── */
   const startEditOnboarding = () => { setOnboardingState({ hasLogo: onboarding?.hasLogo ?? false, hasWebsiteAccess: onboarding?.hasWebsiteAccess ?? false, hasDomainAccess: onboarding?.hasDomainAccess ?? false, hasHostingAccess: onboarding?.hasHostingAccess ?? false, hasFacebookAccess: onboarding?.hasFacebookAccess ?? false, hasInstagramAccess: onboarding?.hasInstagramAccess ?? false, hasGoogleBusinessAccess: onboarding?.hasGoogleBusinessAccess ?? false, hasWhatsappAccess: onboarding?.hasWhatsappAccess ?? false, hasBrandColors: onboarding?.hasBrandColors ?? false, hasBusinessInfo: onboarding?.hasBusinessInfo ?? false }); setOnboardingNotes(onboarding?.notes ?? ""); setOnboardingEditing(true); };
   const saveOnboarding = () => { upsertOnboarding.mutate({ clientId: id, data: { ...onboardingState, notes: onboardingNotes } } as Parameters<typeof upsertOnboarding.mutate>[0], { onSuccess: () => { invalidateOnboarding(); setOnboardingEditing(false); } }); };
@@ -289,8 +318,47 @@ export function ClientDetail() {
             {client.company || "Sin empresa registrada"}
           </p>
         </div>
-        <StatusBadge status={client.status} />
+        <div className="flex items-center gap-2">
+          {client.isFounder ? (
+            <Badge className="gap-1 bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/15">
+              <Crown className="h-3.5 w-3.5" />Fundador #{client.founderNumber}
+            </Badge>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => setFounderModal(true)}>
+              <Crown className="h-3.5 w-3.5 mr-1.5" />Marcar como Fundador
+            </Button>
+          )}
+          <StatusBadge status={client.status} />
+        </div>
       </div>
+
+      <Dialog open={founderModal} onOpenChange={setFounderModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Marcar a {client.name} como Fundador</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Se le asignará el siguiente número de Fundador disponible y se le enviará automáticamente el correo de bienvenida
+              (idioma según su registro de prospecto, español por defecto).
+            </p>
+            <div className="space-y-1.5">
+              <Label>Nombre del paquete</Label>
+              <Input
+                placeholder="Ej: Ecommerce, AI Business..."
+                value={founderPackageName}
+                onChange={(e) => setFounderPackageName(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFounderModal(false)}>Cancelar</Button>
+            <Button onClick={submitFounder} disabled={markFounder.isPending || !founderPackageName.trim()}>
+              {markFounder.isPending ? "Enviando..." : "Confirmar y enviar correo"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-muted-foreground">
         <div className="flex items-center gap-2"><Mail className="h-4 w-4" />{client.email || "—"}</div>

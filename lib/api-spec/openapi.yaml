@@ -249,6 +249,31 @@ paths:
         "404":
           description: Not found
 
+  /clients/{id}/mark-founder:
+    post:
+      operationId: markClientFounder
+      tags: [clients]
+      summary: Mark a client as a numbered Founder and send the founder welcome email
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarkClientFounderInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MarkClientFounderResult"
+        "400":
+          description: Already a Founder, or invalid body
+        "404":
+          description: Not found
+
   # ─── CLIENT ACCESS VAULT ───────────────────────────────────────────────────
   /clients/{clientId}/access:
     get:
@@ -3785,7 +3810,7 @@ components:
     # ── CLIENT ────────────────────────────────────────────────────────────────
     Client:
       type: object
-      required: [id, name, status, createdAt]
+      required: [id, name, status, isFounder, createdAt]
       properties:
         id: { type: integer }
         name: { type: string }
@@ -3795,6 +3820,8 @@ components:
         industry: { type: ["string", "null"] }
         status: { type: string, enum: [active, inactive, prospect] }
         notes: { type: ["string", "null"] }
+        isFounder: { type: boolean }
+        founderNumber: { type: ["integer", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     ClientInput:
@@ -3818,6 +3845,18 @@ components:
         industry: { type: string }
         status: { type: string, enum: [active, inactive, prospect] }
         notes: { type: string }
+    MarkClientFounderInput:
+      type: object
+      required: [packageName]
+      properties:
+        packageName: { type: string, minLength: 1 }
+    MarkClientFounderResult:
+      type: object
+      required: [client, emailSent]
+      properties:
+        client: { $ref: "#/components/schemas/Client" }
+        emailSent: { type: boolean }
+        emailError: { type: ["string", "null"] }
 
     # ── PROJECT ───────────────────────────────────────────────────────────────
     Project:

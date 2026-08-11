@@ -132,6 +132,8 @@ export const ListClientsResponseItem = zod.object({
   "industry": zod.string().nullish(),
   "status": zod.enum(['active', 'inactive', 'prospect']),
   "notes": zod.string().nullish(),
+  "isFounder": zod.boolean(),
+  "founderNumber": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -168,6 +170,8 @@ export const GetClientResponse = zod.object({
   "industry": zod.string().nullish(),
   "status": zod.enum(['active', 'inactive', 'prospect']),
   "notes": zod.string().nullish(),
+  "isFounder": zod.boolean(),
+  "founderNumber": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -199,6 +203,8 @@ export const UpdateClientResponse = zod.object({
   "industry": zod.string().nullish(),
   "status": zod.enum(['active', 'inactive', 'prospect']),
   "notes": zod.string().nullish(),
+  "isFounder": zod.boolean(),
+  "founderNumber": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -206,6 +212,40 @@ export const UpdateClientResponse = zod.object({
 
 export const DeleteClientParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Mark a client as a numbered Founder and send the founder welcome email
+ */
+export const MarkClientFounderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const MarkClientFounderBody = zod.object({
+  "packageName": zod.string().min(1)
+})
+
+export const MarkClientFounderResponse = zod.object({
+  "client": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "company": zod.string().nullish(),
+  "industry": zod.string().nullish(),
+  "status": zod.enum(['active', 'inactive', 'prospect']),
+  "notes": zod.string().nullish(),
+  "isFounder": zod.boolean(),
+  "founderNumber": zod.number().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+}),
+  "emailSent": zod.boolean(),
+  "emailError": zod.string().nullish()
 })
 
 
