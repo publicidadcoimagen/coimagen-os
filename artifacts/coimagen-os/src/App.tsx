@@ -211,6 +211,19 @@ function Router() {
       <Route path="/client/:slug/ai"        component={ClientAI} />
       <Route path="/client/:slug/profile"   component={ClientProfile} />
       <Route path="/client/:slug"           component={ClientDashboard} />
+      {/* Catch-all for any unmatched /client/:slug/* sub-path — without
+          this, an invalid sub-path (e.g. a typo, or a stale link into an
+          old page) falls through past this whole block into the OS
+          catch-all below, which renders the internal AppLayout/NotFound
+          shell. AuthGate lets that through for a cliente login too (its
+          gate is a startsWith(`/client/${ownSlug}`) prefix check, and an
+          invalid sub-path still starts with that prefix) — not a data
+          leak, but the internal chrome has no business rendering for a
+          cliente account on any path. `replace`, not push: same reasoning
+          as AuthGate's own redirect — this fires involuntarily. */}
+      <Route path="/client/:slug/*?">
+        {(params) => <Redirect to={`/client/${params.slug}`} replace />}
+      </Route>
 
       {/* ── All OS routes — wrapped in AppLayout ────────────────────────── */}
       <Route>

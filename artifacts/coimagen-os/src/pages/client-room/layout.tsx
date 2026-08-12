@@ -12,7 +12,7 @@ import {
   LayoutDashboard, FolderKanban, GitBranch, CheckSquare,
   FileSignature, Receipt, FileText, Calendar, MessageSquare,
   Bot, User, ArrowLeft, Building2, ChevronRight, ClipboardCheck, KeyRound,
-  ShoppingBag,
+  ShoppingBag, LogOut,
 } from "lucide-react";
 
 type Org = {
@@ -74,7 +74,7 @@ function NavItem({ href, icon: Icon, label, active }: {
 
 export function ClientRoomLayout({ slug, children }: { slug: string; children: ReactNode }) {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const isCliente = user?.role === "cliente";
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const { data: rawOrg } = useGetOrganization(slug, {
@@ -172,6 +172,14 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
           >
             <KeyRound className="h-3.5 w-3.5" />
             Cambiar contraseña
+          </Button>
+          <Button
+            variant="ghost" size="sm"
+            className="w-full justify-start gap-2 h-8 text-xs text-muted-foreground hover:text-foreground mt-1"
+            onClick={logout}
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            Cerrar sesión
           </Button>
         </div>
         )}
