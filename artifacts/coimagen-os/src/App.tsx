@@ -183,7 +183,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       );
     }
     if (!location.startsWith(`/client/${ownSlug}`)) {
-      return <Redirect to={`/client/${ownSlug}`} />;
+      // `replace`, not push: this redirect fires automatically (the user
+      // never chose to navigate here), so it must overwrite the disallowed
+      // entry rather than stack on top of it — otherwise every correction
+      // adds a new history entry and Back never actually leaves this loop.
+      return <Redirect to={`/client/${ownSlug}`} replace />;
     }
   }
 
