@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
@@ -7,10 +7,12 @@ import { useAuth } from "@workspace/better-auth-web";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
 import {
   LayoutDashboard, FolderKanban, GitBranch, CheckSquare,
   FileSignature, Receipt, FileText, Calendar, MessageSquare,
-  Bot, User, ArrowLeft, Building2, ChevronRight, ClipboardCheck,
+  Bot, User, ArrowLeft, Building2, ChevronRight, ClipboardCheck, KeyRound,
+  ShoppingBag,
 } from "lucide-react";
 
 type Org = {
@@ -31,13 +33,13 @@ const BASE_NAV_ITEMS = [
   { sub: "approvals",  label: "Aprobaciones", icon: CheckSquare },
 ];
 
-// Nav entries unlocked per enabledModules key (P-79). None of these have a
-// real page wired yet — "ecommerce" needs a real catalog/sales module
-// (Becky's case) and "autopublicador" needs a real content-calendar
-// integration, not a relabeled placeholder — so the map intentionally
-// starts empty. Enabling a module for a client today changes nothing in
-// the nav until its page ships; this is the seam where it plugs in.
-const MODULE_NAV_ITEMS: Record<string, { sub: string; label: string; icon: typeof LayoutDashboard }[]> = {};
+// Nav entries unlocked per enabledModules key (P-79). "ecommerce" now
+// points at the real Becky Beck catalog (migrated off its old standalone
+// staff-only page). "autopublicador" still needs a real content-calendar
+// integration, not a relabeled placeholder, so it stays unwired.
+const MODULE_NAV_ITEMS: Record<string, { sub: string; label: string; icon: typeof LayoutDashboard }[]> = {
+  ecommerce: [{ sub: "catalog", label: "Catálogo", icon: ShoppingBag }],
+};
 
 // Staff-only extras: scaffolded client-room pages not in the P-79 base
 // list. Still useful when staff previews a client room, hidden for actual
@@ -74,6 +76,7 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
   const [location] = useLocation();
   const { user } = useAuth();
   const isCliente = user?.role === "cliente";
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const { data: rawOrg } = useGetOrganization(slug, {
     query: { queryKey: getGetOrganizationQueryKey(slug) },
   });
@@ -131,9 +134,9 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
           ))}
         </nav>
 
-        {/* Footer — internal-OS links are staff-only; a cliente login has
-            nowhere else in the app to go, and the backend blocks those
-            routes for them anyway. */}
+        {/* Footer — internal-OS links are staff-only, since a cliente login
+            must never have a path back into the internal app (P-79). A
+            cliente login gets its own account actions here instead. */}
         {!isCliente && (
         <div className="p-3 border-t border-border/60">
           <Separator className="mb-3" />
@@ -153,6 +156,25 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
           )}
         </div>
         )}
+        {isCliente && (
+        <div className="p-3 border-t border-border/60">
+          <Separator className="mb-3" />
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 h-8 text-xs text-muted-foreground hover:text-foreground" asChild>
+            <Link href={`${base}/profile`}>
+              <Building2 className="h-3.5 w-3.5" />
+              Editar empresa
+            </Link>
+          </Button>
+          <Button
+            variant="ghost" size="sm"
+            className="w-full justify-start gap-2 h-8 text-xs text-muted-foreground hover:text-foreground mt-1"
+            onClick={() => setChangePasswordOpen(true)}
+          >
+            <KeyRound className="h-3.5 w-3.5" />
+            Cambiar contraseña
+          </Button>
+        </div>
+        )}
       </aside>
 
       {/* Main content */}
@@ -161,6 +183,10 @@ export function ClientRoomLayout({ slug, children }: { slug: string; children: R
           {children}
         </div>
       </main>
+
+      {isCliente && (
+        <ChangePasswordDialog open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
+      )}
     </div>
   );
 }
