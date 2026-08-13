@@ -90,13 +90,14 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
 
     // 4. Structured analysis — tries Anthropic first, falls back to Gemini
     // only if Anthropic has no credit loaded (see analyze.ts)
-    const { analysis, provider } = await generateDigitalDiagnosis(url, signals);
+    const { analysis, provider } = await generateDigitalDiagnosis(url, signals, language);
     const storedResult = { ...analysis, _meta: { aiProvider: provider } };
 
     // 5. Persist the diagnosis
     const hostname = new URL(url).hostname;
+    const diagnosisTitle = language === "en" ? `Digital Diagnostic — ${hostname}` : `Diagnóstico Digital — ${hostname}`;
     const [diagnosis] = await db.insert(diagnosesTable).values({
-      title: `Diagnóstico Digital — ${hostname}`,
+      title: diagnosisTitle,
       prospectId: prospect.id,
       status: "completed",
       type: "digital_diagnosis",

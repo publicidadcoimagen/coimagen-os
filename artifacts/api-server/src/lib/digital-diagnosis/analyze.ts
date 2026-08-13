@@ -42,13 +42,14 @@ export function isInsufficientCreditError(err: unknown): boolean {
 // — our scraper only reads the raw HTML response, before any JS runs.
 const LOW_CONTENT_THRESHOLD = 50;
 
-function buildPrompt(url: string, signals: ScrapedSignals): string {
+function buildPrompt(url: string, signals: ScrapedSignals, language: "es" | "en"): string {
   const possibleJsRenderedSite = signals.wordCount < LOW_CONTENT_THRESHOLD;
+  const languageName = language === "es" ? "español" : "English";
   const lowContentNote = possibleJsRenderedSite
     ? `\nNOTA IMPORTANTE: el análisis técnico solo leyó el HTML crudo de la página, sin ejecutar JavaScript. Con ${signals.wordCount} palabras detectadas, es muy probable que este sitio use un framework de renderizado del lado del cliente (React, Vue, Angular, etc.) cuyo contenido real no es visible en el HTML inicial — NO asumas que el sitio "no tiene contenido" o está vacío para un visitante humano. En los campos de "issues" y "readabilityNotes" relacionados a contenido, indica explícitamente esta incertidumbre (ej. "no pudimos verificar el contenido visible automáticamente, posible sitio con renderizado dinámico — se recomienda revisión manual") en vez de afirmar que el contenido no existe. Esto sí es un hallazgo real y accionable en sí mismo: si los buscadores tampoco ejecutan JavaScript al indexar, el sitio puede tener un problema real de SEO por esta misma razón — puedes mencionarlo como tarea prioritaria.\n`
     : "";
 
-  return `Eres un consultor de marketing digital analizando el sitio web de un negocio para generar un diagnóstico gratuito, en español, con un formato similar a un reporte tipo Seobility (meta info, calidad de contenido, estructura, enlaces, factores generales, y tareas priorizadas).
+  return `Eres un consultor de marketing digital analizando el sitio web de un negocio para generar un diagnóstico gratuito, en ${languageName}, con un formato similar a un reporte tipo Seobility (meta info, calidad de contenido, estructura, enlaces, factores generales, y tareas priorizadas).
 
 URL analizada: ${url}
 ${lowContentNote}
@@ -69,12 +70,12 @@ Texto visible extraído de la página (muestra, puede estar truncado):
 ${signals.textSample || "(no se pudo extraer texto visible)"}
 """
 
-Con base en estos datos, genera el diagnóstico estructurado. Usa los números técnicos exactos que te di arriba para los campos que los piden (no los inventes ni los cambies). Para los campos cualitativos (issues, readabilityNotes, prioritizedTasks, summary), analiza con criterio de negocio real: qué le falta a este sitio para generar más contactos/ventas. La lista de "prioritizedTasks" debe tener entre 3 y 6 tareas concretas y accionables, ordenadas por impacto. El "summary" debe ser 2-3 oraciones en español, directas, sin relleno.`;
+Con base en estos datos, genera el diagnóstico estructurado. Usa los números técnicos exactos que te di arriba para los campos que los piden (no los inventes ni los cambies). Para los campos cualitativos (issues, readabilityNotes, prioritizedTasks, summary), analiza con criterio de negocio real: qué le falta a este sitio para generar más contactos/ventas. La lista de "prioritizedTasks" debe tener entre 3 y 6 tareas concretas y accionables, ordenadas por impacto. El "summary" debe ser 2-3 oraciones, directas, sin relleno. IMPORTANTE: todo el texto que generes (issues, readabilityNotes, prioritizedTasks, summary) debe estar completamente en ${languageName}, sin mezclar idiomas.`;
 }
 
-export async function generateDigitalDiagnosis(url: string, signals: ScrapedSignals): Promise<DigitalDiagnosisGeneration> {
+export async function generateDigitalDiagnosis(url: string, signals: ScrapedSignals, language: "es" | "en" = "es"): Promise<DigitalDiagnosisGeneration> {
   const schema = digitalDiagnosisAnalysisSchema;
-  const prompt = buildPrompt(url, signals);
+  const prompt = buildPrompt(url, signals, language);
 
   try {
     const { object } = await generateObject({ model: getAnthropicModel(), schema, prompt });
