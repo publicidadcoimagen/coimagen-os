@@ -159,6 +159,7 @@ import type {
   ProjectUpdate,
   Proposal,
   ProposalInput,
+  ProposalPublicView,
   ProposalUpdate,
   Prospect,
   ProspectInput,
@@ -720,6 +721,153 @@ export function useGetPublicDigitalDiagnosis<TData = Awaited<ReturnType<typeof g
 
 
 
+
+export const getGetPublicProposalUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/proposals/${token}`
+}
+
+/**
+ * @summary Fetch a proposal by its public token (no auth required, powers correo 3/4's link)
+ */
+export const getPublicProposal = async (token: string, options?: RequestInit): Promise<ProposalPublicView> => {
+
+  return customFetch<ProposalPublicView>(getGetPublicProposalUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicProposalQueryKey = (token: string,) => {
+    return [
+    `/api/public/proposals/${token}`
+    ] as const;
+    }
+
+
+export const getGetPublicProposalQueryOptions = <TData = Awaited<ReturnType<typeof getPublicProposal>>, TError = ErrorType<void>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicProposal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicProposalQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicProposal>>> = ({ signal }) => getPublicProposal(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(token), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicProposal>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicProposalQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicProposal>>>
+export type GetPublicProposalQueryError = ErrorType<void>
+
+
+/**
+ * @summary Fetch a proposal by its public token (no auth required, powers correo 3/4's link)
+ */
+
+export function useGetPublicProposal<TData = Awaited<ReturnType<typeof getPublicProposal>>, TError = ErrorType<void>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicProposal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicProposalQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getApprovePublicProposalUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/proposals/${token}`
+}
+
+/**
+ * @summary Approve a proposal from its public page (no auth required)
+ */
+export const approvePublicProposal = async (token: string, options?: RequestInit): Promise<ProposalPublicView> => {
+
+  return customFetch<ProposalPublicView>(getApprovePublicProposalUrl(token),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getApprovePublicProposalMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvePublicProposal>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approvePublicProposal>>, TError,{token: string}, TContext> => {
+
+const mutationKey = ['approvePublicProposal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approvePublicProposal>>, {token: string}> = (props) => {
+          const {token} = props ?? {};
+
+          return  approvePublicProposal(token,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApprovePublicProposalMutationResult = NonNullable<Awaited<ReturnType<typeof approvePublicProposal>>>
+
+    export type ApprovePublicProposalMutationError = ErrorType<void>
+
+    /**
+ * @summary Approve a proposal from its public page (no auth required)
+ */
+export const useApprovePublicProposal = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvePublicProposal>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof approvePublicProposal>>,
+        TError,
+        {token: string},
+        TContext
+      > => {
+      return useMutation(getApprovePublicProposalMutationOptions(options));
+    }
 
 export const getGetPublicFoundersCountUrl = () => {
 

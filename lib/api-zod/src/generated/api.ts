@@ -123,6 +123,38 @@ export const GetPublicDigitalDiagnosisResponse = zod.object({
 
 
 /**
+ * @summary Fetch a proposal by its public token (no auth required, powers correo 3/4's link)
+ */
+export const GetPublicProposalParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const GetPublicProposalResponse = zod.object({
+  "title": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "amount": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.string().nullish()
+})
+
+
+/**
+ * @summary Approve a proposal from its public page (no auth required)
+ */
+export const ApprovePublicProposalParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const ApprovePublicProposalResponse = zod.object({
+  "title": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "amount": zod.number().nullish(),
+  "notes": zod.string().nullish(),
+  "validUntil": zod.string().nullish()
+})
+
+
+/**
  * @summary Live count of Founder clients and the fixed max (no auth required — powers the counter on coimagenmedia.com)
  */
 export const GetPublicFoundersCountResponse = zod.object({
@@ -1538,6 +1570,7 @@ export const ListProspectsResponseItem = zod.object({
   "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']),
   "source": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1555,7 +1588,8 @@ export const CreateProspectBody = zod.object({
   "industry": zod.string().optional(),
   "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']).default(createProspectBodyStatusDefault),
   "source": zod.string().optional(),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "clientId": zod.number().optional()
 })
 
 
@@ -1573,6 +1607,7 @@ export const GetProspectResponse = zod.object({
   "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']),
   "source": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1593,7 +1628,8 @@ export const UpdateProspectBody = zod.object({
   "industry": zod.string().optional(),
   "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']).optional(),
   "source": zod.string().optional(),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "clientId": zod.number().optional()
 })
 
 export const UpdateProspectResponse = zod.object({
@@ -1606,6 +1642,7 @@ export const UpdateProspectResponse = zod.object({
   "status": zod.enum(['lead', 'qualified', 'disqualified', 'converted']),
   "source": zod.string().nullish(),
   "notes": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1740,6 +1777,7 @@ export const ListProposalsResponseItem = zod.object({
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
+  "publicToken": zod.string().uuid().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1773,6 +1811,7 @@ export const GetProposalResponse = zod.object({
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
+  "publicToken": zod.string().uuid().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1804,6 +1843,7 @@ export const UpdateProposalResponse = zod.object({
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
+  "publicToken": zod.string().uuid().optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
