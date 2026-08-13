@@ -194,18 +194,36 @@ router.get("/public/digital-diagnosis/:token", async (req, res): Promise<void> =
     return;
   }
 
-  const [diagnosis] = await db.select().from(diagnosesTable).where(eq(diagnosesTable.publicToken, parsed.data.token)).limit(1);
-  if (!diagnosis) {
+  // Left-joined to prospects for prospect.language — the results page needs
+  // to know which language this specific diagnosis was generated in (see
+  // P-diagnosis-lang) so it can lock its own chrome to that language instead
+  // of following the site-wide ES/EN toggle, which would otherwise mismatch
+  // already-generated, non-regenerable AI content.
+  const [row] = await db
+    .select({
+      title: diagnosesTable.title,
+      status: diagnosesTable.status,
+      sourceUrl: diagnosesTable.sourceUrl,
+      result: diagnosesTable.result,
+      createdAt: diagnosesTable.createdAt,
+      prospectLanguage: prospectsTable.language,
+    })
+    .from(diagnosesTable)
+    .leftJoin(prospectsTable, eq(prospectsTable.id, diagnosesTable.prospectId))
+    .where(eq(diagnosesTable.publicToken, parsed.data.token))
+    .limit(1);
+  if (!row) {
     res.status(404).json({ error: "Diagnóstico no encontrado" });
     return;
   }
 
   res.json({
-    title: diagnosis.title,
-    status: diagnosis.status,
-    sourceUrl: diagnosis.sourceUrl,
-    result: diagnosis.result,
-    createdAt: diagnosis.createdAt.toISOString(),
+    title: row.title,
+    status: row.status,
+    sourceUrl: row.sourceUrl,
+    result: row.result,
+    createdAt: row.createdAt.toISOString(),
+    language: row.prospectLanguage ?? "es",
   });
 });
 
