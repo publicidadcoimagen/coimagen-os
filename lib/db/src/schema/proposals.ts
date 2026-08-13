@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, numeric } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, numeric, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { clientsTable } from "./clients";
@@ -13,6 +13,11 @@ export const proposalsTable = pgTable("proposals", {
   status: text("status").notNull().default("draft"),
   notes: text("notes"),
   validUntil: text("valid_until"),
+  // Opaque, non-sequential identifier for the public view/approve page
+  // (/propuesta/:publicToken) — same pattern as diagnosesTable.publicToken,
+  // so proposal ids can't be enumerated to browse other prospects' terms.
+  // Powers P-80's correo 3/4, which link here instead of a placeholder.
+  publicToken: uuid("public_token").notNull().defaultRandom().unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });

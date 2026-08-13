@@ -23,6 +23,8 @@ export interface Prospect {
   source?: string | null;
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  clientId?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

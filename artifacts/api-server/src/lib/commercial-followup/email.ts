@@ -100,42 +100,83 @@ const SUBJECTS: Record<number, Record<"es" | "en", string>> = {
   4: { es: "Tu propuesta vence pronto", en: "Your proposal expires soon" },
 };
 
-// PENDING: correo-3-propuesta / correo-4-urgencia (and their EN twins) both
-// hardcode a CTA to [LINK_PROPUESTA]/[LINK_APROBAR] — a per-prospect public
-// "view and approve your proposal" link. That page/token doesn't exist
-// anywhere in this codebase today: proposalsTable has no publicToken (unlike
-// diagnosesTable), and none of these 14 prospects has a proposal record at
-// all yet — they're still "lead" status. Stage 3 isn't due for any of them
-// for at least 3 more days (see eligibility.ts), so there's no time
-// pressure, but this needs a real decision — build the public proposal
-// link, or point the CTA somewhere else — before stage 3 can send anything
-// that isn't a broken link. Throwing here on purpose rather than guessing.
-function stage3Or4Body(_stage: 3 | 4, _name: string, _company: string, _lang: "es" | "en"): string {
-  throw new Error(
-    "correo 3/4 necesitan un link público de propuesta real ([LINK_PROPUESTA]/[LINK_APROBAR]) que hoy no existe en el backend — no se puede armar el CTA sin inventar una URL rota.",
-  );
+const PROPOSAL_PAGE_BASE_URL = "https://www.coimagenmedia.com/propuesta";
+
+// P-81 Fase A: correo 3/4 now build a real link — repository.ts only marks
+// a prospect due for stage 3/4 once a real proposal record exists for them
+// (staff creates it via POST /proposals), and passes its publicToken here.
+// The single link works for both stages: the public page itself has the
+// "Aprobar" action, same shape as diagnosesTable's public results page —
+// no separate [LINK_APROBAR] URL needed. Copy here is a first draft, not
+// yet reviewed the way stage 2's was (see stage2Body's approval note).
+function stage3Or4Body(stage: 3 | 4, name: string, company: string, lang: "es" | "en", proposalUrl: string): string {
+  const n = escapeHtml(name);
+  const c = escapeHtml(company);
+  const heading = stage === 3
+    ? (lang === "es" ? `${n}, tu propuesta para ${c} está lista` : `${n}, your proposal for ${c} is ready`)
+    : (lang === "es" ? `${n}, tu propuesta vence pronto` : `${n}, your proposal expires soon`);
+  const body = stage === 3
+    ? (lang === "es"
+      ? "Preparamos una propuesta a la medida de tu negocio, con el alcance y la inversión detallados. Puedes revisarla y aprobarla directamente desde el siguiente enlace."
+      : "We put together a proposal tailored to your business, with scope and investment detailed. You can review and approve it directly from the link below.")
+    : (lang === "es"
+      ? "Tu propuesta sigue disponible, pero está por vencer. Si quieres avanzar, este es el momento de revisarla y aprobarla."
+      : "Your proposal is still available, but it's about to expire. If you want to move forward, now's the time to review and approve it.");
+  const cta = lang === "es" ? "Ver mi propuesta →" : "See my proposal →";
+  const sign = lang === "es"
+    ? "Saludos,<br><span style=\"color:#c8c3dd;\">El equipo de Coimagen Media Agency</span>"
+    : "Best,<br><span style=\"color:#c8c3dd;\">The Coimagen Media Agency team</span>";
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f0a1e; padding:32px 0;">
+      <tr><td align="center">
+        <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #1a1235 0%, #241a42 100%); border-radius:16px; overflow:hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+          <tr><td style="padding:32px 40px 24px 40px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+              <td style="padding-right:10px;"><img src="https://www.coimagenmedia.com/logo-coimagen.png" alt="Coimagen Media" width="28" height="28" style="display:block; border-radius:6px;"></td>
+              <td><span style="color:#ffffff; font-size:18px; font-weight:700; letter-spacing:0.5px;">COIMAGEN <span style="color:#00cfff;">MEDIA</span></span></td>
+            </tr></table>
+          </td></tr>
+          <tr><td style="padding:36px 40px;">
+            <h1 style="color:#ffffff; font-size:22px; line-height:1.35; margin:0 0 20px 0; font-weight:600;">${heading}</h1>
+            <p style="color:#c8c3dd; font-size:15px; line-height:1.65; margin:0 0 28px 0;">${body}</p>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;">
+              <tr><td style="border-radius:8px; background-color:#00cfff;"><a href="${proposalUrl}" style="display:inline-block; padding:12px 24px; color:#06060f; font-size:14px; font-weight:700; text-decoration:none;">${cta}</a></td></tr>
+            </table>
+            <p style="color:#8f89a8; font-size:14px; margin:0;">${sign}</p>
+          </td></tr>
+          <tr><td style="padding:24px 40px; background-color:rgba(0,0,0,0.2); border-top:1px solid rgba(255,255,255,0.06);">
+            <p style="color:#5c5675; font-size:12px; margin:0; text-align:center;">Coimagen Media Agency · Tijuana / San Diego<br><a href="https://www.coimagenmedia.com" style="color:#00cfff; text-decoration:none;">coimagenmedia.com</a></p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>`;
 }
 
-function buildStageEmail(stage: number, name: string, company: string | null, lang: "es" | "en"): { subject: string; html: string } {
+function buildStageEmail(stage: number, name: string, company: string | null, lang: "es" | "en", proposalPublicToken: string | undefined): { subject: string; html: string } {
   const subject = SUBJECTS[stage]?.[lang] ?? SUBJECTS[2][lang];
 
   if (stage === 2) {
     return { subject, html: stage2Body(name, lang) };
   }
   if (stage === 3 || stage === 4) {
+    if (!proposalPublicToken) {
+      throw new Error(`Correo ${stage} necesita proposalPublicToken — repository.ts solo debería marcar esta etapa como "due" cuando ya existe una propuesta.`);
+    }
     const fallbackCompany = lang === "es" ? "tu negocio" : "your business";
-    return { subject, html: stage3Or4Body(stage, name, company ?? fallbackCompany, lang) };
+    const proposalUrl = `${PROPOSAL_PAGE_BASE_URL}/${proposalPublicToken}`;
+    return { subject, html: stage3Or4Body(stage, name, company ?? fallbackCompany, lang, proposalUrl) };
   }
   throw new Error(`Unknown commercial follow-up stage: ${stage}`);
 }
 
-export async function sendFollowupEmail(stage: number, name: string, email: string, company: string | null, lang: "es" | "en"): Promise<string> {
+export async function sendFollowupEmail(stage: number, name: string, email: string, company: string | null, lang: "es" | "en", proposalPublicToken?: string): Promise<string> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error("RESEND_API_KEY no está configurada");
   }
 
-  const { subject, html } = buildStageEmail(stage, name, company, lang);
+  const { subject, html } = buildStageEmail(stage, name, company, lang, proposalPublicToken);
   const resend = new Resend(apiKey);
 
   const { data, error } = await resend.emails.send({

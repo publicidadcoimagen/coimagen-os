@@ -21,6 +21,7 @@ export interface Proposal {
   notes?: string | null;
   /** @nullable */
   validUntil?: string | null;
+  publicToken?: string;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

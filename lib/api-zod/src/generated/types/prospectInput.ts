@@ -17,4 +17,5 @@ export interface ProspectInput {
   status?: ProspectInputStatus;
   source?: string;
   notes?: string;
+  clientId?: number;
 }
