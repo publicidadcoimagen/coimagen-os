@@ -108,6 +108,8 @@ describe("authMiddleware", () => {
       status: "active",
       forcePasswordReset: false,
       lastLogin: null,
+      clientId: null,
+      enabledModules: [],
     });
   });
 
@@ -131,6 +133,8 @@ describe("authMiddleware", () => {
       status: "active",
       forcePasswordReset: false,
       lastLogin: null,
+      clientId: null,
+      enabledModules: [],
     });
   });
 });
@@ -214,6 +218,8 @@ describe("GET /auth/user", () => {
       status: "active",
       forcePasswordReset: false,
       lastLogin: null,
+      clientId: null,
+      enabledModules: [],
     };
     const req = createMockRequest({
       isAuthenticated: () => true,
