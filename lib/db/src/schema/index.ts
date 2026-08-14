@@ -51,3 +51,4 @@ export * from "./integration-logs";
 export * from "./ai-executions";
 export * from "./email-events";
 export * from "./commercial-followups";
+export * from "./invoice-reminders";
