@@ -279,6 +279,60 @@ paths:
         "404":
           description: Not found
 
+  /public/invoices/{token}/fiscal-data:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: submitPublicInvoiceFiscalData
+      tags: [public]
+      summary: Client's RFC/razón social/constancia for THIS cuota (CASO 1) — must be submitted before create-paypal-order will run if requiresFiscalInvoice was checked.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FiscalDataBody"
+      responses:
+        "200":
+          description: Saved
+        "400":
+          description: Invalid data (missing field, or file isn't a PDF)
+        "404":
+          description: Not found
+
+  /public/invoices/{token}/subscription-fiscal-data:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: submitPublicSubscriptionFiscalData
+      tags: [public]
+      summary: Client's one-time fiscal choice for their recurring monthly plan (CASO 2) — finalizes the PayPal subscription (price includes 16% IVA if requested) and returns subscriptionApproveUrl.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionFiscalDataBody"
+      responses:
+        "200":
+          description: Subscription finalized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicePublicView"
+        "400":
+          description: Invalid data
+        "404":
+          description: Not found — no invoice, or no pending subscription for this proposal
+        "502":
+          description: PayPal error creating the subscription
+
   /public/founders/count:
     get:
       operationId: getPublicFoundersCount
@@ -1678,6 +1732,31 @@ paths:
           description: Deleted
         "404":
           description: Not found
+
+  /invoices/{id}/fiscal-document:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    post:
+      operationId: uploadInvoiceFiscalDocument
+      tags: [invoices]
+      summary: Staff uploads the real CFDI PDF once the accountant issues it (P-payments fiscal-docs) — automatically emails it to the client on success.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FiscalDocumentUploadBody"
+      responses:
+        "200":
+          description: Uploaded and emailed to the client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FiscalDocumentUploadResponse"
+        "404":
+          description: Not found
+        "409":
+          description: Invoice has no clientId/email or never required a fiscal invoice
 
   # ─── SUBSCRIPTIONS ─────────────────────────────────────────────────────────
   /subscriptions:
@@ -4490,7 +4569,7 @@ components:
 
     InvoicePublicView:
       type: object
-      required: [publicToken, label, amount, currency, status]
+      required: [publicToken, label, amount, currency, status, subscriptionPending]
       properties:
         publicToken: { type: string, format: uuid }
         label:       { type: string }
@@ -4498,10 +4577,53 @@ components:
         currency:    { type: string }
         status:      { type: string, enum: [draft, sent, paid, overdue, cancelled] }
         # Only set once this was the LAST unpaid installment for its
-        # proposal AND the recurring subscription has been created with
-        # PayPal (see webhooks-paypal.ts) — the client must click through
-        # this link to actually authorize the monthly charge.
+        # proposal, the client has answered the fiscal-invoice question for
+        # their recurring plan (see subscription-fiscal-data below), AND the
+        # subscription has been created with PayPal — the client must click
+        # through this link to actually authorize the monthly charge.
         subscriptionApproveUrl: { type: ["string", "null"] }
+        # True as soon as the last cuota is paid and there's a recurring
+        # plan to authorize, even before subscriptionApproveUrl exists —
+        # tells the client-facing page to show the fiscal-invoice
+        # mini-form (subscription-fiscal-data) rather than nothing at all.
+        subscriptionPending: { type: boolean }
+
+    FiscalDataBody:
+      type: object
+      required: [rfc, razonSocial, constanciaBase64, constanciaFileName]
+      properties:
+        rfc: { type: string }
+        razonSocial: { type: string }
+        # data:application/pdf;base64,... — validated server-side to reject
+        # anything that isn't actually a PDF.
+        constanciaBase64: { type: string }
+        constanciaFileName: { type: string }
+
+    SubscriptionFiscalDataBody:
+      type: object
+      required: [requiresFiscalInvoice]
+      properties:
+        requiresFiscalInvoice: { type: boolean }
+        # Required (validated server-side) only when requiresFiscalInvoice
+        # is true — omitted/ignored otherwise.
+        rfc: { type: string }
+        razonSocial: { type: string }
+        constanciaBase64: { type: string }
+        constanciaFileName: { type: string }
+
+    FiscalDocumentUploadBody:
+      type: object
+      required: [fileBase64, fileName]
+      properties:
+        fileBase64: { type: string }
+        fileName: { type: string }
+
+    FiscalDocumentUploadResponse:
+      type: object
+      required: [uploaded, emailedToClient]
+      properties:
+        uploaded: { type: boolean }
+        emailedToClient: { type: boolean }
 
     CreatePaypalOrderRequest:
       type: object
@@ -4575,7 +4697,7 @@ components:
     # ── INVOICE ───────────────────────────────────────────────────────────────
     Invoice:
       type: object
-      required: [id, number, amount, status, createdAt]
+      required: [id, number, amount, status, createdAt, requiresFiscalInvoice]
       properties:
         id: { type: integer }
         number: { type: string }
@@ -4588,6 +4710,7 @@ components:
         description: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
+        requiresFiscalInvoice: { type: boolean }
     InvoiceInput:
       type: object
       required: [number, amount]

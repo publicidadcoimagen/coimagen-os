@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, numeric } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, numeric, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { clientsTable } from "./clients";
@@ -36,6 +36,13 @@ export const subscriptionsTable = pgTable("subscriptions", {
   // /factura page rather than depending on PayPal's GET-subscription
   // response still including a fresh one post-creation.
   paypalApproveUrl: text("paypal_approve_url"),
+  // Client's own choice, made once on /factura/:token right before they
+  // click paypalApproveUrl — same never-automatic rule as
+  // invoices.requiresFiscalInvoice, but captured a single time here rather
+  // than per-cuota, since it drives every future monthly charge, not one
+  // specific payment. See client_fiscal_data for the RFC/razón
+  // social/constancia submitted alongside this.
+  requiresFiscalInvoice: boolean("requires_fiscal_invoice").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });

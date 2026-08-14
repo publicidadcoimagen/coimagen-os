@@ -15,4 +15,5 @@ export interface InvoicePublicView {
   status: InvoicePublicViewStatus;
   /** @nullable */
   subscriptionApproveUrl?: string | null;
+  subscriptionPending: boolean;
 }

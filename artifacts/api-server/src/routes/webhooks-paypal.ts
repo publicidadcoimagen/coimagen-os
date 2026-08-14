@@ -3,8 +3,50 @@ import { eq } from "drizzle-orm";
 import { db, invoicePaymentsTable, invoicesTable, subscriptionsTable, clientsTable } from "@workspace/db";
 import { verifyPaypalWebhookSignature } from "../lib/paypal/webhook-verify";
 import { handleInstallmentPaid } from "../lib/payment-schedule/on-installment-paid";
+import { applyFiscalInvoice } from "../lib/payment-schedule/generate";
 import { sendStaleSubscriptionAlertEmail } from "../lib/subscription-alerts/email";
+import { getInvoiceFiscalData, getClientFiscalData } from "../lib/fiscal-data/repository";
+import { sendFiscalInvoiceAlertEmail } from "../lib/fiscal-data/email";
+import { getFiscalDocument } from "../lib/fiscal-blobs";
 import { logger } from "../lib/logger";
+
+// Fires the staff fiscal-invoice alert for one captured payment — never
+// lets an email failure fail the webhook itself (PayPal would just retry
+// the whole event), only logs. Shared by both CASO 1 (per-cuota,
+// invoice_fiscal_data) and CASO 2 (monthly, client_fiscal_data) below.
+async function alertFiscalInvoiceRequested(params: {
+  invoiceId: number;
+  clientName: string;
+  label: string;
+  rfc: string;
+  razonSocial: string;
+  constanciaFileKey: string;
+  constanciaFileName: string;
+  amount: number;
+  ivaAmount: number;
+  currency: string;
+}): Promise<void> {
+  try {
+    const constanciaBuffer = await getFiscalDocument(params.constanciaFileKey);
+    if (!constanciaBuffer) {
+      logger.error({ invoiceId: params.invoiceId }, "No se encontró la constancia fiscal en el almacenamiento — no se pudo enviar la alerta");
+      return;
+    }
+    await sendFiscalInvoiceAlertEmail({
+      clientName: params.clientName,
+      label: params.label,
+      rfc: params.rfc,
+      razonSocial: params.razonSocial,
+      amount: params.amount,
+      ivaAmount: params.ivaAmount,
+      currency: params.currency,
+      constanciaBuffer,
+      constanciaFileName: params.constanciaFileName,
+    });
+  } catch (err) {
+    logger.error({ err, invoiceId: params.invoiceId }, "No se pudo enviar la alerta de factura fiscal solicitada");
+  }
+}
 
 interface PaypalEvent {
   event_type?: string;
@@ -37,6 +79,30 @@ async function handleCaptureCompleted(event: PaypalEvent): Promise<void> {
   await db.update(invoicePaymentsTable).set({ status: "captured", paypalCaptureId: captureId ?? null, capturedAt: new Date() })
     .where(eq(invoicePaymentsTable.id, payment.id));
   await handleInstallmentPaid(payment.invoiceId);
+
+  const [invoice] = await db.select().from(invoicesTable).where(eq(invoicesTable.id, payment.invoiceId));
+  if (!invoice?.requiresFiscalInvoice || !invoice.clientId) return;
+
+  const [fiscalData, client] = await Promise.all([
+    getInvoiceFiscalData(invoice.id),
+    db.select({ name: clientsTable.name }).from(clientsTable).where(eq(clientsTable.id, invoice.clientId)).then((r) => r[0]),
+  ]);
+  if (!fiscalData) {
+    logger.error({ invoiceId: invoice.id }, "requiresFiscalInvoice=true pero no hay invoice_fiscal_data — no se pudo alertar");
+    return;
+  }
+  await alertFiscalInvoiceRequested({
+    invoiceId: invoice.id,
+    clientName: client?.name ?? `cliente #${invoice.clientId}`,
+    label: invoice.installmentLabel ?? invoice.description ?? "Pago",
+    rfc: fiscalData.rfc,
+    razonSocial: fiscalData.razonSocial,
+    constanciaFileKey: fiscalData.constanciaFileKey,
+    constanciaFileName: fiscalData.constanciaFileName,
+    amount: parseFloat(payment.amount),
+    ivaAmount: parseFloat(payment.ivaAmount),
+    currency: payment.currency,
+  });
 }
 
 async function handleSubscriptionActivated(event: PaypalEvent): Promise<void> {
@@ -71,7 +137,13 @@ async function handleRecurringPaymentCompleted(event: PaypalEvent): Promise<void
     return;
   }
 
-  const amount = event.resource?.amount?.total ?? event.resource?.amount?.value ?? subscription.amount;
+  // Fiscal split derived from our own authoritative math (same
+  // applyFiscalInvoice used to price the PayPal subscription in the first
+  // place, see subscription-authorization.ts), not re-parsed from the
+  // webhook payload — avoids any float-precision drift between what PayPal
+  // reports and what we billed for.
+  const { baseAmount, ivaAmount, totalAmount } = applyFiscalInvoice(parseFloat(subscription.amount), subscription.requiresFiscalInvoice);
+  const amount = (event.resource?.amount?.total ?? event.resource?.amount?.value ?? totalAmount.toString());
   const currency = event.resource?.amount?.currency ?? event.resource?.amount?.currency_code ?? "MXN";
   const today = new Date().toISOString().slice(0, 10);
 
@@ -85,6 +157,7 @@ async function handleRecurringPaymentCompleted(event: PaypalEvent): Promise<void
     issuedDate: today,
     dueDate: today,
     description: `Cobro mensual — ${subscription.plan}`,
+    requiresFiscalInvoice: subscription.requiresFiscalInvoice,
   }).returning();
 
   await db.insert(invoicePaymentsTable).values({
@@ -92,9 +165,32 @@ async function handleRecurringPaymentCompleted(event: PaypalEvent): Promise<void
     paypalOrderId: saleId,
     status: "captured",
     amount,
-    ivaAmount: "0",
+    ivaAmount: subscription.requiresFiscalInvoice ? ivaAmount.toString() : "0",
     currency,
     capturedAt: new Date(),
+  });
+
+  if (!subscription.requiresFiscalInvoice) return;
+
+  const [fiscalData, client] = await Promise.all([
+    getClientFiscalData(subscription.clientId),
+    db.select({ name: clientsTable.name }).from(clientsTable).where(eq(clientsTable.id, subscription.clientId)).then((r) => r[0]),
+  ]);
+  if (!fiscalData) {
+    logger.error({ subscriptionId: subscription.id }, "requiresFiscalInvoice=true pero no hay client_fiscal_data — no se pudo alertar");
+    return;
+  }
+  await alertFiscalInvoiceRequested({
+    invoiceId: invoice.id,
+    clientName: client?.name ?? `cliente #${subscription.clientId}`,
+    label: `Mensualidad — ${subscription.plan}`,
+    rfc: fiscalData.rfc,
+    razonSocial: fiscalData.razonSocial,
+    constanciaFileKey: fiscalData.constanciaFileKey,
+    constanciaFileName: fiscalData.constanciaFileName,
+    amount: baseAmount + ivaAmount,
+    ivaAmount,
+    currency,
   });
 }
 

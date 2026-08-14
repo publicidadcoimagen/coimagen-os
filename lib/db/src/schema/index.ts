@@ -54,3 +54,6 @@ export * from "./commercial-followups";
 export * from "./invoice-reminders";
 export * from "./invoice-payments";
 export * from "./subscription-alerts";
+export * from "./invoice-fiscal-data";
+export * from "./client-fiscal-data";
+export * from "./invoice-fiscal-documents";

@@ -30,6 +30,7 @@ async function serializePublicView(p: Proposal) {
           currency: activeInvoice.currency,
           status: activeInvoice.status as "draft" | "sent" | "paid" | "overdue" | "cancelled",
           subscriptionApproveUrl: null, // only ever set on the LAST installment, see webhooks-paypal.ts
+          subscriptionPending: false, // ditto — only relevant once the deposit/milestone invoices are all paid
         }
       : null,
   };

@@ -25,4 +25,5 @@ export interface Invoice {
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
+  requiresFiscalInvoice: boolean;
 }

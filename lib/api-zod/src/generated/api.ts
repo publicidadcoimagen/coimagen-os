@@ -141,7 +141,8 @@ export const GetPublicProposalResponse = zod.object({
   "amount": zod.number(),
   "currency": zod.string(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
-  "subscriptionApproveUrl": zod.string().nullish()
+  "subscriptionApproveUrl": zod.string().nullish(),
+  "subscriptionPending": zod.boolean()
 }),zod.null()]).optional()
 })
 
@@ -165,7 +166,8 @@ export const ApprovePublicProposalResponse = zod.object({
   "amount": zod.number(),
   "currency": zod.string(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
-  "subscriptionApproveUrl": zod.string().nullish()
+  "subscriptionApproveUrl": zod.string().nullish(),
+  "subscriptionPending": zod.boolean()
 }),zod.null()]).optional()
 })
 
@@ -183,7 +185,8 @@ export const GetPublicInvoiceResponse = zod.object({
   "amount": zod.number(),
   "currency": zod.string(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
-  "subscriptionApproveUrl": zod.string().nullish()
+  "subscriptionApproveUrl": zod.string().nullish(),
+  "subscriptionPending": zod.boolean()
 })
 
 
@@ -219,6 +222,47 @@ export const CapturePublicInvoicePaypalOrderBody = zod.object({
 
 export const CapturePublicInvoicePaypalOrderResponse = zod.object({
   "status": zod.string()
+})
+
+
+/**
+ * @summary Client's RFC/razón social/constancia for THIS cuota (CASO 1) — must be submitted before create-paypal-order will run if requiresFiscalInvoice was checked.
+ */
+export const SubmitPublicInvoiceFiscalDataParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const SubmitPublicInvoiceFiscalDataBody = zod.object({
+  "rfc": zod.string(),
+  "razonSocial": zod.string(),
+  "constanciaBase64": zod.string(),
+  "constanciaFileName": zod.string()
+})
+
+
+/**
+ * @summary Client's one-time fiscal choice for their recurring monthly plan (CASO 2) — finalizes the PayPal subscription (price includes 16% IVA if requested) and returns subscriptionApproveUrl.
+ */
+export const SubmitPublicSubscriptionFiscalDataParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const SubmitPublicSubscriptionFiscalDataBody = zod.object({
+  "requiresFiscalInvoice": zod.boolean(),
+  "rfc": zod.string().optional(),
+  "razonSocial": zod.string().optional(),
+  "constanciaBase64": zod.string().optional(),
+  "constanciaFileName": zod.string().optional()
+})
+
+export const SubmitPublicSubscriptionFiscalDataResponse = zod.object({
+  "publicToken": zod.string().uuid(),
+  "label": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "subscriptionApproveUrl": zod.string().nullish(),
+  "subscriptionPending": zod.boolean()
 })
 
 
@@ -2031,7 +2075,8 @@ export const ListInvoicesResponseItem = zod.object({
   "dueDate": zod.string().nullish(),
   "description": zod.string().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string().nullish()
+  "updatedAt": zod.string().nullish(),
+  "requiresFiscalInvoice": zod.boolean()
 })
 export const ListInvoicesResponse = zod.array(ListInvoicesResponseItem)
 
@@ -2065,7 +2110,8 @@ export const GetInvoiceResponse = zod.object({
   "dueDate": zod.string().nullish(),
   "description": zod.string().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string().nullish()
+  "updatedAt": zod.string().nullish(),
+  "requiresFiscalInvoice": zod.boolean()
 })
 
 
@@ -2097,12 +2143,31 @@ export const UpdateInvoiceResponse = zod.object({
   "dueDate": zod.string().nullish(),
   "description": zod.string().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string().nullish()
+  "updatedAt": zod.string().nullish(),
+  "requiresFiscalInvoice": zod.boolean()
 })
 
 
 export const DeleteInvoiceParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Staff uploads the real CFDI PDF once the accountant issues it (P-payments fiscal-docs) — automatically emails it to the client on success.
+ */
+export const UploadInvoiceFiscalDocumentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UploadInvoiceFiscalDocumentBody = zod.object({
+  "fileBase64": zod.string(),
+  "fileName": zod.string()
+})
+
+export const UploadInvoiceFiscalDocumentResponse = zod.object({
+  "uploaded": zod.boolean(),
+  "emailedToClient": zod.boolean()
 })
 
 

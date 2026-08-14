@@ -1045,6 +1045,7 @@ export interface InvoicePublicView {
   status: InvoicePublicViewStatus;
   /** @nullable */
   subscriptionApproveUrl?: string | null;
+  subscriptionPending: boolean;
 }
 
 export interface ProposalPublicView {
@@ -1057,6 +1058,31 @@ export interface ProposalPublicView {
   /** @nullable */
   validUntil?: string | null;
   nextInvoice?: InvoicePublicView | null;
+}
+
+export interface FiscalDataBody {
+  rfc: string;
+  razonSocial: string;
+  constanciaBase64: string;
+  constanciaFileName: string;
+}
+
+export interface SubscriptionFiscalDataBody {
+  requiresFiscalInvoice: boolean;
+  rfc?: string;
+  razonSocial?: string;
+  constanciaBase64?: string;
+  constanciaFileName?: string;
+}
+
+export interface FiscalDocumentUploadBody {
+  fileBase64: string;
+  fileName: string;
+}
+
+export interface FiscalDocumentUploadResponse {
+  uploaded: boolean;
+  emailedToClient: boolean;
 }
 
 export interface CreatePaypalOrderRequest {
@@ -1232,6 +1258,7 @@ export interface Invoice {
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
+  requiresFiscalInvoice: boolean;
 }
 
 export type InvoiceInputStatus = typeof InvoiceInputStatus[keyof typeof InvoiceInputStatus];

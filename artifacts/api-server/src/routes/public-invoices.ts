@@ -7,8 +7,14 @@ import {
   CreatePublicInvoicePaypalOrderBody,
   CapturePublicInvoicePaypalOrderParams,
   CapturePublicInvoicePaypalOrderBody,
+  SubmitPublicInvoiceFiscalDataParams,
+  SubmitPublicInvoiceFiscalDataBody,
+  SubmitPublicSubscriptionFiscalDataParams,
+  SubmitPublicSubscriptionFiscalDataBody,
 } from "@workspace/api-zod";
 import { setRequiresFiscalInvoice } from "../lib/payment-schedule/repository";
+import { getInvoiceFiscalData, submitInvoiceFiscalData } from "../lib/fiscal-data/repository";
+import { findPendingSubscriptionForProposal, finalizeSubscriptionAuthorization } from "../lib/subscription-authorization";
 import { createOrder, captureOrder } from "../lib/paypal/orders";
 import { logger } from "../lib/logger";
 
@@ -21,12 +27,16 @@ async function findInvoiceByToken(token: string): Promise<Invoice | null> {
 
 async function serializeInvoicePublicView(invoice: Invoice) {
   let subscriptionApproveUrl: string | null = null;
+  let subscriptionPending = false;
   if (invoice.proposalId) {
     const [pending] = await db.select({ url: subscriptionsTable.paypalApproveUrl })
       .from(subscriptionsTable)
       .where(and(eq(subscriptionsTable.proposalId, invoice.proposalId), eq(subscriptionsTable.status, "pending_authorization")))
       .limit(1);
-    subscriptionApproveUrl = pending?.url ?? null;
+    if (pending) {
+      subscriptionPending = true;
+      subscriptionApproveUrl = pending.url ?? null;
+    }
   }
 
   return {
@@ -36,6 +46,7 @@ async function serializeInvoicePublicView(invoice: Invoice) {
     currency: invoice.currency,
     status: invoice.status as "draft" | "sent" | "paid" | "overdue" | "cancelled",
     subscriptionApproveUrl,
+    subscriptionPending,
   };
 }
 
@@ -49,6 +60,29 @@ router.get("/public/invoices/:token", async (req, res): Promise<void> => {
   if (!invoice || !invoice.publicToken) { res.status(404).json({ error: "Factura no encontrada" }); return; }
 
   res.json(await serializeInvoicePublicView(invoice));
+});
+
+// Client's RFC/razón social/constancia for THIS cuota (CASO 1) — must be
+// submitted before create-paypal-order below will run if
+// requiresFiscalInvoice is checked. Re-submitting overwrites the previous
+// value (upsert on invoiceId), so a client fixing a typo doesn't need a
+// separate edit endpoint.
+router.post("/public/invoices/:token/fiscal-data", async (req, res): Promise<void> => {
+  const parsedParams = SubmitPublicInvoiceFiscalDataParams.safeParse(req.params);
+  if (!parsedParams.success) { res.status(400).json({ error: parsedParams.error.message }); return; }
+  const parsedBody = SubmitPublicInvoiceFiscalDataBody.safeParse(req.body);
+  if (!parsedBody.success) { res.status(400).json({ error: parsedBody.error.message }); return; }
+
+  const invoice = await findInvoiceByToken(parsedParams.data.token);
+  if (!invoice) { res.status(404).json({ error: "Factura no encontrada" }); return; }
+  if (invoice.status === "paid") { res.status(409).json({ error: "Esta cuota ya fue pagada" }); return; }
+
+  try {
+    await submitInvoiceFiscalData(invoice.id, parsedBody.data);
+    res.json({ saved: true });
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : "No se pudo guardar la constancia" });
+  }
 });
 
 // Creates the PayPal order server-side — amount is always computed from
@@ -66,6 +100,17 @@ router.post("/public/invoices/:token/create-paypal-order", async (req, res): Pro
   if (invoice.status !== "sent" && invoice.status !== "overdue") {
     res.status(409).json({ error: "Esta cuota todavía no está disponible para pago" });
     return;
+  }
+
+  // Blocking rule: a client who checked "necesito factura fiscal" cannot
+  // pay until RFC/razón social/constancia are on file for THIS invoice —
+  // without them there's nothing to hand the accountant afterward.
+  if (parsedBody.data.requiresFiscalInvoice) {
+    const fiscalData = await getInvoiceFiscalData(invoice.id);
+    if (!fiscalData) {
+      res.status(400).json({ error: "Completa tus datos fiscales (RFC, razón social y constancia) antes de pagar." });
+      return;
+    }
   }
 
   await setRequiresFiscalInvoice(invoice.id, parsedBody.data.requiresFiscalInvoice);
@@ -109,6 +154,39 @@ router.post("/public/invoices/:token/capture-paypal-order", async (req, res): Pr
     logger.error({ err, invoiceId: invoice.id, paypalOrderId: parsedBody.data.paypalOrderId }, "No se pudo capturar la orden de PayPal");
     res.status(502).json({ error: "No se pudo confirmar el pago con PayPal. Si el cargo se realizó, se reflejará en unos momentos." });
   }
+});
+
+// Client's one-time fiscal choice for their recurring monthly plan (CASO
+// 2) — only reachable once the last cuota is paid and a pending_authorization
+// subscription exists for this proposal (subscriptionPending on the GET
+// response). Finalizes the actual PayPal subscription (price includes 16%
+// IVA if requested) and returns the updated view with subscriptionApproveUrl.
+router.post("/public/invoices/:token/subscription-fiscal-data", async (req, res): Promise<void> => {
+  const parsedParams = SubmitPublicSubscriptionFiscalDataParams.safeParse(req.params);
+  if (!parsedParams.success) { res.status(400).json({ error: parsedParams.error.message }); return; }
+  const parsedBody = SubmitPublicSubscriptionFiscalDataBody.safeParse(req.body);
+  if (!parsedBody.success) { res.status(400).json({ error: parsedBody.error.message }); return; }
+
+  const invoice = await findInvoiceByToken(parsedParams.data.token);
+  if (!invoice || !invoice.proposalId) { res.status(404).json({ error: "Factura no encontrada" }); return; }
+
+  const pending = await findPendingSubscriptionForProposal(invoice.proposalId);
+  if (!pending) { res.status(404).json({ error: "No hay una suscripción pendiente de autorización para esta propuesta" }); return; }
+
+  try {
+    await finalizeSubscriptionAuthorization(pending.id, parsedBody.data);
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("obligatorios")) {
+      res.status(400).json({ error: err.message });
+      return;
+    }
+    logger.error({ err, subscriptionId: pending.id }, "No se pudo finalizar la autorización de la suscripción");
+    res.status(502).json({ error: "No se pudo iniciar la autorización con PayPal. Intenta de nuevo." });
+    return;
+  }
+
+  const updatedInvoice = await findInvoiceByToken(parsedParams.data.token);
+  res.json(await serializeInvoicePublicView(updatedInvoice!));
 });
 
 export default router;

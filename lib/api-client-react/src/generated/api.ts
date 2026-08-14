@@ -106,6 +106,9 @@ import type {
   DirectorAssignClient,
   DirectorAssignProject,
   DirectorUpdate,
+  FiscalDataBody,
+  FiscalDocumentUploadBody,
+  FiscalDocumentUploadResponse,
   HealthStatus,
   Idea,
   IdeaCreate,
@@ -181,6 +184,7 @@ import type {
   SmartOnboardingUpdate,
   StatusCount,
   Subscription,
+  SubscriptionFiscalDataBody,
   SubscriptionInput,
   SubscriptionUpdate,
   SystemCredentialInput,
@@ -1093,6 +1097,150 @@ export const useCapturePublicInvoicePaypalOrder = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCapturePublicInvoicePaypalOrderMutationOptions(options));
+    }
+
+export const getSubmitPublicInvoiceFiscalDataUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invoices/${token}/fiscal-data`
+}
+
+/**
+ * @summary Client's RFC/razón social/constancia for THIS cuota (CASO 1) — must be submitted before create-paypal-order will run if requiresFiscalInvoice was checked.
+ */
+export const submitPublicInvoiceFiscalData = async (token: string,
+    fiscalDataBody: FiscalDataBody, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getSubmitPublicInvoiceFiscalDataUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      fiscalDataBody,)
+  }
+);}
+
+
+
+
+export const getSubmitPublicInvoiceFiscalDataMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPublicInvoiceFiscalData>>, TError,{token: string;data: BodyType<FiscalDataBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitPublicInvoiceFiscalData>>, TError,{token: string;data: BodyType<FiscalDataBody>}, TContext> => {
+
+const mutationKey = ['submitPublicInvoiceFiscalData'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitPublicInvoiceFiscalData>>, {token: string;data: BodyType<FiscalDataBody>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  submitPublicInvoiceFiscalData(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitPublicInvoiceFiscalDataMutationResult = NonNullable<Awaited<ReturnType<typeof submitPublicInvoiceFiscalData>>>
+    export type SubmitPublicInvoiceFiscalDataMutationBody = BodyType<FiscalDataBody>
+    export type SubmitPublicInvoiceFiscalDataMutationError = ErrorType<void>
+
+    /**
+ * @summary Client's RFC/razón social/constancia for THIS cuota (CASO 1) — must be submitted before create-paypal-order will run if requiresFiscalInvoice was checked.
+ */
+export const useSubmitPublicInvoiceFiscalData = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPublicInvoiceFiscalData>>, TError,{token: string;data: BodyType<FiscalDataBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitPublicInvoiceFiscalData>>,
+        TError,
+        {token: string;data: BodyType<FiscalDataBody>},
+        TContext
+      > => {
+      return useMutation(getSubmitPublicInvoiceFiscalDataMutationOptions(options));
+    }
+
+export const getSubmitPublicSubscriptionFiscalDataUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invoices/${token}/subscription-fiscal-data`
+}
+
+/**
+ * @summary Client's one-time fiscal choice for their recurring monthly plan (CASO 2) — finalizes the PayPal subscription (price includes 16% IVA if requested) and returns subscriptionApproveUrl.
+ */
+export const submitPublicSubscriptionFiscalData = async (token: string,
+    subscriptionFiscalDataBody: SubscriptionFiscalDataBody, options?: RequestInit): Promise<InvoicePublicView> => {
+
+  return customFetch<InvoicePublicView>(getSubmitPublicSubscriptionFiscalDataUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      subscriptionFiscalDataBody,)
+  }
+);}
+
+
+
+
+export const getSubmitPublicSubscriptionFiscalDataMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPublicSubscriptionFiscalData>>, TError,{token: string;data: BodyType<SubscriptionFiscalDataBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitPublicSubscriptionFiscalData>>, TError,{token: string;data: BodyType<SubscriptionFiscalDataBody>}, TContext> => {
+
+const mutationKey = ['submitPublicSubscriptionFiscalData'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitPublicSubscriptionFiscalData>>, {token: string;data: BodyType<SubscriptionFiscalDataBody>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  submitPublicSubscriptionFiscalData(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitPublicSubscriptionFiscalDataMutationResult = NonNullable<Awaited<ReturnType<typeof submitPublicSubscriptionFiscalData>>>
+    export type SubmitPublicSubscriptionFiscalDataMutationBody = BodyType<SubscriptionFiscalDataBody>
+    export type SubmitPublicSubscriptionFiscalDataMutationError = ErrorType<void>
+
+    /**
+ * @summary Client's one-time fiscal choice for their recurring monthly plan (CASO 2) — finalizes the PayPal subscription (price includes 16% IVA if requested) and returns subscriptionApproveUrl.
+ */
+export const useSubmitPublicSubscriptionFiscalData = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitPublicSubscriptionFiscalData>>, TError,{token: string;data: BodyType<SubscriptionFiscalDataBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitPublicSubscriptionFiscalData>>,
+        TError,
+        {token: string;data: BodyType<SubscriptionFiscalDataBody>},
+        TContext
+      > => {
+      return useMutation(getSubmitPublicSubscriptionFiscalDataMutationOptions(options));
     }
 
 export const getGetPublicFoundersCountUrl = () => {
@@ -7421,6 +7569,78 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteInvoiceMutationOptions(options));
+    }
+
+export const getUploadInvoiceFiscalDocumentUrl = (id: number,) => {
+
+
+
+
+  return `/api/invoices/${id}/fiscal-document`
+}
+
+/**
+ * @summary Staff uploads the real CFDI PDF once the accountant issues it (P-payments fiscal-docs) — automatically emails it to the client on success.
+ */
+export const uploadInvoiceFiscalDocument = async (id: number,
+    fiscalDocumentUploadBody: FiscalDocumentUploadBody, options?: RequestInit): Promise<FiscalDocumentUploadResponse> => {
+
+  return customFetch<FiscalDocumentUploadResponse>(getUploadInvoiceFiscalDocumentUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      fiscalDocumentUploadBody,)
+  }
+);}
+
+
+
+
+export const getUploadInvoiceFiscalDocumentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadInvoiceFiscalDocument>>, TError,{id: number;data: BodyType<FiscalDocumentUploadBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uploadInvoiceFiscalDocument>>, TError,{id: number;data: BodyType<FiscalDocumentUploadBody>}, TContext> => {
+
+const mutationKey = ['uploadInvoiceFiscalDocument'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadInvoiceFiscalDocument>>, {id: number;data: BodyType<FiscalDocumentUploadBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  uploadInvoiceFiscalDocument(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UploadInvoiceFiscalDocumentMutationResult = NonNullable<Awaited<ReturnType<typeof uploadInvoiceFiscalDocument>>>
+    export type UploadInvoiceFiscalDocumentMutationBody = BodyType<FiscalDocumentUploadBody>
+    export type UploadInvoiceFiscalDocumentMutationError = ErrorType<void>
+
+    /**
+ * @summary Staff uploads the real CFDI PDF once the accountant issues it (P-payments fiscal-docs) — automatically emails it to the client on success.
+ */
+export const useUploadInvoiceFiscalDocument = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uploadInvoiceFiscalDocument>>, TError,{id: number;data: BodyType<FiscalDocumentUploadBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uploadInvoiceFiscalDocument>>,
+        TError,
+        {id: number;data: BodyType<FiscalDocumentUploadBody>},
+        TContext
+      > => {
+      return useMutation(getUploadInvoiceFiscalDocumentMutationOptions(options));
     }
 
 export const getListSubscriptionsUrl = (params?: ListSubscriptionsParams,) => {
