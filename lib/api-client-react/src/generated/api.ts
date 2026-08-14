@@ -52,6 +52,8 @@ import type {
   Bug,
   BugCreate,
   BugUpdate,
+  CapturePaypalOrderRequest,
+  CapturePaypalOrderResponse,
   ChangePasswordRequest,
   ChangePasswordSuccess,
   Client,
@@ -88,6 +90,8 @@ import type {
   CostInput,
   CostSummary,
   CostUpdate,
+  CreatePaypalOrderRequest,
+  CreatePaypalOrderResponse,
   DailySprint,
   DailySprintCreate,
   DailySprintUpdate,
@@ -117,6 +121,7 @@ import type {
   IntegrationUpdate,
   Invoice,
   InvoiceInput,
+  InvoicePublicView,
   InvoiceUpdate,
   ListApprovalsParams,
   ListAuditLogsParams,
@@ -808,7 +813,7 @@ export const getApprovePublicProposalUrl = (token: string,) => {
 }
 
 /**
- * @summary Approve a proposal from its public page (no auth required)
+ * @summary Approve a proposal from its public page (no auth required). On first approval, generates the payment-schedule invoices (P-payments) — the response's nextInvoice is the deposit cuota to pay right away.
  */
 export const approvePublicProposal = async (token: string, options?: RequestInit): Promise<ProposalPublicView> => {
 
@@ -856,7 +861,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type ApprovePublicProposalMutationError = ErrorType<void>
 
     /**
- * @summary Approve a proposal from its public page (no auth required)
+ * @summary Approve a proposal from its public page (no auth required). On first approval, generates the payment-schedule invoices (P-payments) — the response's nextInvoice is the deposit cuota to pay right away.
  */
 export const useApprovePublicProposal = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approvePublicProposal>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -867,6 +872,227 @@ export const useApprovePublicProposal = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getApprovePublicProposalMutationOptions(options));
+    }
+
+export const getGetPublicInvoiceUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invoices/${token}`
+}
+
+/**
+ * @summary Fetch an invoice (payment-schedule cuota) by its public token (no auth required, powers /factura/:token)
+ */
+export const getPublicInvoice = async (token: string, options?: RequestInit): Promise<InvoicePublicView> => {
+
+  return customFetch<InvoicePublicView>(getGetPublicInvoiceUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicInvoiceQueryKey = (token: string,) => {
+    return [
+    `/api/public/invoices/${token}`
+    ] as const;
+    }
+
+
+export const getGetPublicInvoiceQueryOptions = <TData = Awaited<ReturnType<typeof getPublicInvoice>>, TError = ErrorType<void>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicInvoice>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicInvoiceQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicInvoice>>> = ({ signal }) => getPublicInvoice(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(token), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicInvoice>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicInvoiceQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicInvoice>>>
+export type GetPublicInvoiceQueryError = ErrorType<void>
+
+
+/**
+ * @summary Fetch an invoice (payment-schedule cuota) by its public token (no auth required, powers /factura/:token)
+ */
+
+export function useGetPublicInvoice<TData = Awaited<ReturnType<typeof getPublicInvoice>>, TError = ErrorType<void>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicInvoice>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicInvoiceQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreatePublicInvoicePaypalOrderUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invoices/${token}/create-paypal-order`
+}
+
+/**
+ * @summary Create a PayPal order for this cuota. Amount is computed entirely server-side (base amount + 16% IVA if requiresFiscalInvoice) — never trusts a client-supplied amount.
+ */
+export const createPublicInvoicePaypalOrder = async (token: string,
+    createPaypalOrderRequest: CreatePaypalOrderRequest, options?: RequestInit): Promise<CreatePaypalOrderResponse> => {
+
+  return customFetch<CreatePaypalOrderResponse>(getCreatePublicInvoicePaypalOrderUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createPaypalOrderRequest,)
+  }
+);}
+
+
+
+
+export const getCreatePublicInvoicePaypalOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CreatePaypalOrderRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CreatePaypalOrderRequest>}, TContext> => {
+
+const mutationKey = ['createPublicInvoicePaypalOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPublicInvoicePaypalOrder>>, {token: string;data: BodyType<CreatePaypalOrderRequest>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  createPublicInvoicePaypalOrder(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePublicInvoicePaypalOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createPublicInvoicePaypalOrder>>>
+    export type CreatePublicInvoicePaypalOrderMutationBody = BodyType<CreatePaypalOrderRequest>
+    export type CreatePublicInvoicePaypalOrderMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a PayPal order for this cuota. Amount is computed entirely server-side (base amount + 16% IVA if requiresFiscalInvoice) — never trusts a client-supplied amount.
+ */
+export const useCreatePublicInvoicePaypalOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CreatePaypalOrderRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPublicInvoicePaypalOrder>>,
+        TError,
+        {token: string;data: BodyType<CreatePaypalOrderRequest>},
+        TContext
+      > => {
+      return useMutation(getCreatePublicInvoicePaypalOrderMutationOptions(options));
+    }
+
+export const getCapturePublicInvoicePaypalOrderUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invoices/${token}/capture-paypal-order`
+}
+
+/**
+ * @summary Synchronous capture call for optimistic UI feedback only — does NOT mark the invoice paid itself. The PAYMENT.CAPTURE.COMPLETED webhook is the durable source of truth for that; the frontend should poll GET /public/invoices/{token} afterward.
+ */
+export const capturePublicInvoicePaypalOrder = async (token: string,
+    capturePaypalOrderRequest: CapturePaypalOrderRequest, options?: RequestInit): Promise<CapturePaypalOrderResponse> => {
+
+  return customFetch<CapturePaypalOrderResponse>(getCapturePublicInvoicePaypalOrderUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      capturePaypalOrderRequest,)
+  }
+);}
+
+
+
+
+export const getCapturePublicInvoicePaypalOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof capturePublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CapturePaypalOrderRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof capturePublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CapturePaypalOrderRequest>}, TContext> => {
+
+const mutationKey = ['capturePublicInvoicePaypalOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof capturePublicInvoicePaypalOrder>>, {token: string;data: BodyType<CapturePaypalOrderRequest>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  capturePublicInvoicePaypalOrder(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CapturePublicInvoicePaypalOrderMutationResult = NonNullable<Awaited<ReturnType<typeof capturePublicInvoicePaypalOrder>>>
+    export type CapturePublicInvoicePaypalOrderMutationBody = BodyType<CapturePaypalOrderRequest>
+    export type CapturePublicInvoicePaypalOrderMutationError = ErrorType<void>
+
+    /**
+ * @summary Synchronous capture call for optimistic UI feedback only — does NOT mark the invoice paid itself. The PAYMENT.CAPTURE.COMPLETED webhook is the durable source of truth for that; the frontend should poll GET /public/invoices/{token} afterward.
+ */
+export const useCapturePublicInvoicePaypalOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof capturePublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CapturePaypalOrderRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof capturePublicInvoicePaypalOrder>>,
+        TError,
+        {token: string;data: BodyType<CapturePaypalOrderRequest>},
+        TContext
+      > => {
+      return useMutation(getCapturePublicInvoicePaypalOrderMutationOptions(options));
     }
 
 export const getGetPublicFoundersCountUrl = () => {

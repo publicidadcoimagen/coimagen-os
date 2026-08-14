@@ -192,7 +192,7 @@ paths:
     post:
       operationId: approvePublicProposal
       tags: [public]
-      summary: Approve a proposal from its public page (no auth required)
+      summary: Approve a proposal from its public page (no auth required). On first approval, generates the payment-schedule invoices (P-payments) — the response's nextInvoice is the deposit cuota to pay right away.
       responses:
         "200":
           description: Approved
@@ -204,6 +204,80 @@ paths:
           description: Not found
         "409":
           description: Proposal is already in a terminal state
+
+  /public/invoices/{token}:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getPublicInvoice
+      tags: [public]
+      summary: Fetch an invoice (payment-schedule cuota) by its public token (no auth required, powers /factura/:token)
+      responses:
+        "200":
+          description: Invoice found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicePublicView"
+        "404":
+          description: Not found
+
+  /public/invoices/{token}/create-paypal-order:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: createPublicInvoicePaypalOrder
+      tags: [public]
+      summary: Create a PayPal order for this cuota. Amount is computed entirely server-side (base amount + 16% IVA if requiresFiscalInvoice) — never trusts a client-supplied amount.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaypalOrderRequest"
+      responses:
+        "200":
+          description: PayPal order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatePaypalOrderResponse"
+        "404":
+          description: Not found
+        "409":
+          description: Invoice already paid, or not yet payable (still draft)
+
+  /public/invoices/{token}/capture-paypal-order:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: capturePublicInvoicePaypalOrder
+      tags: [public]
+      summary: Synchronous capture call for optimistic UI feedback only — does NOT mark the invoice paid itself. The PAYMENT.CAPTURE.COMPLETED webhook is the durable source of truth for that; the frontend should poll GET /public/invoices/{token} afterward.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CapturePaypalOrderRequest"
+      responses:
+        "200":
+          description: Capture attempted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CapturePaypalOrderResponse"
+        "404":
+          description: Not found
 
   /public/founders/count:
     get:
@@ -4402,11 +4476,61 @@ components:
       type: object
       required: [title, status]
       properties:
-        title:      { type: string }
-        status:     { type: string, enum: [draft, sent, accepted, rejected] }
-        amount:     { type: ["number", "null"] }
-        notes:      { type: ["string", "null"] }
-        validUntil: { type: ["string", "null"] }
+        title:       { type: string }
+        status:      { type: string, enum: [draft, sent, accepted, rejected] }
+        amount:      { type: ["number", "null"] }
+        notes:       { type: ["string", "null"] }
+        validUntil:  { type: ["string", "null"] }
+        # Populated once the proposal is accepted — the deposit cuota to pay
+        # right away, rendered inline on the same /propuesta/:token page.
+        # Null while still draft/sent, and null again if the proposal has no
+        # clientId/amount (can't generate invoices — see
+        # payment-schedule/repository.ts's createInstallmentInvoices).
+        nextInvoice: { oneOf: [{ $ref: "#/components/schemas/InvoicePublicView" }, { type: "null" }] }
+
+    InvoicePublicView:
+      type: object
+      required: [publicToken, label, amount, currency, status]
+      properties:
+        publicToken: { type: string, format: uuid }
+        label:       { type: string }
+        amount:      { type: number }
+        currency:    { type: string }
+        status:      { type: string, enum: [draft, sent, paid, overdue, cancelled] }
+        # Only set once this was the LAST unpaid installment for its
+        # proposal AND the recurring subscription has been created with
+        # PayPal (see webhooks-paypal.ts) — the client must click through
+        # this link to actually authorize the monthly charge.
+        subscriptionApproveUrl: { type: ["string", "null"] }
+
+    CreatePaypalOrderRequest:
+      type: object
+      required: [requiresFiscalInvoice]
+      properties:
+        # Client's own explicit choice for THIS charge — never automatic,
+        # never inferred. See invoices.requiresFiscalInvoice schema comment.
+        requiresFiscalInvoice: { type: boolean }
+
+    CreatePaypalOrderResponse:
+      type: object
+      required: [paypalOrderId, totalAmount, ivaAmount, currency]
+      properties:
+        paypalOrderId: { type: string }
+        totalAmount:   { type: number }
+        ivaAmount:     { type: number }
+        currency:      { type: string }
+
+    CapturePaypalOrderRequest:
+      type: object
+      required: [paypalOrderId]
+      properties:
+        paypalOrderId: { type: string }
+
+    CapturePaypalOrderResponse:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
 
     # ── APPROVAL ──────────────────────────────────────────────────────────────
     Approval:

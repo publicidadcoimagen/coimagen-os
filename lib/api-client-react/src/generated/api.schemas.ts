@@ -1026,6 +1026,27 @@ export const ProposalPublicViewStatus = {
   rejected: 'rejected',
 } as const;
 
+export type InvoicePublicViewStatus = typeof InvoicePublicViewStatus[keyof typeof InvoicePublicViewStatus];
+
+
+export const InvoicePublicViewStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  paid: 'paid',
+  overdue: 'overdue',
+  cancelled: 'cancelled',
+} as const;
+
+export interface InvoicePublicView {
+  publicToken: string;
+  label: string;
+  amount: number;
+  currency: string;
+  status: InvoicePublicViewStatus;
+  /** @nullable */
+  subscriptionApproveUrl?: string | null;
+}
+
 export interface ProposalPublicView {
   title: string;
   status: ProposalPublicViewStatus;
@@ -1035,6 +1056,26 @@ export interface ProposalPublicView {
   notes?: string | null;
   /** @nullable */
   validUntil?: string | null;
+  nextInvoice?: InvoicePublicView | null;
+}
+
+export interface CreatePaypalOrderRequest {
+  requiresFiscalInvoice: boolean;
+}
+
+export interface CreatePaypalOrderResponse {
+  paypalOrderId: string;
+  totalAmount: number;
+  ivaAmount: number;
+  currency: string;
+}
+
+export interface CapturePaypalOrderRequest {
+  paypalOrderId: string;
+}
+
+export interface CapturePaypalOrderResponse {
+  status: string;
 }
 
 export type ApprovalType = typeof ApprovalType[keyof typeof ApprovalType];

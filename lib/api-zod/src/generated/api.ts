@@ -134,12 +134,20 @@ export const GetPublicProposalResponse = zod.object({
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "amount": zod.number().nullish(),
   "notes": zod.string().nullish(),
-  "validUntil": zod.string().nullish()
+  "validUntil": zod.string().nullish(),
+  "nextInvoice": zod.union([zod.object({
+  "publicToken": zod.string().uuid(),
+  "label": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "subscriptionApproveUrl": zod.string().nullish()
+}),zod.null()]).optional()
 })
 
 
 /**
- * @summary Approve a proposal from its public page (no auth required)
+ * @summary Approve a proposal from its public page (no auth required). On first approval, generates the payment-schedule invoices (P-payments) — the response's nextInvoice is the deposit cuota to pay right away.
  */
 export const ApprovePublicProposalParams = zod.object({
   "token": zod.coerce.string().uuid()
@@ -150,7 +158,67 @@ export const ApprovePublicProposalResponse = zod.object({
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "amount": zod.number().nullish(),
   "notes": zod.string().nullish(),
-  "validUntil": zod.string().nullish()
+  "validUntil": zod.string().nullish(),
+  "nextInvoice": zod.union([zod.object({
+  "publicToken": zod.string().uuid(),
+  "label": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "subscriptionApproveUrl": zod.string().nullish()
+}),zod.null()]).optional()
+})
+
+
+/**
+ * @summary Fetch an invoice (payment-schedule cuota) by its public token (no auth required, powers /factura/:token)
+ */
+export const GetPublicInvoiceParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const GetPublicInvoiceResponse = zod.object({
+  "publicToken": zod.string().uuid(),
+  "label": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "subscriptionApproveUrl": zod.string().nullish()
+})
+
+
+/**
+ * @summary Create a PayPal order for this cuota. Amount is computed entirely server-side (base amount + 16% IVA if requiresFiscalInvoice) — never trusts a client-supplied amount.
+ */
+export const CreatePublicInvoicePaypalOrderParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const CreatePublicInvoicePaypalOrderBody = zod.object({
+  "requiresFiscalInvoice": zod.boolean()
+})
+
+export const CreatePublicInvoicePaypalOrderResponse = zod.object({
+  "paypalOrderId": zod.string(),
+  "totalAmount": zod.number(),
+  "ivaAmount": zod.number(),
+  "currency": zod.string()
+})
+
+
+/**
+ * @summary Synchronous capture call for optimistic UI feedback only — does NOT mark the invoice paid itself. The PAYMENT.CAPTURE.COMPLETED webhook is the durable source of truth for that; the frontend should poll GET /public/invoices/{token} afterward.
+ */
+export const CapturePublicInvoicePaypalOrderParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const CapturePublicInvoicePaypalOrderBody = zod.object({
+  "paypalOrderId": zod.string()
+})
+
+export const CapturePublicInvoicePaypalOrderResponse = zod.object({
+  "status": zod.string()
 })
 
 

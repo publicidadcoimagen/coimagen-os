@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { InvoicePublicView } from './invoicePublicView';
 import type { ProposalPublicViewStatus } from './proposalPublicViewStatus';
 
 export interface ProposalPublicView {
@@ -16,4 +17,5 @@ export interface ProposalPublicView {
   notes?: string | null;
   /** @nullable */
   validUntil?: string | null;
+  nextInvoice?: InvoicePublicView | null;
 }

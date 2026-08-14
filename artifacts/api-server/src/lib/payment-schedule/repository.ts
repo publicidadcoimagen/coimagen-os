@@ -1,0 +1,78 @@
+import { eq, and, asc } from "drizzle-orm";
+import { db, invoicesTable, type Invoice, type Proposal } from "@workspace/db";
+import { generateInstallments } from "./generate";
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Generates the invoice installments for a just-approved proposal —
+// deposit only starts as "sent" (payable right away); milestone/final
+// stay "draft" (not shown/payable) until the previous one is paid, see
+// advanceNextInstallment. Invoice numbers are traceable back to the
+// proposal: "P{proposalId}-{n}".
+export async function createInstallmentInvoices(proposal: Proposal): Promise<Invoice[]> {
+  if (!proposal.amount) {
+    throw new Error(`No se pueden generar cuotas: la propuesta ${proposal.id} no tiene amount`);
+  }
+  if (!proposal.clientId) {
+    throw new Error(`No se pueden generar cuotas: la propuesta ${proposal.id} no tiene clientId`);
+  }
+
+  const plan = proposal.paymentPlan === "large" ? "large" : "standard";
+  const installments = generateInstallments(parseFloat(proposal.amount), plan);
+  const today = todayIso();
+
+  const rows = await db.insert(invoicesTable).values(
+    installments.map((installment, i) => ({
+      number: `P${proposal.id}-${i + 1}`,
+      clientId: proposal.clientId,
+      amount: installment.amount.toString(),
+      status: i === 0 ? "sent" : "draft",
+      issuedDate: i === 0 ? today : null,
+      dueDate: i === 0 ? today : null,
+      description: `${proposal.title} — ${installment.label}`,
+      proposalId: proposal.id,
+      installmentLabel: installment.label,
+      currency: proposal.currency,
+    })),
+  ).returning();
+
+  return rows;
+}
+
+// Client's explicit "necesito factura fiscal" choice for THIS cuota, set
+// right before the PayPal order is created — never automatic, never
+// inferred from anything else.
+export async function setRequiresFiscalInvoice(invoiceId: number, requiresFiscalInvoice: boolean): Promise<void> {
+  await db.update(invoicesTable).set({ requiresFiscalInvoice, updatedAt: new Date() }).where(eq(invoicesTable.id, invoiceId));
+}
+
+export async function markInvoicePaid(invoiceId: number): Promise<void> {
+  await db.update(invoicesTable).set({ status: "paid", updatedAt: new Date() }).where(eq(invoicesTable.id, invoiceId));
+}
+
+// The next "draft" cuota for this proposal (large-plan only — standard
+// plans have nothing left to advance after the deposit's pair), flipped to
+// "sent" so it becomes visible/payable on its own /factura/:token page.
+export async function advanceNextInstallment(proposalId: number): Promise<Invoice | null> {
+  const [next] = await db.select().from(invoicesTable)
+    .where(and(eq(invoicesTable.proposalId, proposalId), eq(invoicesTable.status, "draft")))
+    .orderBy(asc(invoicesTable.id))
+    .limit(1);
+  if (!next) return null;
+
+  const today = todayIso();
+  const [updated] = await db.update(invoicesTable)
+    .set({ status: "sent", issuedDate: today, dueDate: today, updatedAt: new Date() })
+    .where(eq(invoicesTable.id, next.id))
+    .returning();
+  return updated;
+}
+
+// True once every installment generated for this proposal is paid — the
+// trigger for creating the recurring subscription.
+export async function allInstallmentsPaid(proposalId: number): Promise<boolean> {
+  const rows = await db.select({ status: invoicesTable.status }).from(invoicesTable).where(eq(invoicesTable.proposalId, proposalId));
+  return rows.length > 0 && rows.every((r) => r.status === "paid");
+}
