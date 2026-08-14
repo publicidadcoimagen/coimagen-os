@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
+import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
 
 const rawPort = process.env["PORT"];
 
@@ -24,4 +25,5 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
   registerCommercialFollowupCron();
+  registerInvoiceRemindersCron();
 });

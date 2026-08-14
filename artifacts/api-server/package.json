@@ -8,7 +8,7 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps --env-file-if-exists=.env ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "sh -c 'export DATABASE_URL=postgres://unused:unused@localhost:5432/unused SESSION_SECRET=test-secret-not-for-real-use; tsx --test test/auth-flow.test.ts test/auth-config.test.ts test/digital-diagnosis-provider-fallback.test.ts test/digital-diagnosis-scrape.test.ts test/webhooks-resend.test.ts test/webhooks-jotform.test.ts test/social-autopublisher.test.ts test/commercial-followup-eligibility.test.ts'"
+    "test": "sh -c 'export DATABASE_URL=postgres://unused:unused@localhost:5432/unused SESSION_SECRET=test-secret-not-for-real-use; tsx --test test/auth-flow.test.ts test/auth-config.test.ts test/digital-diagnosis-provider-fallback.test.ts test/digital-diagnosis-scrape.test.ts test/webhooks-resend.test.ts test/webhooks-jotform.test.ts test/social-autopublisher.test.ts test/commercial-followup-eligibility.test.ts test/invoice-reminders-eligibility.test.ts'"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.87",
