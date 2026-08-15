@@ -2,6 +2,7 @@ import { Resend } from "resend";
 
 const FROM_ADDRESS = "Coimagen Media Agency <info@coimagenmedia.com>";
 const TEAM_ADDRESS = "info@coimagenmedia.com";
+const ACCOUNTANT_ADDRESS = "contaapp.cdmx@gmail.com";
 
 function wrapEmailHtml(bodyHtml: string): string {
   return `<!DOCTYPE html>
@@ -36,10 +37,10 @@ interface FiscalAlertInput {
   constanciaFileName: string;
 }
 
-// Internal alert to Coimagen staff once a payment that requested a Mexican
-// fiscal invoice actually captured — Camila forwards this (RFC, razón
-// social, monto+IVA, constancia adjunta) to her accountant to issue the
-// real CFDI outside this system. Fired once per captured payment (each
+// Alert sent directly to the accountant (Camila CC'd) once a payment that
+// requested a Mexican fiscal invoice actually captured — carries RFC, razón
+// social, monto+IVA, and the constancia attached, so the accountant can issue
+// the real CFDI outside this system. Fired once per captured payment (each
 // cuota independently for CASO 1, once per month for CASO 2's recurring
 // charges) — never batched across payments.
 export async function sendFiscalInvoiceAlertEmail(input: FiscalAlertInput): Promise<string> {
@@ -84,7 +85,8 @@ export async function sendFiscalInvoiceAlertEmail(input: FiscalAlertInput): Prom
   const resend = new Resend(apiKey);
   const { data, error } = await resend.emails.send({
     from: FROM_ADDRESS,
-    to: TEAM_ADDRESS,
+    to: ACCOUNTANT_ADDRESS,
+    cc: TEAM_ADDRESS,
     replyTo: TEAM_ADDRESS,
     subject: `🧾 Factura fiscal solicitada — ${input.clientName}`,
     html: wrapEmailHtml(html),
