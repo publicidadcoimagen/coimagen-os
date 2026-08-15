@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, invoicesTable, invoicePaymentsTable, subscriptionsTable, type Invoice } from "@workspace/db";
+import { db, invoicesTable, invoicePaymentsTable, subscriptionsTable, clientsTable, type Invoice } from "@workspace/db";
 import {
   GetPublicInvoiceParams,
   CreatePublicInvoicePaypalOrderParams,
@@ -11,10 +11,14 @@ import {
   SubmitPublicInvoiceFiscalDataBody,
   SubmitPublicSubscriptionFiscalDataParams,
   SubmitPublicSubscriptionFiscalDataBody,
+  DeclinePublicInvoiceParams,
 } from "@workspace/api-zod";
-import { setRequiresFiscalInvoice } from "../lib/payment-schedule/repository";
+import { setRequiresFiscalInvoice, findActivePaymentAttempt } from "../lib/payment-schedule/repository";
+import { applyRecoveryDiscount } from "../lib/payment-schedule/generate";
 import { getInvoiceFiscalData, submitInvoiceFiscalData } from "../lib/fiscal-data/repository";
 import { findPendingSubscriptionForProposal, finalizeSubscriptionAuthorization } from "../lib/subscription-authorization";
+import { invoiceHasActiveDiscount, isDeclined, recordDeclineIfNew } from "../lib/payment-recovery/repository";
+import { sendDeclineNotifiedStaffEmail } from "../lib/payment-recovery/email";
 import { createOrder, captureOrder } from "../lib/paypal/orders";
 import { logger } from "../lib/logger";
 
@@ -39,14 +43,21 @@ async function serializeInvoicePublicView(invoice: Invoice) {
     }
   }
 
+  const discountApplied = await invoiceHasActiveDiscount(invoice.id);
+
   return {
     publicToken: invoice.publicToken!,
     label: invoice.installmentLabel ?? invoice.description ?? "Pago",
-    amount: parseFloat(invoice.amount),
+    // Already the discounted price when discountApplied is true — the
+    // client never sees a different number here than what they'd actually
+    // be charged (see lib/paypal/orders.ts's createOrder, same discount
+    // resolved the same way).
+    amount: applyRecoveryDiscount(parseFloat(invoice.amount), discountApplied),
     currency: invoice.currency,
     status: invoice.status as "draft" | "sent" | "paid" | "overdue" | "cancelled",
     subscriptionApproveUrl,
     subscriptionPending,
+    discountApplied,
   };
 }
 
@@ -85,6 +96,38 @@ router.post("/public/invoices/:token/fiscal-data", async (req, res): Promise<voi
   }
 });
 
+// Client explicitly says "ya no quiero continuar" (payment-recovery flow,
+// reached from a confirmation PAGE the reminder_24h email links to — never
+// acts from the raw email link itself). Purely informational: doesn't touch
+// invoices.status, doesn't cancel anything in PayPal (a "created"/never-
+// approved order just expires there on its own, see
+// payment-schedule/eligibility.ts) — just records the decision and alerts
+// staff. Idempotent: a repeat call returns the same recorded state, does
+// not error or send a second staff alert.
+router.post("/public/invoices/:token/decline", async (req, res): Promise<void> => {
+  const parsedParams = DeclinePublicInvoiceParams.safeParse(req.params);
+  if (!parsedParams.success) { res.status(400).json({ error: parsedParams.error.message }); return; }
+
+  const invoice = await findInvoiceByToken(parsedParams.data.token);
+  if (!invoice) { res.status(404).json({ error: "Factura no encontrada" }); return; }
+  if (invoice.status === "paid") { res.status(409).json({ error: "Esta cuota ya fue pagada" }); return; }
+
+  if (!(await isDeclined(invoice.id))) {
+    let emailId: string | null = null;
+    if (invoice.clientId) {
+      const [client] = await db.select({ name: clientsTable.name }).from(clientsTable).where(eq(clientsTable.id, invoice.clientId));
+      try {
+        emailId = await sendDeclineNotifiedStaffEmail(invoice, client?.name ?? `cliente #${invoice.clientId}`);
+      } catch (err) {
+        logger.error({ err, invoiceId: invoice.id }, "No se pudo enviar el aviso interno de factura declinada");
+      }
+    }
+    await recordDeclineIfNew(invoice.id, emailId);
+  }
+
+  res.json(await serializeInvoicePublicView(invoice));
+});
+
 // Creates the PayPal order server-side — amount is always computed from
 // the invoice's own stored amount + the client's requiresFiscalInvoice
 // choice made right now, never from anything the client could tamper with.
@@ -102,6 +145,17 @@ router.post("/public/invoices/:token/create-paypal-order", async (req, res): Pro
     return;
   }
 
+  // Double-payment guard: a webhook confirmation that's still slow (see
+  // PaymentBox.tsx's pollUntilPaid) can make the frontend show the PayPal
+  // button again for a cuota that already has an order in flight. Block a
+  // second order server-side while the first one is still genuinely
+  // pending — see findActivePaymentAttempt for what "still pending" means.
+  const activePayment = await findActivePaymentAttempt(invoice.id);
+  if (activePayment) {
+    res.status(409).json({ error: "Ya hay un pago en proceso para esta cuota. Espera unos minutos a que se confirme antes de intentar de nuevo." });
+    return;
+  }
+
   // Blocking rule: a client who checked "necesito factura fiscal" cannot
   // pay until RFC/razón social/constancia are on file for THIS invoice —
   // without them there's nothing to hand the accountant afterward.
@@ -116,7 +170,8 @@ router.post("/public/invoices/:token/create-paypal-order", async (req, res): Pro
   await setRequiresFiscalInvoice(invoice.id, parsedBody.data.requiresFiscalInvoice);
 
   try {
-    const order = await createOrder(invoice, parsedBody.data.requiresFiscalInvoice);
+    const discountApplied = await invoiceHasActiveDiscount(invoice.id);
+    const order = await createOrder(invoice, parsedBody.data.requiresFiscalInvoice, discountApplied);
     await db.insert(invoicePaymentsTable).values({
       invoiceId: invoice.id,
       paypalOrderId: order.paypalOrderId,

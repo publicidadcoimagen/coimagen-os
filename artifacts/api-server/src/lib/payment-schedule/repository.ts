@@ -1,6 +1,13 @@
-import { eq, and, asc } from "drizzle-orm";
-import { db, invoicesTable, type Invoice, type Proposal } from "@workspace/db";
+import { eq, and, asc, inArray } from "drizzle-orm";
+import { db, invoicesTable, invoicePaymentsTable, type Invoice, type Proposal } from "@workspace/db";
 import { generateInstallments } from "./generate";
+import { isPaymentAttemptStillActive } from "./eligibility";
+
+// "created"/"approved" are the two invoice_payments states between order
+// creation and capture — a real payment attempt in flight. "captured" is
+// resolved (paid), "failed"/"refunded" are resolved (not paid, but not
+// blocking either) — see eligibility.ts for why age matters too.
+const ACTIVE_PAYMENT_STATUSES = ["created", "approved"] as const;
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
@@ -75,4 +82,17 @@ export async function advanceNextInstallment(proposalId: number): Promise<Invoic
 export async function allInstallmentsPaid(proposalId: number): Promise<boolean> {
   const rows = await db.select({ status: invoicesTable.status }).from(invoicesTable).where(eq(invoicesTable.proposalId, proposalId));
   return rows.length > 0 && rows.every((r) => r.status === "paid");
+}
+
+// Guards against a double payment: while a genuinely in-flight PayPal order
+// exists for this invoice (created/approved, not yet captured, and not old
+// enough to have expired on PayPal's own side — see eligibility.ts),
+// create-paypal-order must refuse to create a second one. This is checked
+// server-side, not just in the frontend, because the frontend's PayPal
+// button re-appearing after a slow webhook is exactly the scenario this
+// guards against — an easily-skippable frontend-only check wouldn't help.
+export async function findActivePaymentAttempt(invoiceId: number, now = new Date()) {
+  const rows = await db.select().from(invoicePaymentsTable)
+    .where(and(eq(invoicePaymentsTable.invoiceId, invoiceId), inArray(invoicePaymentsTable.status, ACTIVE_PAYMENT_STATUSES)));
+  return rows.find((row) => isPaymentAttemptStillActive(row.createdAt, now)) ?? null;
 }

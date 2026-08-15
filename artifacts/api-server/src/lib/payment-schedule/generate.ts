@@ -75,3 +75,17 @@ export function applyFiscalInvoice(baseAmount: number, requiresFiscalInvoice: bo
   const ivaAmount = round2(baseAmount * IVA_RATE);
   return { baseAmount, ivaAmount, totalAmount: round2(baseAmount + ivaAmount) };
 }
+
+// Payment-recovery win-back discount (lib/payment-recovery/) — a flat 10%
+// off once a 30d/60d reactivation email has ever gone out for this invoice.
+// Applied to the BASE amount, before applyFiscalInvoice — a client who also
+// wants a fiscal invoice pays 16% IVA on the already-discounted price, not
+// on the original one. Deliberately takes a plain boolean, not a DB lookup:
+// the caller (lib/payment-recovery/repository.ts's invoiceHasActiveDiscount)
+// resolves whether the discount applies, this function only ever does the
+// arithmetic — same separation as applyFiscalInvoice above.
+const RECOVERY_DISCOUNT_RATE = 0.10;
+
+export function applyRecoveryDiscount(baseAmount: number, discountApplied: boolean): number {
+  return discountApplied ? round2(baseAmount * (1 - RECOVERY_DISCOUNT_RATE)) : baseAmount;
+}

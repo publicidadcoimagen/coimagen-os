@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { generateInstallments, applyFiscalInvoice } from "../src/lib/payment-schedule/generate";
+import { generateInstallments, applyFiscalInvoice, applyRecoveryDiscount } from "../src/lib/payment-schedule/generate";
 
 describe("generateInstallments", () => {
   test("standard plan (50/50) splits an even amount exactly", () => {
@@ -57,5 +57,26 @@ describe("applyFiscalInvoice", () => {
     const mxn = applyFiscalInvoice(500, true);
     const usd = applyFiscalInvoice(500, true);
     assert.deepEqual(mxn, usd);
+  });
+});
+
+describe("applyRecoveryDiscount", () => {
+  test("no discount applied — amount unchanged", () => {
+    assert.equal(applyRecoveryDiscount(1000, false), 1000);
+  });
+
+  test("discount applied — flat 10% off", () => {
+    assert.equal(applyRecoveryDiscount(1000, true), 900);
+  });
+
+  test("rounds to 2 decimals correctly for an odd amount", () => {
+    assert.equal(applyRecoveryDiscount(333.33, true), 300.0);
+  });
+
+  test("stacks correctly with fiscal IVA when both apply — 10% off first, then 16% IVA on the discounted base, never the other order", () => {
+    const discounted = applyRecoveryDiscount(1000, true);
+    assert.equal(discounted, 900);
+    const withIva = applyFiscalInvoice(discounted, true);
+    assert.deepEqual(withIva, { baseAmount: 900, ivaAmount: 144, totalAmount: 1044 });
   });
 });

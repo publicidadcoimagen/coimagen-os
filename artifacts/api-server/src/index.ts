@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
 import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
 import { registerSubscriptionAlertsCron } from "./lib/subscription-alerts/scheduler";
+import { registerPaymentRecoveryCron } from "./lib/payment-recovery/scheduler";
 
 const rawPort = process.env["PORT"];
 
@@ -28,4 +29,5 @@ app.listen(port, (err) => {
   registerCommercialFollowupCron();
   registerInvoiceRemindersCron();
   registerSubscriptionAlertsCron();
+  registerPaymentRecoveryCron();
 });

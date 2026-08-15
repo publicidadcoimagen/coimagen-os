@@ -142,7 +142,8 @@ export const GetPublicProposalResponse = zod.object({
   "currency": zod.string(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "subscriptionApproveUrl": zod.string().nullish(),
-  "subscriptionPending": zod.boolean()
+  "subscriptionPending": zod.boolean(),
+  "discountApplied": zod.boolean()
 }),zod.null()]).optional()
 })
 
@@ -167,7 +168,8 @@ export const ApprovePublicProposalResponse = zod.object({
   "currency": zod.string(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "subscriptionApproveUrl": zod.string().nullish(),
-  "subscriptionPending": zod.boolean()
+  "subscriptionPending": zod.boolean(),
+  "discountApplied": zod.boolean()
 }),zod.null()]).optional()
 })
 
@@ -186,7 +188,8 @@ export const GetPublicInvoiceResponse = zod.object({
   "currency": zod.string(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "subscriptionApproveUrl": zod.string().nullish(),
-  "subscriptionPending": zod.boolean()
+  "subscriptionPending": zod.boolean(),
+  "discountApplied": zod.boolean()
 })
 
 
@@ -241,6 +244,25 @@ export const SubmitPublicInvoiceFiscalDataBody = zod.object({
 
 
 /**
+ * @summary Client explicitly says they don't want to continue with this cuota (payment-recovery flow). Purely informational — does not touch PayPal, does not cancel anything there's nothing to cancel. Records the decision and alerts staff by email. Idempotent — declining an already-declined invoice just returns its current state.
+ */
+export const DeclinePublicInvoiceParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const DeclinePublicInvoiceResponse = zod.object({
+  "publicToken": zod.string().uuid(),
+  "label": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "subscriptionApproveUrl": zod.string().nullish(),
+  "subscriptionPending": zod.boolean(),
+  "discountApplied": zod.boolean()
+})
+
+
+/**
  * @summary Client's one-time fiscal choice for their recurring monthly plan (CASO 2) — finalizes the PayPal subscription (price includes 16% IVA if requested) and returns subscriptionApproveUrl.
  */
 export const SubmitPublicSubscriptionFiscalDataParams = zod.object({
@@ -262,7 +284,8 @@ export const SubmitPublicSubscriptionFiscalDataResponse = zod.object({
   "currency": zod.string(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "subscriptionApproveUrl": zod.string().nullish(),
-  "subscriptionPending": zod.boolean()
+  "subscriptionPending": zod.boolean(),
+  "discountApplied": zod.boolean()
 })
 
 

@@ -303,6 +303,28 @@ paths:
         "404":
           description: Not found
 
+  /public/invoices/{token}/decline:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: declinePublicInvoice
+      tags: [public]
+      summary: Client explicitly says they don't want to continue with this cuota (payment-recovery flow). Purely informational — does not touch PayPal, does not cancel anything there's nothing to cancel. Records the decision and alerts staff by email. Idempotent — declining an already-declined invoice just returns its current state.
+      responses:
+        "200":
+          description: Recorded (or already was)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicePublicView"
+        "404":
+          description: Not found
+        "409":
+          description: Invoice is already paid — nothing to decline
+
   /public/invoices/{token}/subscription-fiscal-data:
     parameters:
       - name: token
@@ -4569,10 +4591,13 @@ components:
 
     InvoicePublicView:
       type: object
-      required: [publicToken, label, amount, currency, status, subscriptionPending]
+      required: [publicToken, label, amount, currency, status, subscriptionPending, discountApplied]
       properties:
         publicToken: { type: string, format: uuid }
         label:       { type: string }
+        # Already reflects the 10% payment-recovery discount when
+        # discountApplied is true — never the raw base amount in that case.
+        # The client always sees (and pays) the same number.
         amount:      { type: number }
         currency:    { type: string }
         status:      { type: string, enum: [draft, sent, paid, overdue, cancelled] }
@@ -4587,6 +4612,12 @@ components:
         # tells the client-facing page to show the fiscal-invoice
         # mini-form (subscription-fiscal-data) rather than nothing at all.
         subscriptionPending: { type: boolean }
+        # True once a payment-recovery discount (30d or 60d reactivation
+        # email) has ever been sent for this invoice — the 10% off then
+        # applies permanently going forward, computed fresh every time
+        # (invoices.amount itself is never modified). See
+        # lib/payment-recovery/repository.ts's invoiceHasActiveDiscount.
+        discountApplied: { type: boolean }
 
     FiscalDataBody:
       type: object

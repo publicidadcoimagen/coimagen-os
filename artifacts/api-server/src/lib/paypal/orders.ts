@@ -1,7 +1,7 @@
 import { CheckoutPaymentIntent } from "@paypal/paypal-server-sdk";
 import type { Invoice } from "@workspace/db";
 import { getPaypalClient } from "./client";
-import { applyFiscalInvoice } from "../payment-schedule/generate";
+import { applyFiscalInvoice, applyRecoveryDiscount } from "../payment-schedule/generate";
 
 export interface CreatedOrder {
   paypalOrderId: string;
@@ -12,15 +12,19 @@ export interface CreatedOrder {
 
 // Creates a PayPal order for one invoice (cuota). The amount charged is
 // computed entirely server-side from the invoice's own `amount` +
-// `currency` plus the client's fiscal-invoice choice for THIS charge — a
-// client-supplied amount is never trusted. `requiresFiscalInvoice` is
-// applied here (not read from the invoice row) because it's the value the
-// client is choosing right now, on this specific payment attempt; the
+// `currency`, the payment-recovery discount (if any — see
+// lib/payment-recovery/repository.ts's invoiceHasActiveDiscount, resolved
+// by the caller) applied first, plus the client's fiscal-invoice choice for
+// THIS charge applied on top of the (possibly discounted) base — a
+// client-supplied amount is never trusted either way. `requiresFiscalInvoice`
+// is applied here (not read from the invoice row) because it's the value
+// the client is choosing right now, on this specific payment attempt; the
 // caller is responsible for persisting it via
 // payment-schedule/repository.ts's setRequiresFiscalInvoice before calling
 // this, so the invoice row and the actual PayPal charge always agree.
-export async function createOrder(invoice: Invoice, requiresFiscalInvoice: boolean): Promise<CreatedOrder> {
-  const { totalAmount, ivaAmount } = applyFiscalInvoice(parseFloat(invoice.amount), requiresFiscalInvoice);
+export async function createOrder(invoice: Invoice, requiresFiscalInvoice: boolean, discountApplied: boolean): Promise<CreatedOrder> {
+  const discountedBase = applyRecoveryDiscount(parseFloat(invoice.amount), discountApplied);
+  const { totalAmount, ivaAmount } = applyFiscalInvoice(discountedBase, requiresFiscalInvoice);
   const { orders } = getPaypalClient();
 
   const { result } = await orders.createOrder({

@@ -1046,6 +1046,7 @@ export interface InvoicePublicView {
   /** @nullable */
   subscriptionApproveUrl?: string | null;
   subscriptionPending: boolean;
+  discountApplied: boolean;
 }
 
 export interface ProposalPublicView {

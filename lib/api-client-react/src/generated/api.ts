@@ -1171,6 +1171,76 @@ export const useSubmitPublicInvoiceFiscalData = <TError = ErrorType<void>,
       return useMutation(getSubmitPublicInvoiceFiscalDataMutationOptions(options));
     }
 
+export const getDeclinePublicInvoiceUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invoices/${token}/decline`
+}
+
+/**
+ * @summary Client explicitly says they don't want to continue with this cuota (payment-recovery flow). Purely informational — does not touch PayPal, does not cancel anything there's nothing to cancel. Records the decision and alerts staff by email. Idempotent — declining an already-declined invoice just returns its current state.
+ */
+export const declinePublicInvoice = async (token: string, options?: RequestInit): Promise<InvoicePublicView> => {
+
+  return customFetch<InvoicePublicView>(getDeclinePublicInvoiceUrl(token),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getDeclinePublicInvoiceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof declinePublicInvoice>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof declinePublicInvoice>>, TError,{token: string}, TContext> => {
+
+const mutationKey = ['declinePublicInvoice'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof declinePublicInvoice>>, {token: string}> = (props) => {
+          const {token} = props ?? {};
+
+          return  declinePublicInvoice(token,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeclinePublicInvoiceMutationResult = NonNullable<Awaited<ReturnType<typeof declinePublicInvoice>>>
+
+    export type DeclinePublicInvoiceMutationError = ErrorType<void>
+
+    /**
+ * @summary Client explicitly says they don't want to continue with this cuota (payment-recovery flow). Purely informational — does not touch PayPal, does not cancel anything there's nothing to cancel. Records the decision and alerts staff by email. Idempotent — declining an already-declined invoice just returns its current state.
+ */
+export const useDeclinePublicInvoice = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof declinePublicInvoice>>, TError,{token: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof declinePublicInvoice>>,
+        TError,
+        {token: string},
+        TContext
+      > => {
+      return useMutation(getDeclinePublicInvoiceMutationOptions(options));
+    }
+
 export const getSubmitPublicSubscriptionFiscalDataUrl = (token: string,) => {
 
 
