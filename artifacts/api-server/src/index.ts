@@ -1,7 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
-import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
+// Paused 2026-08-14 — see the matching note above app.listen() below for why.
+// import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
+// import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
 
 const rawPort = process.env["PORT"];
 
@@ -24,6 +25,14 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
-  registerCommercialFollowupCron();
-  registerInvoiceRemindersCron();
+
+  // Paused 2026-08-14 per Camila: no real clients yet, so these crons only
+  // burn Neon compute for empty-result runs — not worth keeping an
+  // always-on process awake for. Webhooks (/api/webhooks/paypal,
+  // /api/webhooks/jotform, /api/webhooks/resend) are unaffected — they're
+  // plain Express routes, not scheduled jobs. To reactivate: uncomment the
+  // two lines below (and their imports at the top of this file) once there
+  // are real prospects/invoices/subscriptions for these to act on.
+  // registerCommercialFollowupCron();
+  // registerInvoiceRemindersCron();
 });
