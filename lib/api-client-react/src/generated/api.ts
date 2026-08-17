@@ -76,6 +76,7 @@ import type {
   ClientTimeline,
   ClientTimelineInput,
   ClientUpdate,
+  CommercialFollowupStatus,
   ConfigEntry,
   ConfigEntryInput,
   ContentCalendarItem,
@@ -125,6 +126,7 @@ import type {
   Invoice,
   InvoiceInput,
   InvoicePublicView,
+  InvoiceReminderStatus,
   InvoiceUpdate,
   ListApprovalsParams,
   ListAuditLogsParams,
@@ -17197,4 +17199,146 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDeleteBeckyBeckProductMutationOptions(options));
     }
+
+export const getListCommercialFollowupStatusesUrl = () => {
+
+
+
+
+  return `/api/sequences/commercial-followups`
+}
+
+export const listCommercialFollowupStatuses = async ( options?: RequestInit): Promise<CommercialFollowupStatus[]> => {
+
+  return customFetch<CommercialFollowupStatus[]>(getListCommercialFollowupStatusesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCommercialFollowupStatusesQueryKey = () => {
+    return [
+    `/api/sequences/commercial-followups`
+    ] as const;
+    }
+
+
+export const getListCommercialFollowupStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCommercialFollowupStatusesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>> = ({ signal }) => listCommercialFollowupStatuses({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCommercialFollowupStatusesQueryResult = NonNullable<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>>
+export type ListCommercialFollowupStatusesQueryError = ErrorType<unknown>
+
+
+
+export function useListCommercialFollowupStatuses<TData = Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCommercialFollowupStatusesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListInvoiceReminderStatusesUrl = () => {
+
+
+
+
+  return `/api/sequences/invoice-reminders`
+}
+
+export const listInvoiceReminderStatuses = async ( options?: RequestInit): Promise<InvoiceReminderStatus[]> => {
+
+  return customFetch<InvoiceReminderStatus[]>(getListInvoiceReminderStatusesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListInvoiceReminderStatusesQueryKey = () => {
+    return [
+    `/api/sequences/invoice-reminders`
+    ] as const;
+    }
+
+
+export const getListInvoiceReminderStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listInvoiceReminderStatuses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listInvoiceReminderStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListInvoiceReminderStatusesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInvoiceReminderStatuses>>> = ({ signal }) => listInvoiceReminderStatuses({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInvoiceReminderStatuses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListInvoiceReminderStatusesQueryResult = NonNullable<Awaited<ReturnType<typeof listInvoiceReminderStatuses>>>
+export type ListInvoiceReminderStatusesQueryError = ErrorType<unknown>
+
+
+
+export function useListInvoiceReminderStatuses<TData = Awaited<ReturnType<typeof listInvoiceReminderStatuses>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listInvoiceReminderStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListInvoiceReminderStatusesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 

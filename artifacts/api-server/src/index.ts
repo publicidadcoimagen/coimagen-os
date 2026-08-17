@@ -1,9 +1,13 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
-import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
-import { registerSubscriptionAlertsCron } from "./lib/subscription-alerts/scheduler";
-import { registerPaymentRecoveryCron } from "./lib/payment-recovery/scheduler";
+// Paused 2026-08-14 — see the matching note above app.listen() below for why.
+// import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
+// import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
+// Also paused on merge (2026-08-17), same reasoning: no real subscriptions/
+// invoices exist yet for these to act on until real PayPal credentials +
+// webhook are configured (see PR #28). Reactivate alongside the two above.
+// import { registerSubscriptionAlertsCron } from "./lib/subscription-alerts/scheduler";
+// import { registerPaymentRecoveryCron } from "./lib/payment-recovery/scheduler";
 
 const rawPort = process.env["PORT"];
 
@@ -26,8 +30,18 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
-  registerCommercialFollowupCron();
-  registerInvoiceRemindersCron();
-  registerSubscriptionAlertsCron();
-  registerPaymentRecoveryCron();
+
+  // Paused 2026-08-14 per Camila: no real clients yet, so these crons only
+  // burn Neon compute for empty-result runs — not worth keeping an
+  // always-on process awake for. Webhooks (/api/webhooks/paypal,
+  // /api/webhooks/jotform, /api/webhooks/resend) are unaffected — they're
+  // plain Express routes, not scheduled jobs. To reactivate: uncomment the
+  // two lines below (and their imports at the top of this file) once there
+  // are real prospects/invoices/subscriptions for these to act on.
+  // registerCommercialFollowupCron();
+  // registerInvoiceRemindersCron();
+  // Also paused on merge (2026-08-17), same reasoning as above — see note
+  // at the top of this file (PR #28).
+  // registerSubscriptionAlertsCron();
+  // registerPaymentRecoveryCron();
 });

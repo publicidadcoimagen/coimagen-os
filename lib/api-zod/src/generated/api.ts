@@ -5188,3 +5188,36 @@ export const DeleteBeckyBeckProductParams = zod.object({
 })
 
 
+export const ListCommercialFollowupStatusesResponseItem = zod.object({
+  "prospectId": zod.number(),
+  "prospectName": zod.string(),
+  "prospectEmail": zod.string().nullable(),
+  "company": zod.string().nullable(),
+  "prospectStatus": zod.string(),
+  "createdAt": zod.string(),
+  "sentStages": zod.array(zod.number()),
+  "lastSentAt": zod.string().nullable(),
+  "nextStage": zod.number().nullable().describe('null once the sequence is complete (past the last stage)'),
+  "nextEligibleAt": zod.string().nullable().describe('day-threshold date for nextStage; null if complete'),
+  "hasProposal": zod.boolean().describe('stages 3\/4 are gated on this — see commercial-followup\/repository.ts')
+})
+export const ListCommercialFollowupStatusesResponse = zod.array(ListCommercialFollowupStatusesResponseItem)
+
+
+export const ListInvoiceReminderStatusesResponseItem = zod.object({
+  "invoiceId": zod.number(),
+  "invoiceNumber": zod.string(),
+  "clientName": zod.string(),
+  "clientEmail": zod.string().nullable(),
+  "dueDate": zod.string().nullable(),
+  "invoiceStatus": zod.string(),
+  "staffWindowStage": zod.union([zod.literal('upcoming'),zod.literal('overdue'),zod.literal(null)]).nullable(),
+  "staffSentStages": zod.array(zod.string()),
+  "staffLastSentAt": zod.string().nullable(),
+  "clientWindowStage": zod.union([zod.literal('upcoming'),zod.literal('overdue'),zod.literal(null)]).nullable(),
+  "clientSentStages": zod.array(zod.string()),
+  "clientLastSentAt": zod.string().nullable()
+})
+export const ListInvoiceReminderStatusesResponse = zod.array(ListInvoiceReminderStatusesResponseItem)
+
+

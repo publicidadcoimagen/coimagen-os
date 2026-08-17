@@ -1306,6 +1306,75 @@ export interface InvoiceUpdate {
   description?: string;
 }
 
+export interface CommercialFollowupStatus {
+  prospectId: number;
+  prospectName: string;
+  /** @nullable */
+  prospectEmail: string | null;
+  /** @nullable */
+  company: string | null;
+  prospectStatus: string;
+  createdAt: string;
+  sentStages: number[];
+  /** @nullable */
+  lastSentAt: string | null;
+  /**
+     * null once the sequence is complete (past the last stage)
+     * @nullable
+     */
+  nextStage: number | null;
+  /**
+     * day-threshold date for nextStage; null if complete
+     * @nullable
+     */
+  nextEligibleAt: string | null;
+  /** stages 3/4 are gated on this — see commercial-followup/repository.ts */
+  hasProposal: boolean;
+}
+
+/**
+ * @nullable
+ */
+export type InvoiceReminderStatusStaffWindowStage = typeof InvoiceReminderStatusStaffWindowStage[keyof typeof InvoiceReminderStatusStaffWindowStage] | null;
+
+
+export const InvoiceReminderStatusStaffWindowStage = {
+  upcoming: 'upcoming',
+  overdue: 'overdue',
+} as const;
+
+/**
+ * @nullable
+ */
+export type InvoiceReminderStatusClientWindowStage = typeof InvoiceReminderStatusClientWindowStage[keyof typeof InvoiceReminderStatusClientWindowStage] | null;
+
+
+export const InvoiceReminderStatusClientWindowStage = {
+  upcoming: 'upcoming',
+  overdue: 'overdue',
+} as const;
+
+export interface InvoiceReminderStatus {
+  invoiceId: number;
+  invoiceNumber: string;
+  clientName: string;
+  /** @nullable */
+  clientEmail: string | null;
+  /** @nullable */
+  dueDate: string | null;
+  invoiceStatus: string;
+  /** @nullable */
+  staffWindowStage: InvoiceReminderStatusStaffWindowStage;
+  staffSentStages: string[];
+  /** @nullable */
+  staffLastSentAt: string | null;
+  /** @nullable */
+  clientWindowStage: InvoiceReminderStatusClientWindowStage;
+  clientSentStages: string[];
+  /** @nullable */
+  clientLastSentAt: string | null;
+}
+
 export type SubscriptionBillingCycle = typeof SubscriptionBillingCycle[keyof typeof SubscriptionBillingCycle];
 
 
