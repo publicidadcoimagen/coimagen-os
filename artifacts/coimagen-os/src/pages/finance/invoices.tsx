@@ -4,6 +4,7 @@ import {
   useListInvoices,
   useCreateInvoice,
   useUpdateInvoice,
+  useUploadInvoiceFiscalDocument,
   useListClients,
   getListInvoicesQueryKey,
 } from "@workspace/api-client-react";
@@ -15,8 +16,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, FileUp } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/format";
+
+function fileToDataUri(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("No se pudo leer el archivo"));
+    reader.readAsDataURL(file);
+  });
+}
 
 const STATUS_ES: Record<string, string> = { draft: "Borrador", sent: "Enviada", paid: "Pagada", overdue: "Vencida", cancelled: "Cancelada" };
 const STATUS_COLOR: Record<string, string> = {
@@ -35,8 +45,33 @@ export function Invoices() {
   const { data: clients } = useListClients();
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
+  const uploadFiscalDocument = useUploadInvoiceFiscalDocument();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ number: "", clientId: "", amount: "", status: "draft", issuedDate: "", dueDate: "", description: "" });
+  const [fiscalDocInvoiceId, setFiscalDocInvoiceId] = useState<number | null>(null);
+  const [fiscalDocFile, setFiscalDocFile] = useState<File | null>(null);
+  const [fiscalDocError, setFiscalDocError] = useState<string | null>(null);
+  const [fiscalDocResult, setFiscalDocResult] = useState<string | null>(null);
+
+  const closeFiscalDocDialog = () => {
+    setFiscalDocInvoiceId(null);
+    setFiscalDocFile(null);
+    setFiscalDocError(null);
+    setFiscalDocResult(null);
+  };
+
+  const handleUploadFiscalDocument = () => {
+    if (fiscalDocInvoiceId === null || !fiscalDocFile) return;
+    setFiscalDocError(null);
+    fileToDataUri(fiscalDocFile)
+      .then((fileBase64) =>
+        uploadFiscalDocument.mutateAsync({ id: fiscalDocInvoiceId, data: { fileBase64, fileName: fiscalDocFile.name } }),
+      )
+      .then((result) => {
+        setFiscalDocResult(result.emailedToClient ? "Documento subido y enviado al cliente por correo." : "Documento subido, pero no se pudo enviar el correo — intenta reenviarlo manualmente.");
+      })
+      .catch((err) => setFiscalDocError(err instanceof Error ? err.message : "No se pudo subir el documento"));
+  };
 
   const filtered = invoices?.filter((i) => tab === "all" || i.status === tab) ?? [];
   const totalPaid = invoices?.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0) ?? 0;
@@ -95,11 +130,16 @@ export function Invoices() {
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.issuedDate)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.dueDate)}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[inv.status]}`}>{STATUS_ES[inv.status] ?? inv.status}</span></td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 space-x-1">
                     {inv.status === "sent" && (
                       <Button size="sm" variant="outline" className="h-6 text-xs" onClick={() => {
                         updateInvoice.mutate({ id: inv.id, data: { status: "paid" } }, { onSuccess: () => qc.invalidateQueries({ queryKey: getListInvoicesQueryKey() }) });
                       }}>Marcar pagada</Button>
+                    )}
+                    {inv.requiresFiscalInvoice && inv.status === "paid" && (
+                      <Button size="sm" variant="outline" className="h-6 text-xs gap-1" onClick={() => setFiscalDocInvoiceId(inv.id)}>
+                        <FileUp className="h-3 w-3" /> Subir factura fiscal
+                      </Button>
                     )}
                   </td>
                 </tr>
@@ -141,6 +181,31 @@ export function Invoices() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button onClick={handleSubmit} disabled={!form.number || !form.amount || createInvoice.isPending}>{createInvoice.isPending ? "Guardando..." : "Crear"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={fiscalDocInvoiceId !== null} onOpenChange={(v) => { if (!v) closeFiscalDocDialog(); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Subir factura fiscal</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Sube el PDF del CFDI que te dio el contador — se le manda automáticamente al cliente por correo al subirlo.
+            </p>
+            <div>
+              <Label>Archivo (PDF)</Label>
+              <Input type="file" accept="application/pdf" onChange={(e) => setFiscalDocFile(e.target.files?.[0] ?? null)} />
+            </div>
+            {fiscalDocError && <p className="text-xs text-destructive">{fiscalDocError}</p>}
+            {fiscalDocResult && <p className="text-xs text-emerald-400">{fiscalDocResult}</p>}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeFiscalDocDialog}>{fiscalDocResult ? "Cerrar" : "Cancelar"}</Button>
+            {!fiscalDocResult && (
+              <Button onClick={handleUploadFiscalDocument} disabled={!fiscalDocFile || uploadFiscalDocument.isPending}>
+                {uploadFiscalDocument.isPending ? "Subiendo..." : "Subir y enviar"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

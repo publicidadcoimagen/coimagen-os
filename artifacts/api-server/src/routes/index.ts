@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import publicDigitalDiagnosisRouter from "./public-digital-diagnosis";
 import publicFoundersRouter from "./public-founders";
 import publicProposalsRouter from "./public-proposals";
+import publicInvoicesRouter from "./public-invoices";
 import clientsRouter from "./clients";
 import clientAccessRouter from "./client-access";
 import clientBrandRouter from "./client-brand";
@@ -64,6 +65,7 @@ router.use(authRouter);
 router.use(publicDigitalDiagnosisRouter);
 router.use(publicFoundersRouter);
 router.use(publicProposalsRouter);
+router.use(publicInvoicesRouter);
 
 router.use(requireAuth);
 router.use(clientRoleGate);

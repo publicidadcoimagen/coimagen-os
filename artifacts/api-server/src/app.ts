@@ -13,6 +13,7 @@ import { verifyTurnstile } from "./middlewares/turnstile";
 import { getCurrentAuthUser } from "./routes/auth";
 import { resendWebhookHandler } from "./routes/webhooks-resend";
 import { jotformWebhookHandler } from "./routes/webhooks-jotform";
+import { paypalWebhookHandler } from "./routes/webhooks-paypal";
 
 const app: Express = express();
 
@@ -110,6 +111,20 @@ const jotformWebhookLimiter = rateLimit({
   message: { error: "Demasiadas solicitudes." },
 });
 app.post("/api/webhooks/jotform", jotformWebhookLimiter, jotformWebhookHandler);
+
+// P-payments: PayPal notifies order captures and subscription lifecycle
+// events here. Ordinary JSON body like Jotform above — PayPal's own
+// verify-webhook-signature REST API (see lib/paypal/webhook-verify.ts)
+// re-parses the body on their end, unlike Resend's Svix scheme which needs
+// untouched raw bytes.
+const paypalWebhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Demasiadas solicitudes." },
+});
+app.post("/api/webhooks/paypal", paypalWebhookLimiter, paypalWebhookHandler);
 
 app.use("/api", router);
 

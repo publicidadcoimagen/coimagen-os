@@ -1,6 +1,7 @@
 import { and, eq, isNotNull } from "drizzle-orm";
 import { db, invoicesTable, clientsTable, invoiceRemindersTable, type Invoice } from "@workspace/db";
 import { stageForDueDate, type ReminderStage } from "./eligibility";
+import { isDeclined } from "../payment-recovery/repository";
 
 // Only "sent" counts as "billed, awaiting payment". "draft" was never shown
 // to the client (nothing to be overdue about), "paid"/"cancelled" are
@@ -51,6 +52,12 @@ async function findDue(audience: ReminderAudience, windowDays: number, now: Date
   for (const row of rows) {
     if (!row.invoice.dueDate) continue;
     if (requireEmail && !row.clientEmail) continue; // can't email a reminder with no address
+
+    // A client who explicitly declined (payment-recovery flow) already told
+    // us they're not paying — nagging them about a due date they've already
+    // rejected is tone-deaf. Doesn't apply to the payment-recovery discount
+    // stages themselves, only to these unrelated due-date reminders.
+    if (await isDeclined(row.invoice.id)) continue;
 
     const stage = stageForDueDate(row.invoice.dueDate, today, windowDays);
     if (stage === null) continue;

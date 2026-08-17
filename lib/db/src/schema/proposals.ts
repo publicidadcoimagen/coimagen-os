@@ -13,6 +13,22 @@ export const proposalsTable = pgTable("proposals", {
   status: text("status").notNull().default("draft"),
   notes: text("notes"),
   validUntil: text("valid_until"),
+  // "standard" = 50% deposit / 50% final. "large" = 50% deposit / 25%
+  // milestone / 25% launch (Contrato Maestro V2, cláusula 4). Staff sets
+  // this when drafting the proposal — drives how many invoice installments
+  // get generated on approval (see lib/payment-schedule/generate.ts).
+  paymentPlan: text("payment_plan").notNull().default("standard"),
+  // The ongoing plan fee that starts once every installment above is paid
+  // — distinct from `amount`, which is the one-time project total. Null
+  // until staff fills it in; a proposal with no recurring component (a
+  // one-off project) just leaves this null and no subscription gets
+  // created.
+  monthlyAmount: numeric("monthly_amount"),
+  // MXN or USD — no per-client "catalog currency" concept exists anywhere
+  // else in the schema, so this is staff's explicit choice at proposal
+  // creation, same as paymentPlan. Propagated as-is to every generated
+  // installment invoice (invoices.currency); no conversion ever happens.
+  currency: text("currency").notNull().default("MXN"),
   // Opaque, non-sequential identifier for the public view/approve page
   // (/propuesta/:publicToken) — same pattern as diagnosesTable.publicToken,
   // so proposal ids can't be enumerated to browse other prospects' terms.

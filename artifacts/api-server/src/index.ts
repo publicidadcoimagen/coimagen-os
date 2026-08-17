@@ -3,6 +3,11 @@ import { logger } from "./lib/logger";
 // Paused 2026-08-14 — see the matching note above app.listen() below for why.
 // import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
 // import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
+// Also paused on merge (2026-08-17), same reasoning: no real subscriptions/
+// invoices exist yet for these to act on until real PayPal credentials +
+// webhook are configured (see PR #28). Reactivate alongside the two above.
+// import { registerSubscriptionAlertsCron } from "./lib/subscription-alerts/scheduler";
+// import { registerPaymentRecoveryCron } from "./lib/payment-recovery/scheduler";
 
 const rawPort = process.env["PORT"];
 
@@ -35,4 +40,8 @@ app.listen(port, (err) => {
   // are real prospects/invoices/subscriptions for these to act on.
   // registerCommercialFollowupCron();
   // registerInvoiceRemindersCron();
+  // Also paused on merge (2026-08-17), same reasoning as above — see note
+  // at the top of this file (PR #28).
+  // registerSubscriptionAlertsCron();
+  // registerPaymentRecoveryCron();
 });
