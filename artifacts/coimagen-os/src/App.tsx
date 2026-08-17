@@ -31,6 +31,8 @@ import { Invoices } from "@/pages/finance/invoices";
 import { Subscriptions } from "@/pages/finance/subscriptions";
 import { PaymentCalendar } from "@/pages/finance/calendar";
 
+import { Sequences } from "@/pages/sequences/index";
+
 import { Approvals } from "@/pages/approvals/index";
 import { Revenue } from "@/pages/revenue/index";
 import { Costs } from "@/pages/costs/index";
@@ -247,6 +249,8 @@ function Router() {
             <Route path="/finance/invoices" component={Invoices} />
             <Route path="/finance/subscriptions" component={Subscriptions} />
             <Route path="/finance/calendar" component={PaymentCalendar} />
+
+            <Route path="/sequences" component={Sequences} />
 
             <Route path="/approvals" component={Approvals} />
             <Route path="/revenue" component={Revenue} />

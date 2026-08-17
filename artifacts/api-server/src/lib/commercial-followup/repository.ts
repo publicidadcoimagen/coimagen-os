@@ -17,7 +17,7 @@ export interface DueFollowup {
 // whose plan includes prospect follow-up. Empty if the agent row doesn't
 // exist yet (first boot, before ensureCommercialFollowupAgent runs) or no
 // client has it assigned.
-async function eligibleClientIds(): Promise<number[]> {
+export async function eligibleClientIds(): Promise<number[]> {
   const [agent] = await db.select({ id: agentsTable.id }).from(agentsTable).where(eq(agentsTable.name, AGENT_NAME));
   if (!agent) return [];
   const rows = await db.select({ clientId: agentClientsTable.clientId }).from(agentClientsTable).where(eq(agentClientsTable.agentId, agent.id));
