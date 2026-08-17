@@ -35,6 +35,7 @@ tags:
   - name: bugs
   - name: ideas
   - name: automations
+  - name: sequences
 
 paths:
   # ─── AUTH ───────────────────────────────────────────────────────────────────
@@ -3751,6 +3752,39 @@ paths:
         "404":
           description: Not found
 
+  # ─── SEQUENCES (read-only status views for automated email sequences) ──────
+  # Reuses the same eligibility.ts pure functions each cron already runs — no
+  # new business logic, just a read model over commercial_followups and
+  # invoice_reminders. subscription-alerts and payment-recovery sequences are
+  # deliberately left out here: their tables only exist on the still-unmerged
+  # feature/paypal-payments branch, not on main. Add once that merges.
+  /sequences/commercial-followups:
+    get:
+      operationId: listCommercialFollowupStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommercialFollowupStatus"
+  /sequences/invoice-reminders:
+    get:
+      operationId: listInvoiceReminderStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InvoiceReminderStatus"
+
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -4485,6 +4519,39 @@ components:
         issuedDate: { type: string }
         dueDate: { type: string }
         description: { type: string }
+
+    # ── SEQUENCES ─────────────────────────────────────────────────────────────
+    CommercialFollowupStatus:
+      type: object
+      required: [prospectId, prospectName, prospectEmail, company, prospectStatus, createdAt, sentStages, lastSentAt, nextStage, nextEligibleAt, hasProposal]
+      properties:
+        prospectId: { type: integer }
+        prospectName: { type: string }
+        prospectEmail: { type: ["string", "null"] }
+        company: { type: ["string", "null"] }
+        prospectStatus: { type: string }
+        createdAt: { type: string }
+        sentStages: { type: array, items: { type: integer } }
+        lastSentAt: { type: ["string", "null"] }
+        nextStage: { type: ["integer", "null"], description: "null once the sequence is complete (past the last stage)" }
+        nextEligibleAt: { type: ["string", "null"], description: "day-threshold date for nextStage; null if complete" }
+        hasProposal: { type: boolean, description: "stages 3/4 are gated on this — see commercial-followup/repository.ts" }
+    InvoiceReminderStatus:
+      type: object
+      required: [invoiceId, invoiceNumber, clientName, clientEmail, dueDate, invoiceStatus, staffWindowStage, staffSentStages, staffLastSentAt, clientWindowStage, clientSentStages, clientLastSentAt]
+      properties:
+        invoiceId: { type: integer }
+        invoiceNumber: { type: string }
+        clientName: { type: string }
+        clientEmail: { type: ["string", "null"] }
+        dueDate: { type: ["string", "null"] }
+        invoiceStatus: { type: string }
+        staffWindowStage: { type: ["string", "null"], enum: [upcoming, overdue, null] }
+        staffSentStages: { type: array, items: { type: string } }
+        staffLastSentAt: { type: ["string", "null"] }
+        clientWindowStage: { type: ["string", "null"], enum: [upcoming, overdue, null] }
+        clientSentStages: { type: array, items: { type: string } }
+        clientLastSentAt: { type: ["string", "null"] }
 
     # ── SUBSCRIPTION ──────────────────────────────────────────────────────────
     Subscription:

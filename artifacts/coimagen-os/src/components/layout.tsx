@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, FolderKanban, CheckSquare, Settings,
   UserSearch, TrendingUp, Stethoscope, FileText, Receipt,
   RefreshCw, CalendarDays, ShieldCheck, BarChart3, ScrollText,
-  Lock, Bot, Bell, Bug,
+  Lock, Bot, Bell, Bug, Mail,
   Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
   FileSignature,
   Brain, Plug, PlayCircle, LogOut, Share2, ShoppingBag,
@@ -45,6 +45,12 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/finance/invoices", label: "Facturación", icon: Receipt },
       { href: "/finance/subscriptions", label: "Suscripciones", icon: RefreshCw },
       { href: "/finance/calendar", label: "Calendario", icon: CalendarDays },
+    ],
+  },
+  {
+    label: "Secuencias",
+    items: [
+      { href: "/sequences", label: "Correos Automatizados", icon: Mail },
     ],
   },
   {
