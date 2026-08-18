@@ -3,19 +3,12 @@ import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Construction, Send, Users } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 
 export function ClientMessages() {
   const [, params] = useRoute("/client/:slug/messages");
   const slug = params?.slug ?? "";
-
-  const features = [
-    "Mensajes directos con tu equipo COIMAGEN",
-    "Hilos por proyecto y tarea",
-    "Notificaciones de actualizaciones",
-    "Historial completo de conversaciones",
-    "Adjuntar archivos y referencias",
-    "Menciones con @nombre",
-  ];
+  const { t } = useLang();
 
   return (
     <ClientRoomLayout slug={slug}>
@@ -23,10 +16,10 @@ export function ClientMessages() {
         <div className="flex items-center gap-3">
           <MessageSquare className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-xl font-bold">Mensajes</h1>
-            <p className="text-sm text-muted-foreground">Canal de comunicación directa con tu equipo</p>
+            <h1 className="text-xl font-bold">{t.messages.title}</h1>
+            <p className="text-sm text-muted-foreground">{t.messages.subtitle}</p>
           </div>
-          <Badge variant="outline" className="ml-auto text-[9px] py-0 bg-amber-400/10 text-amber-400 border-amber-400/30">Próximamente</Badge>
+          <Badge variant="outline" className="ml-auto text-[9px] py-0 bg-amber-400/10 text-amber-400 border-amber-400/30">{t.common.comingSoon}</Badge>
         </div>
 
         <div className="flex flex-col items-center justify-center py-14 gap-6">
@@ -39,17 +32,17 @@ export function ClientMessages() {
             </div>
           </div>
           <div className="text-center space-y-2 max-w-sm">
-            <h2 className="text-lg font-bold">Canal de mensajes en construcción</h2>
+            <h2 className="text-lg font-bold">{t.messages.underConstruction}</h2>
             <p className="text-sm text-muted-foreground">
-              Muy pronto podrás comunicarte directamente con el equipo de COIMAGEN desde tu Client Room, sin necesidad de correo externo.
+              {t.messages.comingSoonDesc}
             </p>
           </div>
         </div>
 
         <div>
-          <p className="text-xs font-semibold text-muted-foreground mb-3">Lo que vendrá</p>
+          <p className="text-xs font-semibold text-muted-foreground mb-3">{t.messages.whatsComing}</p>
           <div className="grid grid-cols-2 gap-2">
-            {features.map((feat) => (
+            {t.messages.features.map((feat) => (
               <Card key={feat} className="border-border/40">
                 <CardContent className="p-3 flex items-center gap-2">
                   <Send className="h-3.5 w-3.5 text-primary/40 flex-shrink-0" />
@@ -64,8 +57,8 @@ export function ClientMessages() {
           <CardContent className="p-3 flex items-center gap-3">
             <Users className="h-5 w-5 text-primary" />
             <div>
-              <p className="text-xs font-semibold text-primary">¿Necesitas comunicarte ahora?</p>
-              <p className="text-[11px] text-muted-foreground">Escríbenos a hola@coimagenmedia.com o a tu Director asignado</p>
+              <p className="text-xs font-semibold text-primary">{t.messages.needNow}</p>
+              <p className="text-[11px] text-muted-foreground">{t.messages.contactHint}</p>
             </div>
           </CardContent>
         </Card>

@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MundoCreateStatus } from './mundoCreateStatus';
 
 export interface MundoCreate {
   key: string;
@@ -13,7 +14,7 @@ export interface MundoCreate {
   description?: string;
   objetivo?: string;
   kpis?: string[];
-  status?: string;
+  status?: MundoCreateStatus;
   directorId?: number;
   sortOrder?: number;
 }

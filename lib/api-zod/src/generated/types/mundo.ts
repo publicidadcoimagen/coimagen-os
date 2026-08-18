@@ -8,6 +8,7 @@
 import type { DirectorClient } from './directorClient';
 import type { DirectorProject } from './directorProject';
 import type { MundoDirectorSummary } from './mundoDirectorSummary';
+import type { MundoStatus } from './mundoStatus';
 
 export interface Mundo {
   id: number;
@@ -19,12 +20,13 @@ export interface Mundo {
   /** @nullable */
   objetivo?: string | null;
   kpis?: string[];
-  status: string;
+  status: MundoStatus;
   /** @nullable */
   directorId?: number | null;
   director?: MundoDirectorSummary;
   agentCount?: number;
   automationCount?: number;
+  incidentCount?: number;
   taskCount?: number;
   assignedClients?: DirectorClient[];
   assignedProjects?: DirectorProject[];

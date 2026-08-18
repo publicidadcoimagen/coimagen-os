@@ -64,7 +64,6 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Organización",
     items: [
-      { href: "/org", label: "Organigrama", icon: Network },
       { href: "/mundos", label: "Mundos", icon: Globe2 },
     ],
   },
@@ -103,6 +102,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/users", label: "Roles y Accesos", icon: UserCog },
       { href: "/audit", label: "Bitácora", icon: ScrollText },
+      { href: "/org", label: "Organigrama", icon: Network },
       { href: "/settings", label: "Configuración", icon: Settings },
     ],
   },

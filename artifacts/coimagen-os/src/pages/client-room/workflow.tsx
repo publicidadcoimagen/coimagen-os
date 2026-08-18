@@ -7,24 +7,16 @@ import {
   UserSearch, Stethoscope, FileText, DollarSign,
   Users, Factory, ShieldCheck, Package, Handshake,
 } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 
-const STAGES = [
-  { name: "Lead",            icon: UserSearch,   desc: "Contacto inicial y calificación del prospecto" },
-  { name: "Diagnóstico",     icon: Stethoscope,  desc: "Análisis de necesidades y situación actual del cliente" },
-  { name: "Propuesta",       icon: FileText,     desc: "Presentación de la propuesta comercial personalizada" },
-  { name: "Contrato",        icon: FileText,     desc: "Firma del contrato y acuerdo de servicio" },
-  { name: "Pago",            icon: DollarSign,   desc: "Confirmación del pago inicial o total" },
-  { name: "Onboarding",      icon: Users,        desc: "Bienvenida, recolección de información y accesos" },
-  { name: "Producción",      icon: Factory,      desc: "Ejecución del servicio contratado" },
-  { name: "QA",              icon: ShieldCheck,  desc: "Revisión de calidad y pruebas antes de entrega" },
-  { name: "Entrega",         icon: Package,      desc: "Entrega formal del proyecto al cliente" },
-  { name: "Customer Success",icon: Handshake,    desc: "Seguimiento, soporte y relación a largo plazo" },
-];
+const STAGE_ICONS = [UserSearch, Stethoscope, FileText, FileText, DollarSign, Users, Factory, ShieldCheck, Package, Handshake];
 
 export function ClientWorkflow() {
   const [, params] = useRoute("/client/:slug/workflow");
   const slug = params?.slug ?? "";
+  const { t } = useLang();
   const currentStage = 6;
+  const stages = t.workflow.stages.map((s, i) => ({ ...s, icon: STAGE_ICONS[i]! }));
 
   return (
     <ClientRoomLayout slug={slug}>
@@ -32,10 +24,10 @@ export function ClientWorkflow() {
         <div className="flex items-center gap-3">
           <GitBranch className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-xl font-bold">Workflow</h1>
-            <p className="text-sm text-muted-foreground">Estado actual de tu proyecto</p>
+            <h1 className="text-xl font-bold">{t.workflow.title}</h1>
+            <p className="text-sm text-muted-foreground">{t.workflow.subtitle}</p>
           </div>
-          <Badge variant="outline" className="ml-auto bg-green-400/10 text-green-400 border-green-400/30 text-[10px]">Solo lectura</Badge>
+          <Badge variant="outline" className="ml-auto bg-green-400/10 text-green-400 border-green-400/30 text-[10px]">{t.common.readOnly}</Badge>
         </div>
 
         <Card className="border-primary/20 bg-primary/5">
@@ -45,16 +37,16 @@ export function ClientWorkflow() {
                 <Factory className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-bold">Etapa actual: Producción</p>
-                <p className="text-xs text-muted-foreground">Etapa {currentStage} de {STAGES.length} — En proceso</p>
+                <p className="text-sm font-bold">{t.workflow.currentStageLabel}</p>
+                <p className="text-xs text-muted-foreground">{t.workflow.stageOfTotal(currentStage, stages.length)}</p>
               </div>
-              <Badge variant="outline" className="ml-auto bg-blue-400/10 text-blue-400 border-blue-400/30">En progreso</Badge>
+              <Badge variant="outline" className="ml-auto bg-blue-400/10 text-blue-400 border-blue-400/30">{t.workflow.inProgress}</Badge>
             </div>
           </CardContent>
         </Card>
 
         <div className="space-y-2">
-          {STAGES.map((stage, i) => {
+          {stages.map((stage, i) => {
             const isDone    = i < currentStage - 1;
             const isCurrent = i === currentStage - 1;
             const isPending = i > currentStage - 1;
@@ -77,7 +69,7 @@ export function ClientWorkflow() {
                       <Circle className="h-4 w-4 text-muted-foreground/30" />
                     )}
                   </div>
-                  {i < STAGES.length - 1 && (
+                  {i < stages.length - 1 && (
                     <div className={`w-0.5 h-3 mt-1 ${isDone ? "bg-primary" : "bg-border"}`} />
                   )}
                 </div>
@@ -95,12 +87,12 @@ export function ClientWorkflow() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className={`text-sm font-semibold ${isPending ? "text-muted-foreground" : ""}`}>{stage.name}</p>
-                        {isDone    && <Badge variant="outline" className="text-[9px] py-0 bg-green-400/10 text-green-400 border-green-400/30">Completado</Badge>}
-                        {isCurrent && <Badge variant="outline" className="text-[9px] py-0 bg-blue-400/10 text-blue-400 border-blue-400/30">En progreso</Badge>}
+                        {isDone    && <Badge variant="outline" className="text-[9px] py-0 bg-green-400/10 text-green-400 border-green-400/30">{t.workflow.completed}</Badge>}
+                        {isCurrent && <Badge variant="outline" className="text-[9px] py-0 bg-blue-400/10 text-blue-400 border-blue-400/30">{t.workflow.inProgress}</Badge>}
                       </div>
                       <p className="text-[10px] text-muted-foreground">{stage.desc}</p>
                     </div>
-                    <span className={`text-[10px] font-mono flex-shrink-0 ${isPending ? "text-muted-foreground/30" : "text-muted-foreground"}`}>{i + 1}/{STAGES.length}</span>
+                    <span className={`text-[10px] font-mono flex-shrink-0 ${isPending ? "text-muted-foreground/30" : "text-muted-foreground"}`}>{i + 1}/{stages.length}</span>
                   </CardContent>
                 </Card>
               </div>

@@ -5773,12 +5773,15 @@ components:
         kpis:
           type: array
           items: { type: string }
-        status: { type: string }
+        status:
+          type: string
+          enum: [designed, configuring, pilot, active, paused]
         directorId: { type: ["integer", "null"] }
         director:
           $ref: "#/components/schemas/MundoDirectorSummary"
         agentCount: { type: integer }
         automationCount: { type: integer }
+        incidentCount: { type: integer }
         taskCount: { type: integer }
         assignedClients:
           type: array
@@ -5803,7 +5806,9 @@ components:
         kpis:
           type: array
           items: { type: string }
-        status: { type: string }
+        status:
+          type: string
+          enum: [designed, configuring, pilot, active, paused]
         directorId: { type: integer }
         sortOrder: { type: integer }
     MundoUpdate:
@@ -5814,7 +5819,9 @@ components:
         kpis:
           type: array
           items: { type: string }
-        status: { type: string }
+        status:
+          type: string
+          enum: [designed, configuring, pilot, active, paused]
         directorId: { type: integer }
 
     # ─── QUALITY CENTER ──────────────────────────────────────────────────────────

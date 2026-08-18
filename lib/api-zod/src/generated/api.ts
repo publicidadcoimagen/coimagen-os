@@ -3621,7 +3621,7 @@ export const ListMundosResponseItem = zod.object({
   "description": zod.string().nullish(),
   "objetivo": zod.string().nullish(),
   "kpis": zod.array(zod.string()).optional(),
-  "status": zod.string(),
+  "status": zod.enum(['designed', 'configuring', 'pilot', 'active', 'paused']),
   "directorId": zod.number().nullish(),
   "director": zod.object({
   "id": zod.number(),
@@ -3633,6 +3633,7 @@ export const ListMundosResponseItem = zod.object({
 }).optional(),
   "agentCount": zod.number().optional(),
   "automationCount": zod.number().optional(),
+  "incidentCount": zod.number().optional(),
   "taskCount": zod.number().optional(),
   "assignedClients": zod.array(zod.object({
   "id": zod.number(),
@@ -3659,7 +3660,7 @@ export const CreateMundoBody = zod.object({
   "description": zod.string().optional(),
   "objetivo": zod.string().optional(),
   "kpis": zod.array(zod.string()).optional(),
-  "status": zod.string().optional(),
+  "status": zod.enum(['designed', 'configuring', 'pilot', 'active', 'paused']).optional(),
   "directorId": zod.number().optional(),
   "sortOrder": zod.number().optional()
 })
@@ -3680,7 +3681,7 @@ export const GetMundoResponse = zod.object({
   "description": zod.string().nullish(),
   "objetivo": zod.string().nullish(),
   "kpis": zod.array(zod.string()).optional(),
-  "status": zod.string(),
+  "status": zod.enum(['designed', 'configuring', 'pilot', 'active', 'paused']),
   "directorId": zod.number().nullish(),
   "director": zod.object({
   "id": zod.number(),
@@ -3692,6 +3693,7 @@ export const GetMundoResponse = zod.object({
 }).optional(),
   "agentCount": zod.number().optional(),
   "automationCount": zod.number().optional(),
+  "incidentCount": zod.number().optional(),
   "taskCount": zod.number().optional(),
   "assignedClients": zod.array(zod.object({
   "id": zod.number(),
@@ -3718,7 +3720,7 @@ export const UpdateMundoBody = zod.object({
   "description": zod.string().optional(),
   "objetivo": zod.string().optional(),
   "kpis": zod.array(zod.string()).optional(),
-  "status": zod.string().optional(),
+  "status": zod.enum(['designed', 'configuring', 'pilot', 'active', 'paused']).optional(),
   "directorId": zod.number().optional()
 })
 
@@ -3730,7 +3732,7 @@ export const UpdateMundoResponse = zod.object({
   "description": zod.string().nullish(),
   "objetivo": zod.string().nullish(),
   "kpis": zod.array(zod.string()).optional(),
-  "status": zod.string(),
+  "status": zod.enum(['designed', 'configuring', 'pilot', 'active', 'paused']),
   "directorId": zod.number().nullish(),
   "director": zod.object({
   "id": zod.number(),
@@ -3742,6 +3744,7 @@ export const UpdateMundoResponse = zod.object({
 }).optional(),
   "agentCount": zod.number().optional(),
   "automationCount": zod.number().optional(),
+  "incidentCount": zod.number().optional(),
   "taskCount": zod.number().optional(),
   "assignedClients": zod.array(zod.object({
   "id": zod.number(),

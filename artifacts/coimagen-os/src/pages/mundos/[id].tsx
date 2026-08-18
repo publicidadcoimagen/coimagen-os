@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import {
   Globe2, Bot, Zap, CheckSquare, BarChart3, FileText,
   ArrowLeft, Crown, ChevronRight, Users, FolderKanban,
-  Target, Shield, User, Lock, Cpu,
+  Target, Shield, User, Lock, Cpu, AlertTriangle,
 } from "lucide-react";
+import { MUNDO_STATUS_COLORS, mundoStatusLabel } from "@/lib/mundoStatus";
 
 type MundoDetail = {
   id: number;
@@ -20,6 +21,7 @@ type MundoDetail = {
   status: string;
   agentCount?: number;
   automationCount?: number;
+  incidentCount?: number;
   taskCount?: number;
   assignedClients?: { id: number; name: string }[];
   assignedProjects?: { id: number; name: string }[];
@@ -31,11 +33,6 @@ type MundoDetail = {
     objetivo?: string | null;
     responsabilidades?: string[];
   } | null;
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-400/15 text-green-400 border-green-400/30",
-  inactive: "bg-muted text-muted-foreground border-border",
 };
 
 type StructureSection = {
@@ -170,6 +167,14 @@ export function MundoDetail() {
       ready: false,
     },
     {
+      icon: AlertTriangle,
+      title: "Incidentes",
+      description: "Incidentes reportados en este Mundo",
+      count: m.incidentCount ?? 0,
+      color: "bg-red-400/20 text-red-400",
+      ready: false,
+    },
+    {
       icon: CheckSquare,
       title: "Tareas",
       description: "Tareas y sprints del Mundo",
@@ -214,8 +219,8 @@ export function MundoDetail() {
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-2xl font-bold tracking-tight">{m.name}</h1>
-              <Badge variant="outline" className={`${STATUS_COLORS[m.status] ?? ""}`}>
-                {m.status === "active" ? "Activo" : "Inactivo"}
+              <Badge variant="outline" className={`${MUNDO_STATUS_COLORS[m.status] ?? ""}`}>
+                {mundoStatusLabel(m.status)}
               </Badge>
             </div>
             {m.objetivo && (
@@ -243,10 +248,11 @@ export function MundoDetail() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
           { label: "Agentes", value: m.agentCount ?? 0, icon: Bot },
           { label: "Automatizaciones", value: m.automationCount ?? 0, icon: Zap },
+          { label: "Incidentes", value: m.incidentCount ?? 0, icon: AlertTriangle },
           { label: "Tareas", value: m.taskCount ?? 0, icon: CheckSquare },
           { label: "KPIs definidos", value: (m.kpis ?? []).length, icon: BarChart3 },
         ].map(({ label, value, icon: Icon }) => (

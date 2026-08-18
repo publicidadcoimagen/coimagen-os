@@ -2415,6 +2415,17 @@ export interface MundoDirectorSummary {
   responsabilidades?: string[];
 }
 
+export type MundoStatus = typeof MundoStatus[keyof typeof MundoStatus];
+
+
+export const MundoStatus = {
+  designed: 'designed',
+  configuring: 'configuring',
+  pilot: 'pilot',
+  active: 'active',
+  paused: 'paused',
+} as const;
+
 export interface Mundo {
   id: number;
   key: string;
@@ -2425,12 +2436,13 @@ export interface Mundo {
   /** @nullable */
   objetivo?: string | null;
   kpis?: string[];
-  status: string;
+  status: MundoStatus;
   /** @nullable */
   directorId?: number | null;
   director?: MundoDirectorSummary;
   agentCount?: number;
   automationCount?: number;
+  incidentCount?: number;
   taskCount?: number;
   assignedClients?: DirectorClient[];
   assignedProjects?: DirectorProject[];
@@ -2440,6 +2452,17 @@ export interface Mundo {
   updatedAt?: string | null;
 }
 
+export type MundoCreateStatus = typeof MundoCreateStatus[keyof typeof MundoCreateStatus];
+
+
+export const MundoCreateStatus = {
+  designed: 'designed',
+  configuring: 'configuring',
+  pilot: 'pilot',
+  active: 'active',
+  paused: 'paused',
+} as const;
+
 export interface MundoCreate {
   key: string;
   name: string;
@@ -2447,16 +2470,27 @@ export interface MundoCreate {
   description?: string;
   objetivo?: string;
   kpis?: string[];
-  status?: string;
+  status?: MundoCreateStatus;
   directorId?: number;
   sortOrder?: number;
 }
+
+export type MundoUpdateStatus = typeof MundoUpdateStatus[keyof typeof MundoUpdateStatus];
+
+
+export const MundoUpdateStatus = {
+  designed: 'designed',
+  configuring: 'configuring',
+  pilot: 'pilot',
+  active: 'active',
+  paused: 'paused',
+} as const;
 
 export interface MundoUpdate {
   description?: string;
   objetivo?: string;
   kpis?: string[];
-  status?: string;
+  status?: MundoUpdateStatus;
   directorId?: number;
 }
 
