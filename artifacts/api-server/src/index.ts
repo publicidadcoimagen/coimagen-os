@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { registerAnthropicBalanceAlertCron } from "./lib/anthropic-balance-alert/scheduler";
 // Paused 2026-08-14 — see the matching note above app.listen() below for why.
 // import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
 // import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
@@ -30,6 +31,12 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Active, unlike the crons paused below — this one doesn't depend on real
+  // clients/invoices/subscriptions existing. Digital Diagnosis is already
+  // live and unauthenticated-public; Anthropic running out of credit is a
+  // real, present risk regardless of the CRM's client count.
+  registerAnthropicBalanceAlertCron();
 
   // Paused 2026-08-14 per Camila: no real clients yet, so these crons only
   // burn Neon compute for empty-result runs — not worth keeping an
