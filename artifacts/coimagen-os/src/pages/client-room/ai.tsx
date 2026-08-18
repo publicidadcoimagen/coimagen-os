@@ -3,17 +3,15 @@ import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bot, Construction, Sparkles, Shield, Zap, Lock } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
+
+const CAPABILITY_ICONS = [Sparkles, Shield, Zap, Lock];
 
 export function ClientAI() {
   const [, params] = useRoute("/client/:slug/ai");
   const slug = params?.slug ?? "";
-
-  const capabilities = [
-    { icon: Sparkles, label: "Consultar el estado de tu proyecto en tiempo real" },
-    { icon: Shield, label: "Revisar contratos y facturas con lenguaje natural" },
-    { icon: Zap, label: "Obtener resúmenes de avance del workflow" },
-    { icon: Lock, label: "Información 100% privada — solo de tu organización" },
-  ];
+  const { t } = useLang();
+  const capabilities = t.ai.capabilities.map((label, i) => ({ label, icon: CAPABILITY_ICONS[i]! }));
 
   return (
     <ClientRoomLayout slug={slug}>
@@ -21,10 +19,10 @@ export function ClientAI() {
         <div className="flex items-center gap-3">
           <Bot className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-xl font-bold">Asistente IA</h1>
-            <p className="text-sm text-muted-foreground">Tu asistente privado de COIMAGEN OS</p>
+            <h1 className="text-xl font-bold">{t.ai.title}</h1>
+            <p className="text-sm text-muted-foreground">{t.ai.subtitle}</p>
           </div>
-          <Badge variant="outline" className="ml-auto text-[9px] py-0 bg-amber-400/10 text-amber-400 border-amber-400/30">Próximamente</Badge>
+          <Badge variant="outline" className="ml-auto text-[9px] py-0 bg-amber-400/10 text-amber-400 border-amber-400/30">{t.common.comingSoon}</Badge>
         </div>
 
         <div className="flex flex-col items-center justify-center py-10 gap-6">
@@ -37,15 +35,15 @@ export function ClientAI() {
             </div>
           </div>
           <div className="text-center space-y-2 max-w-sm">
-            <h2 className="text-lg font-bold">Asistente IA en construcción</h2>
+            <h2 className="text-lg font-bold">{t.ai.underConstruction}</h2>
             <p className="text-sm text-muted-foreground">
-              Tu asistente personal conocerá únicamente la información de tu organización. Podrá responder preguntas, generar resúmenes y ayudarte a entender el avance de tu proyecto.
+              {t.ai.comingSoonDesc}
             </p>
           </div>
         </div>
 
         <div>
-          <p className="text-xs font-semibold text-muted-foreground mb-3">Capacidades planificadas</p>
+          <p className="text-xs font-semibold text-muted-foreground mb-3">{t.ai.plannedCapabilities}</p>
           <div className="space-y-2">
             {capabilities.map(({ icon: Icon, label }) => (
               <Card key={label} className="border-border/40">
@@ -60,9 +58,9 @@ export function ClientAI() {
 
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-3">
-            <p className="text-xs font-semibold text-primary mb-1">🔒 Seguridad garantizada</p>
+            <p className="text-xs font-semibold text-primary mb-1">{t.ai.securityGuaranteed}</p>
             <p className="text-[11px] text-muted-foreground">
-              El asistente IA solo tendrá acceso a la información de tu organización. Nunca podrá consultar datos de otros clientes.
+              {t.ai.securityDesc}
             </p>
           </CardContent>
         </Card>

@@ -7,6 +7,7 @@ import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FolderKanban, Calendar, TrendingUp, User } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 
 type Org = { id: number; slug: string; name: string; clientId?: number | null };
 type Project = {
@@ -22,14 +23,10 @@ const STATUS_COLOR: Record<string, string> = {
   completed:   "bg-slate-400/15 text-slate-400 border-slate-400/30",
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  planning: "Planeación", active: "Activo", in_progress: "En progreso",
-  on_hold: "En pausa", completed: "Completado",
-};
-
 export function ClientProjects() {
   const [, params] = useRoute("/client/:slug/projects");
   const slug = params?.slug ?? "";
+  const { t, lang } = useLang();
 
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
   const org = rawOrg as Org | undefined;
@@ -47,8 +44,8 @@ export function ClientProjects() {
         <div className="flex items-center gap-3">
           <FolderKanban className="h-5 w-5 text-primary" />
           <div>
-            <h1 className="text-xl font-bold">Proyectos</h1>
-            <p className="text-sm text-muted-foreground">{projects.length} proyecto{projects.length !== 1 ? "s" : ""} activo{projects.length !== 1 ? "s" : ""}</p>
+            <h1 className="text-xl font-bold">{t.projects.title}</h1>
+            <p className="text-sm text-muted-foreground">{t.projects.countLabel(projects.length)}</p>
           </div>
         </div>
 
@@ -57,8 +54,8 @@ export function ClientProjects() {
         ) : projects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 border border-dashed border-border/50 rounded-xl gap-3 text-muted-foreground">
             <FolderKanban className="h-10 w-10 opacity-20" />
-            <p className="text-sm">No hay proyectos registrados para esta organización</p>
-            {!org?.clientId && <p className="text-[11px]">Vincula un cliente en la configuración del Client Room</p>}
+            <p className="text-sm">{t.projects.emptyTitle}</p>
+            {!org?.clientId && <p className="text-[11px]">{t.projects.emptyHint}</p>}
           </div>
         ) : (
           <div className="space-y-3">
@@ -73,7 +70,7 @@ export function ClientProjects() {
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <p className="text-sm font-bold">{project.name}</p>
                         <Badge variant="outline" className={`text-[10px] py-0 ${STATUS_COLOR[project.status] ?? ""}`}>
-                          {STATUS_LABEL[project.status] ?? project.status}
+                          {t.projects.status[project.status] ?? project.status}
                         </Badge>
                       </div>
                       {project.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{project.description}</p>}
@@ -81,12 +78,12 @@ export function ClientProjects() {
                         {project.dueDate && (
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            <span>Entrega: {new Date(project.dueDate).toLocaleDateString("es-MX")}</span>
+                            <span>{t.projects.delivery} {new Date(project.dueDate).toLocaleDateString(lang === "en" ? "en-US" : "es-MX")}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-1">
                           <TrendingUp className="h-3 w-3" />
-                          <span>Prioridad: {project.priority}</span>
+                          <span>{t.projects.priority} {project.priority}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <User className="h-3 w-3" />

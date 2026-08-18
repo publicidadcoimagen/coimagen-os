@@ -14,22 +14,20 @@ import {
   Clock, TrendingUp, AlertCircle, ChevronRight, FileSignature,
 } from "lucide-react";
 import { Link } from "wouter";
+import { useLang } from "@/context/LanguageContext";
 
 type Org = { id: number; slug: string; name: string; clientId?: number | null; description?: string | null };
 type Approval = { id: number; type: string; title: string; status: string; createdAt: string };
 type Invoice = { id: number; amount: number; status: string; dueDate?: string | null };
 type ContractRow = { id: number; title: string; status: string };
 
-const WORKFLOW_STAGES = [
-  "Lead", "Diagnóstico", "Propuesta", "Contrato",
-  "Pago", "Onboarding", "Producción", "QA", "Entrega", "Customer Success",
-];
+const WORKFLOW_STAGE_COUNT = 10;
 
 function StageProgress({ current = 6 }: { current?: number }) {
   return (
     <div className="flex items-center gap-1 flex-wrap">
-      {WORKFLOW_STAGES.map((stage, i) => (
-        <div key={stage} className="flex items-center gap-1">
+      {Array.from({ length: WORKFLOW_STAGE_COUNT }, (_, i) => (
+        <div key={i} className="flex items-center gap-1">
           <div className={`flex items-center justify-center rounded-full text-[9px] font-bold w-5 h-5 flex-shrink-0 ${
             i < current
               ? "bg-primary text-primary-foreground"
@@ -37,7 +35,7 @@ function StageProgress({ current = 6 }: { current?: number }) {
               ? "bg-primary/30 text-primary border border-primary"
               : "bg-muted text-muted-foreground"
           }`}>{i + 1}</div>
-          {i < WORKFLOW_STAGES.length - 1 && (
+          {i < WORKFLOW_STAGE_COUNT - 1 && (
             <div className={`h-0.5 w-3 flex-shrink-0 ${i < current ? "bg-primary" : "bg-muted"}`} />
           )}
         </div>
@@ -49,6 +47,7 @@ function StageProgress({ current = 6 }: { current?: number }) {
 export function ClientDashboard() {
   const [, params] = useRoute("/client/:slug");
   const slug = params?.slug ?? "";
+  const { t, lang } = useLang();
 
   const { data: rawOrg } = useGetOrganization(slug, {
     query: { queryKey: getGetOrganizationQueryKey(slug), enabled: !!slug },
@@ -75,10 +74,10 @@ export function ClientDashboard() {
   const nextDue = pendingInvoices.find((i) => i.dueDate)?.dueDate;
 
   const kpiCards = [
-    { label: "Aprobaciones pendientes", value: pendingApprovals.length, icon: CheckSquare, color: "text-orange-400", href: `/client/${slug}/approvals` },
-    { label: "Estado del proyecto", value: "En producción", icon: TrendingUp, color: "text-green-400", href: `/client/${slug}/projects` },
-    { label: "Próximo pago", value: nextDue ? new Date(nextDue).toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) : "—", icon: Clock, color: "text-blue-400", href: `/client/${slug}/invoices` },
-    { label: "Facturas pendientes", value: pendingInvoices.length, icon: Receipt, color: "text-yellow-400", href: `/client/${slug}/invoices` },
+    { label: t.dashboard.kpiPendingApprovals, value: pendingApprovals.length, icon: CheckSquare, color: "text-orange-400", href: `/client/${slug}/approvals` },
+    { label: t.dashboard.kpiProjectStatus, value: t.dashboard.inProduction, icon: TrendingUp, color: "text-green-400", href: `/client/${slug}/projects` },
+    { label: t.dashboard.kpiNextPayment, value: nextDue ? new Date(nextDue).toLocaleDateString(lang === "en" ? "en-US" : "es-MX", { day: "2-digit", month: "short" }) : "—", icon: Clock, color: "text-blue-400", href: `/client/${slug}/invoices` },
+    { label: t.dashboard.kpiPendingInvoices, value: pendingInvoices.length, icon: Receipt, color: "text-yellow-400", href: `/client/${slug}/invoices` },
   ];
 
   return (
@@ -88,10 +87,10 @@ export function ClientDashboard() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <LayoutDashboard className="h-5 w-5 text-primary" />
-            <h1 className="text-2xl font-bold tracking-tight">Bienvenido{org?.name ? `, ${org.name}` : ""}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{t.dashboard.welcome}{org?.name ? `, ${org.name}` : ""}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {org?.description ?? "Este es tu portal privado. Aquí puedes ver el estado de tu proyecto, aprobar documentos y revisar facturas."}
+            {org?.description ?? t.dashboard.defaultDescription}
           </p>
         </div>
 
@@ -116,11 +115,11 @@ export function ClientDashboard() {
         <Card className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-semibold">Estado del Workflow</p>
-              <Badge variant="outline" className="text-[10px] py-0 bg-green-400/10 text-green-400 border-green-400/30">En producción</Badge>
+              <p className="text-sm font-semibold">{t.dashboard.workflowStatus}</p>
+              <Badge variant="outline" className="text-[10px] py-0 bg-green-400/10 text-green-400 border-green-400/30">{t.dashboard.inProduction}</Badge>
             </div>
             <StageProgress current={6} />
-            <p className="text-[11px] text-muted-foreground mt-2">Etapa actual: <strong>Producción</strong> — En proceso</p>
+            <p className="text-[11px] text-muted-foreground mt-2">{t.dashboard.currentStagePrefix} <strong>{t.dashboard.production}</strong> — {t.dashboard.inProcess}</p>
           </CardContent>
         </Card>
 
@@ -129,7 +128,7 @@ export function ClientDashboard() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <FileSignature className="h-4 w-4 text-orange-400" />
-              <h2 className="text-sm font-semibold">Contratos por firmar</h2>
+              <h2 className="text-sm font-semibold">{t.dashboard.contractsToSign}</h2>
               <Badge variant="outline" className="text-[9px] py-0 bg-orange-400/10 text-orange-400 border-orange-400/30">{unsignedContracts.length}</Badge>
             </div>
             <div className="space-y-2">
@@ -139,7 +138,7 @@ export function ClientDashboard() {
                     <FileSignature className="h-4 w-4 text-orange-400 flex-shrink-0" />
                     <p className="text-sm font-medium flex-1">{c.title}</p>
                     <Button size="sm" className="h-7 text-xs" asChild>
-                      <Link href={`/client/${slug}/contracts`}>Firmar</Link>
+                      <Link href={`/client/${slug}/contracts`}>{t.dashboard.sign}</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -154,11 +153,11 @@ export function ClientDashboard() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-orange-400" />
-                <h2 className="text-sm font-semibold">Aprobaciones pendientes</h2>
+                <h2 className="text-sm font-semibold">{t.dashboard.pendingApprovalsHeading}</h2>
                 <Badge variant="outline" className="text-[9px] py-0 bg-orange-400/10 text-orange-400 border-orange-400/30">{pendingApprovals.length}</Badge>
               </div>
               <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
-                <Link href={`/client/${slug}/approvals`}>Ver todas <ChevronRight className="h-3 w-3 ml-1" /></Link>
+                <Link href={`/client/${slug}/approvals`}>{t.dashboard.viewAll} <ChevronRight className="h-3 w-3 ml-1" /></Link>
               </Button>
             </div>
             <div className="space-y-2">
@@ -168,10 +167,10 @@ export function ClientDashboard() {
                     <CheckSquare className="h-4 w-4 text-orange-400 flex-shrink-0" />
                     <div className="flex-1">
                       <p className="text-sm font-medium">{a.title}</p>
-                      <p className="text-[10px] text-muted-foreground capitalize">{a.type} · {new Date(a.createdAt).toLocaleDateString("es-MX")}</p>
+                      <p className="text-[10px] text-muted-foreground capitalize">{a.type} · {new Date(a.createdAt).toLocaleDateString(lang === "en" ? "en-US" : "es-MX")}</p>
                     </div>
                     <Button size="sm" className="h-7 text-xs" asChild>
-                      <Link href={`/client/${slug}/approvals`}>Revisar</Link>
+                      <Link href={`/client/${slug}/approvals`}>{t.dashboard.review}</Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -182,12 +181,12 @@ export function ClientDashboard() {
 
         {/* Quick links */}
         <div>
-          <h2 className="text-sm font-semibold text-muted-foreground mb-3">Accesos rápidos</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground mb-3">{t.dashboard.quickAccess}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {[
-              { href: `/client/${slug}/projects`, label: "Ver proyectos", icon: FolderKanban },
-              { href: `/client/${slug}/approvals`, label: "Aprobaciones", icon: CheckSquare },
-              { href: `/client/${slug}/invoices`, label: "Mis facturas", icon: Receipt },
+              { href: `/client/${slug}/projects`, label: t.dashboard.viewProjects, icon: FolderKanban },
+              { href: `/client/${slug}/approvals`, label: t.nav.approvals, icon: CheckSquare },
+              { href: `/client/${slug}/invoices`, label: t.dashboard.myInvoices, icon: Receipt },
             ].map(({ href, label, icon: Icon }) => (
               <Button key={href} variant="outline" size="sm" className="h-9 text-xs justify-start gap-2" asChild>
                 <Link href={href}><Icon className="h-3.5 w-3.5" />{label}</Link>
