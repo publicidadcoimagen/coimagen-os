@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, count } from "drizzle-orm";
+import { eq, count, inArray } from "drizzle-orm";
 import {
   db,
   mundosTable,
@@ -9,6 +9,8 @@ import {
   clientsTable,
   projectsTable,
   agentsTable,
+  automationsTable,
+  incidentsTable,
 } from "@workspace/db";
 import { GetMundoParams, UpdateMundoParams, UpdateMundoBody, CreateMundoBody } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
@@ -97,6 +99,22 @@ async function getAgentCount(mundoId: number): Promise<number> {
   return Number(row?.value ?? 0);
 }
 
+// automations has no direct mundoId — it's a 2-hop join via the agent that
+// owns each automation (automations.agentId -> agents.mundoId). No schema
+// change needed, agents.mundoId already exists.
+async function getAutomationCount(mundoId: number): Promise<number> {
+  const agentRows = await db.select({ id: agentsTable.id }).from(agentsTable).where(eq(agentsTable.mundoId, mundoId));
+  const agentIds = agentRows.map((r) => r.id);
+  if (agentIds.length === 0) return 0;
+  const [row] = await db.select({ value: count() }).from(automationsTable).where(inArray(automationsTable.agentId, agentIds));
+  return Number(row?.value ?? 0);
+}
+
+async function getIncidentCount(mundoId: number): Promise<number> {
+  const [row] = await db.select({ value: count() }).from(incidentsTable).where(eq(incidentsTable.mundoId, mundoId));
+  return Number(row?.value ?? 0);
+}
+
 async function getMundoWithRelations(mundoId: number) {
   const [mundo] = await db.select().from(mundosTable).where(eq(mundosTable.id, mundoId));
   if (!mundo) return null;
@@ -117,7 +135,8 @@ async function getMundoWithRelations(mundoId: number) {
     ...mundo,
     director: director ?? null,
     agentCount: await getAgentCount(mundo.id),
-    automationCount: 0,
+    automationCount: await getAutomationCount(mundo.id),
+    incidentCount: await getIncidentCount(mundo.id),
     taskCount: 0,
     assignedClients,
     assignedProjects,
@@ -139,7 +158,7 @@ router.post("/mundos", requireRole("ceo", "admin"), async (req, res): Promise<vo
     description: d.description ?? null,
     objetivo: d.objetivo ?? null,
     kpis: d.kpis ?? [],
-    status: d.status ?? "active",
+    status: d.status ?? "designed",
     directorId: d.directorId ?? null,
     sortOrder: d.sortOrder ?? nextOrder,
   }).returning();
@@ -168,7 +187,8 @@ router.get("/mundos", async (req, res): Promise<void> => {
       ...m,
       director: director ?? null,
       agentCount: await getAgentCount(m.id),
-      automationCount: 0,
+      automationCount: await getAutomationCount(m.id),
+      incidentCount: await getIncidentCount(m.id),
       taskCount: 0,
       assignedClients,
       assignedProjects,

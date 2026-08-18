@@ -5,11 +5,12 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MundoUpdateStatus } from './mundoUpdateStatus';
 
 export interface MundoUpdate {
   description?: string;
   objetivo?: string;
   kpis?: string[];
-  status?: string;
+  status?: MundoUpdateStatus;
   directorId?: number;
 }

@@ -3,7 +3,8 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Globe2, Bot, Zap, CheckSquare, Crown, Cpu, ArrowRight, Users, FolderKanban, ChevronRight } from "lucide-react";
+import { Globe2, Bot, Zap, CheckSquare, Crown, Cpu, ArrowRight, Users, FolderKanban, ChevronRight, AlertTriangle } from "lucide-react";
+import { MUNDO_STATUS_COLORS, mundoStatusLabel } from "@/lib/mundoStatus";
 
 type Mundo = {
   id: number;
@@ -15,15 +16,11 @@ type Mundo = {
   status: string;
   agentCount?: number;
   automationCount?: number;
+  incidentCount?: number;
   taskCount?: number;
   assignedClients?: { id: number; name: string }[];
   assignedProjects?: { id: number; name: string }[];
   director?: { id: number; name: string } | null;
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-400/15 text-green-400 border-green-400/30",
-  inactive: "bg-muted text-muted-foreground border-border",
 };
 
 function HierarchyNav({ mundos }: { mundos: Mundo[] }) {
@@ -94,8 +91,8 @@ function MundoCard({ mundo }: { mundo: Mundo }) {
               </div>
             </div>
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <Badge variant="outline" className={`text-[10px] py-0 ${STATUS_COLORS[mundo.status] ?? ""}`}>
-                {mundo.status === "active" ? "Activo" : "Inactivo"}
+              <Badge variant="outline" className={`text-[10px] py-0 ${MUNDO_STATUS_COLORS[mundo.status] ?? ""}`}>
+                {mundoStatusLabel(mundo.status)}
               </Badge>
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50 group-hover:text-primary/70 transition-colors" />
             </div>
@@ -109,10 +106,11 @@ function MundoCard({ mundo }: { mundo: Mundo }) {
           )}
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {[
               { icon: Bot, label: "Agentes", value: mundo.agentCount ?? 0 },
               { icon: Zap, label: "Automations", value: mundo.automationCount ?? 0 },
+              { icon: AlertTriangle, label: "Incidentes", value: mundo.incidentCount ?? 0 },
               { icon: CheckSquare, label: "Tareas", value: mundo.taskCount ?? 0 },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="text-center p-1.5 rounded-md bg-muted/30">
