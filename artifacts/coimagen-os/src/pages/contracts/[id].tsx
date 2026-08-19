@@ -21,6 +21,7 @@ import {
   FileSignature, ChevronLeft, ChevronRight, Edit2,
   CheckCircle2, Send, Eye, AlertCircle, XCircle, Clock,
   FileText, User, Calendar, DollarSign, Link2, ScrollText,
+  ShieldCheck, ExternalLink,
 } from "lucide-react";
 
 const CONTRACT_TYPES = [
@@ -59,6 +60,14 @@ type Contract = {
   sentAt?: string | null; signedAt?: string | null; expiresAt?: string | null;
   createdBy?: string | null; signedBy?: string | null;
   createdAt: string; updatedAt?: string | null;
+  // Escritos únicamente por el webhook de DocuSeal (evidencia real de
+  // firma) — nunca editables desde EditDialog.
+  docusealSubmissionId?: string | null;
+  docusealExternalId?: string | null;
+  signingUrl?: string | null;
+  signedDocumentUrl?: string | null;
+  auditLogUrl?: string | null;
+  signerIp?: string | null;
 };
 
 function statusMeta(s: string) {
@@ -74,8 +83,8 @@ function typeLabel(t: string) {
 function StatusActions({ contract, onUpdate }: { contract: Contract; onUpdate: (s: string) => void }) {
   const transitions: Record<string, { to: string; label: string; icon: React.ComponentType<{ className?: string }> }[]> = {
     draft:    [{ to: "sent",      label: "Marcar enviado",   icon: Send },    { to: "cancelled", label: "Cancelar", icon: XCircle }],
-    sent:     [{ to: "viewed",    label: "Marcar visto",     icon: Eye },     { to: "signed", label: "Marcar firmado", icon: CheckCircle2 }, { to: "rejected", label: "Rechazado", icon: XCircle }],
-    viewed:   [{ to: "signed",    label: "Marcar firmado",   icon: CheckCircle2 }, { to: "rejected", label: "Rechazado", icon: XCircle }],
+    sent:     [{ to: "viewed",    label: "Marcar visto",     icon: Eye },     { to: "rejected", label: "Rechazado", icon: XCircle }],
+    viewed:   [{ to: "rejected",  label: "Rechazado",        icon: XCircle }],
     signed:   [{ to: "active",    label: "Activar",          icon: CheckCircle2 }, { to: "expired", label: "Marcar vencido", icon: AlertCircle }],
     active:   [{ to: "expired",   label: "Marcar vencido",   icon: AlertCircle }, { to: "cancelled", label: "Cancelar", icon: XCircle }],
     expired:  [{ to: "renewd",    label: "Renovar",          icon: Clock }],
@@ -328,6 +337,43 @@ export function ContractDetail() {
               ))}
             </CardContent>
           </Card>
+
+          {contract.docusealSubmissionId && (
+            <Card className="border-border/50">
+              <CardContent className="p-3 space-y-3">
+                <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-green-500" />Firma verificada (DocuSeal)
+                </p>
+                <div className="space-y-2">
+                  {contract.signerIp && (
+                    <div className="flex items-start gap-2">
+                      <User className="h-3.5 w-3.5 text-muted-foreground/50 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-wide">IP del firmante</p>
+                        <p className="text-xs">{contract.signerIp}</p>
+                      </div>
+                    </div>
+                  )}
+                  {contract.signedDocumentUrl && (
+                    <a href={contract.signedDocumentUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                      <ExternalLink className="h-3 w-3" />Documento firmado
+                    </a>
+                  )}
+                  {contract.auditLogUrl && (
+                    <a href={contract.auditLogUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+                      <ExternalLink className="h-3 w-3" />Registro de auditoría
+                    </a>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {contract.status === "signed" && !contract.docusealSubmissionId && (
+            <div className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10">
+              <p className="text-[11px] text-amber-500">Firma manual (sin verificación DocuSeal)</p>
+            </div>
+          )}
 
           {(contract.clientId || contract.projectId || contract.workflowId || contract.invoiceId) && (
             <Card className="border-border/50">

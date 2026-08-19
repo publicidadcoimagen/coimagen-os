@@ -84,9 +84,16 @@ router.get("/contracts/:id", async (req, res): Promise<void> => {
   res.json(serialize(row));
 });
 
-// A cliente-role caller may PATCH only their own contract, and only to sign
-// it: status "sent" -> "signed", nothing else. Staff (ceo/admin) can edit
-// any field on any contract, as before.
+// A cliente-role caller can no longer self-mark their own contract as
+// "signed" via this endpoint — that was a real legal gap (a one-click
+// status flip with zero proof of signature). Real signing now happens
+// exclusively through the DocuSeal webhook (see webhooks-docuseal.ts),
+// which writes verifiable evidence (signer email/IP, signed document,
+// audit log) that no client-facing API call can produce. Cliente-role
+// PATCH access is removed entirely — clients have no legitimate field to
+// edit on their own contract today. Staff (ceo/admin) keep full-edit PATCH
+// access unchanged below, as an intentional manual-override path (paper
+// signature, DocuSeal outage).
 router.patch("/contracts/:id", async (req, res): Promise<void> => {
   const params = UpdateContractParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
@@ -94,16 +101,7 @@ router.patch("/contracts/:id", async (req, res): Promise<void> => {
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
   if (isClienteRole(req)) {
-    const [existing] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
-    if (!existing || existing.clientId !== ownClientId(req)) { res.status(404).json({ error: "Not found" }); return; }
-    const onlySigning = body.data.status === "signed"
-      && Object.keys(body.data).every((k) => ["status", "signedAt", "signedBy"].includes(k));
-    if (!onlySigning || existing.status !== "sent") { res.status(403).json({ error: "Insufficient permissions" }); return; }
-    const [signed] = await db.update(contractsTable)
-      .set({ status: "signed", signedAt: new Date(), signedBy: req.user?.id ?? null, updatedAt: new Date() })
-      .where(eq(contractsTable.id, params.data.id))
-      .returning();
-    res.json(serialize(signed));
+    res.status(403).json({ error: "Insufficient permissions" });
     return;
   }
 
