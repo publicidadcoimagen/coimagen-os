@@ -5,27 +5,51 @@ import { db, contractsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 
 // DocuSeal (self-hosted elsewhere) calls this on submission lifecycle
-// events, signed via a plain HMAC-SHA256 over the raw body (not Svix like
-// Resend) — see docs.docuseal.com/webhooks. Needs the exact raw request
-// bytes to verify, so this route is mounted in app.ts with express.raw()
-// ahead of the global express.json() — same reasoning as webhooks-resend.ts.
+// events. Verified against DocuSeal's actual source (lib/webhook_urls/
+// signatures.rb, this exact deployed version) rather than assumed from
+// generic docs: the X-Docuseal-Signature header is NOT a plain hex HMAC of
+// the body. It's "{timestamp}.{hexdigest}", where the digest is
+// HMAC-SHA256(secret, "{timestamp}.{body}") — same scheme family as Stripe.
+// A 5-minute tolerance window (matching DocuSeal's own TOLERANCE constant)
+// rejects stale or future-dated signatures as a replay guard. Needs the
+// exact raw request bytes to verify, so this route is mounted in app.ts
+// with express.raw() ahead of the global express.json() — same reasoning
+// as webhooks-resend.ts.
 interface DocusealWebhookPayload {
   event_type?: string;
   data?: {
     id?: number | string;
-    external_id?: string | null;
     completed_at?: string | null;
     combined_document_url?: string | null;
     audit_log_url?: string | null;
-    submitters?: Array<{ email?: string | null; ip?: string | null; role?: string | null }>;
+    // external_id lives per-submitter in DocuSeal's real API (Submitters::
+    // SerializeForApi), not at the top level of `data` — confirmed against
+    // the deployed source. No `ip` field exists anywhere in this payload
+    // (checked the submitter serializer and its submission-event data) —
+    // DocuSeal doesn't expose signer IP via webhook in this version, so
+    // contracts.signerIp cannot be populated from here today.
+    submitters?: Array<{ email?: string | null; external_id?: string | null; role?: string | null }>;
   };
 }
 
-function verifySignature(rawBody: Buffer, secret: string, signature: string | undefined): boolean {
-  if (!signature) return false;
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
+const SIGNATURE_TOLERANCE_SECONDS = 5 * 60;
+
+function verifySignature(rawBody: Buffer, secret: string, header: string | undefined): boolean {
+  if (!header) return false;
+  const dotIndex = header.indexOf(".");
+  if (dotIndex === -1) return false;
+  const timestampPart = header.slice(0, dotIndex);
+  const signaturePart = header.slice(dotIndex + 1);
+  const timestamp = Number(timestampPart);
+  if (!Number.isInteger(timestamp)) return false;
+
+  const now = Math.floor(Date.now() / 1000);
+  if (timestamp < now - SIGNATURE_TOLERANCE_SECONDS || timestamp > now + SIGNATURE_TOLERANCE_SECONDS) return false;
+
+  const signedMessage = `${timestampPart}.${rawBody.toString("utf8")}`;
+  const expected = createHmac("sha256", secret).update(signedMessage).digest("hex");
   const expectedBuf = Buffer.from(expected, "hex");
-  const providedBuf = Buffer.from(signature, "hex");
+  const providedBuf = Buffer.from(signaturePart, "hex");
   // Different lengths would throw inside timingSafeEqual instead of just
   // comparing false — a malformed/forged header must reject cleanly.
   if (expectedBuf.length !== providedBuf.length) return false;
@@ -45,7 +69,10 @@ async function handleSubmissionCompleted(payload: DocusealWebhookPayload): Promi
   if (!data) return;
 
   const submissionId = data.id != null ? String(data.id) : null;
-  const externalId = data.external_id ?? null;
+  // external_id is per-submitter in DocuSeal's real payload shape — Coimagen
+  // sends exactly one submitter per contract, so the first non-null value
+  // found is the one set at submission-create time.
+  const externalId = data.submitters?.find((s) => s.external_id)?.external_id ?? null;
 
   // Look up by the DocuSeal submission id first (set on a prior webhook for
   // this same submission, if any), falling back to external_id — the value
@@ -75,7 +102,9 @@ async function handleSubmissionCompleted(payload: DocusealWebhookPayload): Promi
     signedBy: submitter?.email ?? null,
     signedDocumentUrl: data.combined_document_url ?? null,
     auditLogUrl: data.audit_log_url ?? null,
-    signerIp: submitter?.ip ?? null,
+    // DocuSeal's webhook payload doesn't expose signer IP in this version
+    // (confirmed against the deployed serializer source) — left null until
+    // that's fetchable some other way (e.g. parsing the audit log itself).
     docusealSubmissionId: contract.docusealSubmissionId ?? submissionId,
     updatedAt: new Date(),
   }).where(eq(contractsTable.id, contract.id));
