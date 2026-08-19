@@ -107,6 +107,7 @@ import type {
   DirectorAssignClient,
   DirectorAssignProject,
   DirectorUpdate,
+  ErrorEnvelope,
   FiscalDataBody,
   FiscalDocumentUploadBody,
   FiscalDocumentUploadResponse,
@@ -174,6 +175,9 @@ import type {
   Prospect,
   ProspectInput,
   ProspectUpdate,
+  ProspectingAuditPending,
+  ProspectingAuditReviewSubmit,
+  ProspectingAuditReviewed,
   PublicFoundersCount,
   QcTicket,
   QcTicketCreate,
@@ -17341,4 +17345,153 @@ export function useListInvoiceReminderStatuses<TData = Awaited<ReturnType<typeof
 
 
 
+
+export const getListPendingProspectingAuditsUrl = () => {
+
+
+
+
+  return `/api/prospecting-audits/pending`
+}
+
+/**
+ * @summary List prospecting audits awaiting the 2 manual checklist answers
+ */
+export const listPendingProspectingAudits = async ( options?: RequestInit): Promise<ProspectingAuditPending[]> => {
+
+  return customFetch<ProspectingAuditPending[]>(getListPendingProspectingAuditsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPendingProspectingAuditsQueryKey = () => {
+    return [
+    `/api/prospecting-audits/pending`
+    ] as const;
+    }
+
+
+export const getListPendingProspectingAuditsQueryOptions = <TData = Awaited<ReturnType<typeof listPendingProspectingAudits>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPendingProspectingAudits>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPendingProspectingAuditsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPendingProspectingAudits>>> = ({ signal }) => listPendingProspectingAudits({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPendingProspectingAudits>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPendingProspectingAuditsQueryResult = NonNullable<Awaited<ReturnType<typeof listPendingProspectingAudits>>>
+export type ListPendingProspectingAuditsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List prospecting audits awaiting the 2 manual checklist answers
+ */
+
+export function useListPendingProspectingAudits<TData = Awaited<ReturnType<typeof listPendingProspectingAudits>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPendingProspectingAudits>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPendingProspectingAuditsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getSubmitProspectingAuditReviewUrl = (id: number,) => {
+
+
+
+
+  return `/api/prospecting-audits/${id}`
+}
+
+/**
+ * @summary Submit the 2 manual checklist answers; computes final score/tier
+ */
+export const submitProspectingAuditReview = async (id: number,
+    prospectingAuditReviewSubmit: ProspectingAuditReviewSubmit, options?: RequestInit): Promise<ProspectingAuditReviewed> => {
+
+  return customFetch<ProspectingAuditReviewed>(getSubmitProspectingAuditReviewUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      prospectingAuditReviewSubmit,)
+  }
+);}
+
+
+
+
+export const getSubmitProspectingAuditReviewMutationOptions = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitProspectingAuditReview>>, TError,{id: number;data: BodyType<ProspectingAuditReviewSubmit>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitProspectingAuditReview>>, TError,{id: number;data: BodyType<ProspectingAuditReviewSubmit>}, TContext> => {
+
+const mutationKey = ['submitProspectingAuditReview'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitProspectingAuditReview>>, {id: number;data: BodyType<ProspectingAuditReviewSubmit>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  submitProspectingAuditReview(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitProspectingAuditReviewMutationResult = NonNullable<Awaited<ReturnType<typeof submitProspectingAuditReview>>>
+    export type SubmitProspectingAuditReviewMutationBody = BodyType<ProspectingAuditReviewSubmit>
+    export type SubmitProspectingAuditReviewMutationError = ErrorType<ErrorEnvelope>
+
+    /**
+ * @summary Submit the 2 manual checklist answers; computes final score/tier
+ */
+export const useSubmitProspectingAuditReview = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitProspectingAuditReview>>, TError,{id: number;data: BodyType<ProspectingAuditReviewSubmit>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitProspectingAuditReview>>,
+        TError,
+        {id: number;data: BodyType<ProspectingAuditReviewSubmit>},
+        TContext
+      > => {
+      return useMutation(getSubmitProspectingAuditReviewMutationOptions(options));
+    }
 

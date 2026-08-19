@@ -1,6 +1,6 @@
 import { eq, and, or, isNull, inArray } from "drizzle-orm";
 import { db, prospectsTable, commercialFollowupsTable, proposalsTable, agentsTable, agentClientsTable, type Prospect } from "@workspace/db";
-import { nextStageToSend } from "./eligibility";
+import { nextStageToSend, PROSPECTING_FUNNEL_SOURCES } from "./eligibility";
 import { AGENT_NAME } from "./agent";
 
 export interface DueFollowup {
@@ -26,14 +26,15 @@ export async function eligibleClientIds(): Promise<number[]> {
 
 // Every "Lead" prospect due for exactly one follow-up email right now, per
 // nextStageToSend's one-stage-per-run rule. Multi-tenant (P-81 Fase A):
-// scope is Coimagen's own Diagnóstico Digital funnel (clientId null) PLUS,
-// for each client that has this agent assigned via agent_clients, that
-// client's own leads regardless of source — a client's lead pipeline isn't
-// Coimagen's "diagnostico_digital" funnel, so that source filter only ever
-// applied to the internal tenant.
+// scope is Coimagen's own internal funnel (clientId null, source in
+// PROSPECTING_FUNNEL_SOURCES — P-82 widened this from diagnostico_digital-
+// only to also include agente_prospectador) PLUS, for each client that has
+// this agent assigned via agent_clients, that client's own leads regardless
+// of source — a client's lead pipeline isn't Coimagen's own funnel, so that
+// source filter only ever applied to the internal tenant.
 export async function findDueFollowups(now = new Date()): Promise<DueFollowup[]> {
   const clientIds = await eligibleClientIds();
-  const scopeConditions = [and(isNull(prospectsTable.clientId), eq(prospectsTable.source, "diagnostico_digital"))];
+  const scopeConditions = [and(isNull(prospectsTable.clientId), inArray(prospectsTable.source, PROSPECTING_FUNNEL_SOURCES))];
   if (clientIds.length > 0) scopeConditions.push(inArray(prospectsTable.clientId, clientIds));
 
   const leads = await db.select().from(prospectsTable).where(

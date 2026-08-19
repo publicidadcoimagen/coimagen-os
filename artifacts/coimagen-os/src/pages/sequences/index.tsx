@@ -1,12 +1,19 @@
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useListCommercialFollowupStatuses,
   useListInvoiceReminderStatuses,
+  useListPendingProspectingAudits,
+  useSubmitProspectingAuditReview,
+  getListPendingProspectingAuditsQueryKey,
 } from "@workspace/api-client-react";
-import type { CommercialFollowupStatus, InvoiceReminderStatus } from "@workspace/api-client-react";
+import type { CommercialFollowupStatus, InvoiceReminderStatus, ProspectingAuditPending } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Mail, Receipt, RefreshCw, CreditCard } from "lucide-react";
+import { Mail, Receipt, RefreshCw, CreditCard, ClipboardCheck } from "lucide-react";
 import { formatDate } from "@/lib/format";
 
 const todayIso = () => new Date().toISOString().slice(0, 10);
@@ -137,6 +144,91 @@ function InvoiceRemindersTab() {
   );
 }
 
+// P-82 Agente Prospectador — manual-review queue for the 2 checklist items
+// with no reliable API (abandonedSocial, noContentPublished). The other 8
+// checklist items are a later phase (Google Places/PageSpeed APIs + HTML
+// analysis — no API keys contracted yet), so every row here today is
+// pending purely on these 2 answers.
+function ProspectingAuditRow({ audit }: { audit: ProspectingAuditPending }) {
+  const queryClient = useQueryClient();
+  const [abandonedSocial, setAbandonedSocial] = useState(false);
+  const [noContentPublished, setNoContentPublished] = useState(false);
+
+  const { mutate: submit, isPending } = useSubmitProspectingAuditReview({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getListPendingProspectingAuditsQueryKey() });
+      },
+    },
+  });
+
+  return (
+    <tr className="border-b border-border/50 last:border-0">
+      <td className="p-3">
+        <div className="font-medium">{audit.prospectName}</div>
+        <div className="text-xs text-muted-foreground">{audit.prospectPhone ?? "-"}</div>
+      </td>
+      <td className="p-3 text-muted-foreground">{audit.prospectIndustry ?? "-"}</td>
+      <td className="p-3 text-muted-foreground">{formatDate(audit.createdAt)}</td>
+      <td className="p-3">
+        <label className="flex items-center gap-2 text-xs cursor-pointer">
+          <Checkbox checked={abandonedSocial} onCheckedChange={(v) => setAbandonedSocial(v === true)} />
+          Redes sociales abandonadas
+        </label>
+      </td>
+      <td className="p-3">
+        <label className="flex items-center gap-2 text-xs cursor-pointer">
+          <Checkbox checked={noContentPublished} onCheckedChange={(v) => setNoContentPublished(v === true)} />
+          Sin contenido publicado
+        </label>
+      </td>
+      <td className="p-3">
+        <Button
+          size="sm"
+          disabled={isPending}
+          onClick={() => submit({ id: audit.diagnosisId, data: { abandonedSocial, noContentPublished } })}
+        >
+          {isPending ? "Enviando..." : "Enviar"}
+        </Button>
+      </td>
+    </tr>
+  );
+}
+
+function ProspectingAuditsTab() {
+  const { data, isLoading } = useListPendingProspectingAudits();
+  const rows = data ?? [];
+
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted-foreground">
+        Solo los 2 puntos del checklist sin API confiable (redes abandonadas, sin contenido publicado). Los otros 8 se
+        completan automáticamente en una fase posterior (Google Places/PageSpeed — aún sin contratar).
+      </p>
+      {isLoading ? <div className="text-muted-foreground text-sm">Cargando...</div> : (
+        <div className="rounded-lg border border-border overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-border bg-muted/30">
+              <th className="text-left p-3 font-medium text-muted-foreground">Prospecto</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Industria</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Creado</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Redes abandonadas</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Sin contenido</th>
+              <th className="text-left p-3 font-medium text-muted-foreground">Acción</th>
+            </tr></thead>
+            <tbody>
+              {rows.map((r) => <ProspectingAuditRow key={r.diagnosisId} audit={r} />)}
+              {rows.length === 0 && (
+                <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Sin auditorías pendientes de revisión.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ComingSoonTab({ reason }: { reason: string }) {
   return (
     <Card>
@@ -162,6 +254,7 @@ export function Sequences() {
           <TabsTrigger value="invoice-reminders" className="gap-1.5"><Receipt className="h-3.5 w-3.5" /> Recordatorios de Factura</TabsTrigger>
           <TabsTrigger value="subscription-alerts" className="gap-1.5"><RefreshCw className="h-3.5 w-3.5" /> Alertas de Suscripción</TabsTrigger>
           <TabsTrigger value="payment-recovery" className="gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Recuperación de Pago</TabsTrigger>
+          <TabsTrigger value="prospecting-audits" className="gap-1.5"><ClipboardCheck className="h-3.5 w-3.5" /> Auditoría de Prospección</TabsTrigger>
         </TabsList>
 
         <TabsContent value="commercial-followup"><CommercialFollowupTab /></TabsContent>
@@ -172,6 +265,7 @@ export function Sequences() {
         <TabsContent value="payment-recovery">
           <ComingSoonTab reason="Tabla payment_recovery_alerts vive en feature/paypal-payments, aún sin mergear a main." />
         </TabsContent>
+        <TabsContent value="prospecting-audits"><ProspectingAuditsTab /></TabsContent>
       </Tabs>
     </div>
   );

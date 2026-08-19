@@ -26,6 +26,14 @@ export const prospectsTable = pgTable("prospects", {
   // — generalizing the Agente de Seguimiento Comercial to be multi-tenant
   // instead of building a separate agent per client).
   clientId: integer("client_id").references(() => clientsTable.id, { onDelete: "set null" }),
+  // P-82 Agente Prospectador dedup key — Google Places' place_id for the
+  // business this prospect was found from. Unique when set so a later
+  // prospecting run can never re-find and re-contact the same business
+  // twice, but nullable: every prospect NOT sourced from that agent
+  // (self-submitted diagnóstico leads, Jotform WhatsApp/Facebook leads,
+  // manually created prospects) has no Google Place at all. Postgres allows
+  // any number of NULLs under a unique constraint, so this is safe.
+  googlePlaceId: text("google_place_id").unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });

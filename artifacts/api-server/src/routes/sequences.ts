@@ -9,7 +9,7 @@ import {
   clientsTable,
   invoiceRemindersTable,
 } from "@workspace/db";
-import { STAGE_MIN_DAYS, LAST_STAGE } from "../lib/commercial-followup/eligibility";
+import { STAGE_MIN_DAYS, LAST_STAGE, PROSPECTING_FUNNEL_SOURCES } from "../lib/commercial-followup/eligibility";
 import { eligibleClientIds } from "../lib/commercial-followup/repository";
 import { stageForDueDate } from "../lib/invoice-reminders/eligibility";
 import { STAFF_WINDOW_DAYS, CLIENT_WINDOW_DAYS } from "../lib/invoice-reminders/repository";
@@ -19,7 +19,8 @@ const router: IRouter = Router();
 // Read-only status view for P-80 — reuses the same STAGE_MIN_DAYS/LAST_DAY
 // constants the cron itself uses, so "next eligible date" here can never
 // drift from what the cron will actually do. Scope matches
-// findDueFollowups: Coimagen's own diagnostico_digital funnel plus any
+// findDueFollowups: Coimagen's own internal funnel (PROSPECTING_FUNNEL_
+// SOURCES — diagnostico_digital + agente_prospectador as of P-82) plus any
 // client with the agent assigned (P-81 Fase A). Shown regardless of
 // "due right now": a prospect still on status=lead is in-sequence even if
 // its next stage isn't due for a few more days; one already converted
@@ -27,7 +28,7 @@ const router: IRouter = Router();
 // vanish the moment it converts).
 router.get("/sequences/commercial-followups", async (_req, res): Promise<void> => {
   const clientIds = await eligibleClientIds();
-  const scopeConditions = [and(isNull(prospectsTable.clientId), eq(prospectsTable.source, "diagnostico_digital"))];
+  const scopeConditions = [and(isNull(prospectsTable.clientId), inArray(prospectsTable.source, PROSPECTING_FUNNEL_SOURCES))];
   if (clientIds.length > 0) scopeConditions.push(inArray(prospectsTable.clientId, clientIds));
 
   const prospects = await db.select().from(prospectsTable)
