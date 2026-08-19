@@ -14,6 +14,7 @@ import { getCurrentAuthUser } from "./routes/auth";
 import { resendWebhookHandler } from "./routes/webhooks-resend";
 import { jotformWebhookHandler } from "./routes/webhooks-jotform";
 import { paypalWebhookHandler } from "./routes/webhooks-paypal";
+import { docusealWebhookHandler } from "./routes/webhooks-docuseal";
 
 const app: Express = express();
 
@@ -90,6 +91,12 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 // already be parsed/re-serialized by the time it got there and every
 // signature check would fail.
 app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), resendWebhookHandler);
+
+// Digital Contract Engine: DocuSeal notifies submission.completed here.
+// Needs the exact raw request bytes to verify its HMAC signature (see
+// webhooks-docuseal.ts) — same reasoning as Resend above, must be
+// registered ahead of express.json().
+app.post("/api/webhooks/docuseal", express.raw({ type: "application/json" }), docusealWebhookHandler);
 
 // Express's default json() limit is 100kb — a single product photo from
 // Becky Beck's catalog editor (base64-encoded, ~33% larger than the raw
