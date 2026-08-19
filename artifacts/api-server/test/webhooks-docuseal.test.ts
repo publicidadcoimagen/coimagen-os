@@ -14,8 +14,12 @@ import { docusealWebhookHandler } from "../src/routes/webhooks-docuseal";
 
 const TEST_SECRET = "test-docuseal-secret-not-for-real-use";
 
-function sign(body: Buffer, secret: string): string {
-  return createHmac("sha256", secret).update(body).digest("hex");
+// Matches DocuSeal's real scheme (lib/webhook_urls/signatures.rb, verified
+// against the deployed source): "{timestamp}.{hexdigest}", where the digest
+// is HMAC-SHA256(secret, "{timestamp}.{body}") — not a plain hash of the body.
+function sign(body: Buffer, secret: string, timestamp = Math.floor(Date.now() / 1000)): string {
+  const digest = createHmac("sha256", secret).update(`${timestamp}.${body.toString("utf8")}`).digest("hex");
+  return `${timestamp}.${digest}`;
 }
 
 function createMockResponse() {
@@ -86,6 +90,18 @@ describe("docusealWebhookHandler", () => {
     process.env.DOCUSEAL_WEBHOOK_SECRET = TEST_SECRET;
     const payload = Buffer.from(JSON.stringify({ event_type: "submission.completed" }));
     const req = createMockRequest(payload, { "x-docuseal-signature": sign(payload, "wrong-secret") });
+    const res = createMockResponse();
+
+    await docusealWebhookHandler(req, res);
+
+    assert.equal(res.statusCode, 400);
+  });
+
+  test("rejects a correctly-signed but stale (>5min old) timestamp", async () => {
+    process.env.DOCUSEAL_WEBHOOK_SECRET = TEST_SECRET;
+    const payload = Buffer.from(JSON.stringify({ event_type: "submission.completed" }));
+    const staleTimestamp = Math.floor(Date.now() / 1000) - 10 * 60;
+    const req = createMockRequest(payload, { "x-docuseal-signature": sign(payload, TEST_SECRET, staleTimestamp) });
     const res = createMockResponse();
 
     await docusealWebhookHandler(req, res);
