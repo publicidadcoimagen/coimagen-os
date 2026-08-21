@@ -42,7 +42,7 @@ import { AdminUsers } from "@/pages/admin/users";
 import { HQ } from "@/pages/hq/index";
 import { Backlog } from "@/pages/backlog/index";
 import { DailySprint } from "@/pages/daily-sprint/index";
-import { BeckyBeckCatalog } from "@/pages/becky-beck/index";
+import { CatalogAdmin } from "@/pages/catalog/index";
 import { Roadmap } from "@/pages/roadmap/index";
 import { Bugs } from "@/pages/bugs/index";
 import { Ideas } from "@/pages/ideas/index";
@@ -261,7 +261,7 @@ function Router() {
             <Route path="/hq" component={HQ} />
             <Route path="/backlog" component={Backlog} />
             <Route path="/daily-sprint" component={DailySprint} />
-            <Route path="/becky-beck" component={BeckyBeckCatalog} />
+            <Route path="/catalog" component={CatalogAdmin} />
             <Route path="/roadmap" component={Roadmap} />
             <Route path="/bugs" component={Bugs} />
             <Route path="/ideas" component={Ideas} />

@@ -48,6 +48,30 @@ export async function createOrder(invoice: Invoice, requiresFiscalInvoice: boole
   return { paypalOrderId: result.id, totalAmount, ivaAmount, currency: invoice.currency };
 }
 
+// Creates a PayPal order for an e-commerce checkout order (pendiente #5) —
+// deliberately separate from createOrder() above, which is invoice/cuota-
+// specific (fiscal IVA, payment-recovery discounts). A catalog order's
+// amount is already fully computed server-side by lib/catalog/pricing.ts
+// before this is called; nothing here re-derives or trusts a client-
+// supplied total.
+export async function createCatalogOrder(params: { orderId: number; totalCents: number; currency: string }): Promise<string> {
+  const { orders } = getPaypalClient();
+  const { result } = await orders.createOrder({
+    body: {
+      intent: CheckoutPaymentIntent.Capture,
+      purchaseUnits: [
+        {
+          referenceId: String(params.orderId),
+          amount: { currencyCode: params.currency, value: (params.totalCents / 100).toFixed(2) },
+        },
+      ],
+    },
+    prefer: "return=minimal",
+  });
+  if (!result.id) throw new Error("PayPal no devolvió un order id al crear la orden de catálogo");
+  return result.id;
+}
+
 export interface CaptureResult {
   status: string;
   captureId: string | null;

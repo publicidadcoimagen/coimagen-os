@@ -563,71 +563,154 @@ export interface TaskUpdate {
   dueDate?: string;
 }
 
-export type BeckyBeckProductCategory = typeof BeckyBeckProductCategory[keyof typeof BeckyBeckProductCategory];
-
-
-export const BeckyBeckProductCategory = {
-  bolso: 'bolso',
-  mochila: 'mochila',
-  llavero: 'llavero',
-} as const;
-
-export interface BeckyBeckProduct {
+export interface Product {
   id: string;
+  clientId: number;
   nameEs: string;
   nameEn: string;
-  category: BeckyBeckProductCategory;
-  priceUsd: number;
-  available: boolean;
   /** @nullable */
-  imageUrl?: string | null;
+  description?: string | null;
+  category: string;
+  priceCents: number;
+  currency: string;
+  /** @nullable */
+  stock?: number | null;
+  /** @nullable */
+  sku?: string | null;
+  available: boolean;
+  imageUrls: string[];
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
 }
 
-export type BeckyBeckProductInputCategory = typeof BeckyBeckProductInputCategory[keyof typeof BeckyBeckProductInputCategory];
-
-
-export const BeckyBeckProductInputCategory = {
-  bolso: 'bolso',
-  mochila: 'mochila',
-  llavero: 'llavero',
-} as const;
-
-export interface BeckyBeckProductInput {
+export interface ProductInput {
+  /** Required for staff callers; ignored and forced to the caller's own client for cliente-role callers */
+  clientId?: number;
   /** @minLength 1 */
   nameEs: string;
   /** @minLength 1 */
   nameEn: string;
-  category: BeckyBeckProductInputCategory;
+  description?: string;
+  /** @minLength 1 */
+  category: string;
   /** @minimum 0 */
-  priceUsd: number;
+  priceCents: number;
+  currency?: string;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  stock?: number | null;
+  sku?: string;
   available?: boolean;
-  /** data: URI — uploaded to Netlify Blobs on save */
-  imageBase64?: string;
+  /** data: URIs — uploaded to Netlify Blobs on save, in order */
+  imagesBase64?: string[];
 }
 
-export type BeckyBeckProductUpdateCategory = typeof BeckyBeckProductUpdateCategory[keyof typeof BeckyBeckProductUpdateCategory];
-
-
-export const BeckyBeckProductUpdateCategory = {
-  bolso: 'bolso',
-  mochila: 'mochila',
-  llavero: 'llavero',
-} as const;
-
-export interface BeckyBeckProductUpdate {
+export interface ProductUpdate {
   /** @minLength 1 */
   nameEs?: string;
   /** @minLength 1 */
   nameEn?: string;
-  category?: BeckyBeckProductUpdateCategory;
+  description?: string;
+  /** @minLength 1 */
+  category?: string;
   /** @minimum 0 */
-  priceUsd?: number;
+  priceCents?: number;
+  currency?: string;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  stock?: number | null;
+  sku?: string;
   available?: boolean;
-  /** data: URI — replaces the existing image if provided */
-  imageBase64?: string;
+  /** If provided, REPLACES the entire existing image set */
+  imagesBase64?: string[];
+}
+
+export interface OrderItem {
+  id: number;
+  /** @nullable */
+  productId?: string | null;
+  nameSnapshot: string;
+  priceCentsSnapshot: number;
+  quantity: number;
+  subtotalCents: number;
+}
+
+/**
+ * @nullable
+ */
+export type OrderShippingAddress = {[key: string]: string} | null;
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
+
+
+export const OrderStatus = {
+  pending: 'pending',
+  paid: 'paid',
+  fulfilled: 'fulfilled',
+  cancelled: 'cancelled',
+} as const;
+
+export interface Order {
+  id: number;
+  clientId: number;
+  buyerName: string;
+  buyerEmail: string;
+  /** @nullable */
+  buyerPhone?: string | null;
+  /** @nullable */
+  shippingAddress?: OrderShippingAddress;
+  status: OrderStatus;
+  currency: string;
+  subtotalCents: number;
+  shippingCents: number;
+  totalCents: number;
+  /** @nullable */
+  paypalOrderId?: string | null;
+  /** @nullable */
+  paidAt?: string | null;
+  /** @nullable */
+  fulfilledAt?: string | null;
+  items: OrderItem[];
+  createdAt: string;
+}
+
+export interface OrderItemInput {
+  productId: string;
+  /** @minimum 1 */
+  quantity: number;
+}
+
+export type CreatePublicOrderBodyShippingAddress = {[key: string]: string};
+
+export interface CreatePublicOrderBody {
+  /** @minLength 1 */
+  buyerName: string;
+  /** @minLength 3 */
+  buyerEmail: string;
+  buyerPhone?: string;
+  shippingAddress?: CreatePublicOrderBodyShippingAddress;
+  /** @minItems 1 */
+  items: OrderItemInput[];
+}
+
+export interface CreatePublicOrderResponse {
+  orderId: number;
+  paypalOrderId: string;
+  totalCents: number;
+  currency: string;
+}
+
+export interface CapturePublicOrderBody {
+  paypalOrderId: string;
+}
+
+export interface CapturePublicOrderResponse {
+  status: string;
 }
 
 export interface DashboardSummary {
@@ -3391,5 +3474,16 @@ triggerEvent?: string;
 export type ListIntegrationsParams = {
 status?: string;
 type?: string;
+};
+
+export type ListProductsParams = {
+/**
+ * Staff only — cliente-role callers are always scoped to their own client
+ */
+clientId?: number;
+};
+
+export type ListOrdersParams = {
+clientId?: number;
 };
 

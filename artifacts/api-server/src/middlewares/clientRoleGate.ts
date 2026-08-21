@@ -27,14 +27,22 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   { method: "GET", pattern: /^\/clients\/\d+\/onboarding$/ },
   { method: "GET", pattern: /^\/account(\/|$)/ },
   { method: "POST", pattern: /^\/account(\/|$)/ },
-  // Becky Beck catalog ("ecommerce" module, P-79) — becky-beck.ts itself
-  // further gates these behind the caller's client having "ecommerce"
-  // enabled, so listing them here doesn't open the catalog to every
-  // cliente account, only to route-class reachability.
-  { method: "GET", pattern: /^\/becky-beck\/products$/ },
-  { method: "POST", pattern: /^\/becky-beck\/products$/ },
-  { method: "PATCH", pattern: /^\/becky-beck\/products\/[^/]+$/ },
-  { method: "DELETE", pattern: /^\/becky-beck\/products\/[^/]+$/ },
+  // Product catalog ("ecommerce" module, P-79/pendiente #5) — catalog.ts
+  // itself further gates these behind the caller's client having
+  // "ecommerce" enabled, so listing them here doesn't open the catalog to
+  // every cliente account, only to route-class reachability.
+  { method: "GET", pattern: /^\/products$/ },
+  { method: "POST", pattern: /^\/products$/ },
+  { method: "GET", pattern: /^\/products\/[^/]+$/ },
+  { method: "PATCH", pattern: /^\/products\/[^/]+$/ },
+  { method: "DELETE", pattern: /^\/products\/[^/]+$/ },
+  { method: "GET", pattern: /^\/products\/[^/]+\/images\/\d+$/ },
+  // Orders — read-only for cliente accounts (fulfillment stays
+  // staff-only-in-practice, see catalog.ts's own comment on that route;
+  // leaving /orders/:id/fulfill off this allowlist means the gate itself
+  // blocks it for cliente accounts too, not just the UI's own omission).
+  { method: "GET", pattern: /^\/orders$/ },
+  { method: "GET", pattern: /^\/orders\/\d+$/ },
 ];
 
 export function clientRoleGate(req: Request, res: Response, next: NextFunction): void {

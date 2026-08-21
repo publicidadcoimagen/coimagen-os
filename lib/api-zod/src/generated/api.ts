@@ -5138,70 +5138,276 @@ export const TestIntegrationResponse = zod.object({
 })
 
 
-export const ListBeckyBeckProductsResponseItem = zod.object({
+export const ListProductsQueryParams = zod.object({
+  "clientId": zod.coerce.number().optional().describe('Staff only — cliente-role callers are always scoped to their own client')
+})
+
+export const ListProductsResponseItem = zod.object({
   "id": zod.string(),
+  "clientId": zod.number(),
   "nameEs": zod.string(),
   "nameEn": zod.string(),
-  "category": zod.enum(['bolso', 'mochila', 'llavero']),
-  "priceUsd": zod.number(),
+  "description": zod.string().nullish(),
+  "category": zod.string(),
+  "priceCents": zod.number(),
+  "currency": zod.string(),
+  "stock": zod.number().nullish(),
+  "sku": zod.string().nullish(),
   "available": zod.boolean(),
-  "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
-export const ListBeckyBeckProductsResponse = zod.array(ListBeckyBeckProductsResponseItem)
+export const ListProductsResponse = zod.array(ListProductsResponseItem)
 
 
 
 
-export const createBeckyBeckProductBodyPriceUsdMin = 0;
 
-export const createBeckyBeckProductBodyAvailableDefault = true;
+export const createProductBodyPriceCentsMin = 0;
 
-export const CreateBeckyBeckProductBody = zod.object({
+export const createProductBodyCurrencyDefault = `USD`;
+export const createProductBodyStockMin = 0;
+
+export const createProductBodyAvailableDefault = true;
+
+export const CreateProductBody = zod.object({
+  "clientId": zod.number().optional().describe('Required for staff callers; ignored and forced to the caller\'s own client for cliente-role callers'),
   "nameEs": zod.string().min(1),
   "nameEn": zod.string().min(1),
-  "category": zod.enum(['bolso', 'mochila', 'llavero']),
-  "priceUsd": zod.number().min(createBeckyBeckProductBodyPriceUsdMin),
-  "available": zod.boolean().default(createBeckyBeckProductBodyAvailableDefault),
-  "imageBase64": zod.string().optional().describe('data: URI — uploaded to Netlify Blobs on save')
+  "description": zod.string().optional(),
+  "category": zod.string().min(1),
+  "priceCents": zod.number().min(createProductBodyPriceCentsMin),
+  "currency": zod.string().default(createProductBodyCurrencyDefault),
+  "stock": zod.number().min(createProductBodyStockMin).nullish(),
+  "sku": zod.string().optional(),
+  "available": zod.boolean().default(createProductBodyAvailableDefault),
+  "imagesBase64": zod.array(zod.string()).optional().describe('data: URIs — uploaded to Netlify Blobs on save, in order')
 })
 
 
-export const UpdateBeckyBeckProductParams = zod.object({
+export const GetProductParams = zod.object({
   "id": zod.coerce.string()
 })
 
-
-
-export const updateBeckyBeckProductBodyPriceUsdMin = 0;
-
-
-
-export const UpdateBeckyBeckProductBody = zod.object({
-  "nameEs": zod.string().min(1).optional(),
-  "nameEn": zod.string().min(1).optional(),
-  "category": zod.enum(['bolso', 'mochila', 'llavero']).optional(),
-  "priceUsd": zod.number().min(updateBeckyBeckProductBodyPriceUsdMin).optional(),
-  "available": zod.boolean().optional(),
-  "imageBase64": zod.string().optional().describe('data: URI — replaces the existing image if provided')
-})
-
-export const UpdateBeckyBeckProductResponse = zod.object({
+export const GetProductResponse = zod.object({
   "id": zod.string(),
+  "clientId": zod.number(),
   "nameEs": zod.string(),
   "nameEn": zod.string(),
-  "category": zod.enum(['bolso', 'mochila', 'llavero']),
-  "priceUsd": zod.number(),
+  "description": zod.string().nullish(),
+  "category": zod.string(),
+  "priceCents": zod.number(),
+  "currency": zod.string(),
+  "stock": zod.number().nullish(),
+  "sku": zod.string().nullish(),
   "available": zod.boolean(),
-  "imageUrl": zod.string().nullish(),
+  "imageUrls": zod.array(zod.string()),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
 
 
-export const DeleteBeckyBeckProductParams = zod.object({
+export const UpdateProductParams = zod.object({
   "id": zod.coerce.string()
+})
+
+
+
+
+export const updateProductBodyPriceCentsMin = 0;
+
+export const updateProductBodyStockMin = 0;
+
+
+
+export const UpdateProductBody = zod.object({
+  "nameEs": zod.string().min(1).optional(),
+  "nameEn": zod.string().min(1).optional(),
+  "description": zod.string().optional(),
+  "category": zod.string().min(1).optional(),
+  "priceCents": zod.number().min(updateProductBodyPriceCentsMin).optional(),
+  "currency": zod.string().optional(),
+  "stock": zod.number().min(updateProductBodyStockMin).nullish(),
+  "sku": zod.string().optional(),
+  "available": zod.boolean().optional(),
+  "imagesBase64": zod.array(zod.string()).optional().describe('If provided, REPLACES the entire existing image set')
+})
+
+export const UpdateProductResponse = zod.object({
+  "id": zod.string(),
+  "clientId": zod.number(),
+  "nameEs": zod.string(),
+  "nameEn": zod.string(),
+  "description": zod.string().nullish(),
+  "category": zod.string(),
+  "priceCents": zod.number(),
+  "currency": zod.string(),
+  "stock": zod.number().nullish(),
+  "sku": zod.string().nullish(),
+  "available": zod.boolean(),
+  "imageUrls": zod.array(zod.string()),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+export const DeleteProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+export const ListOrdersQueryParams = zod.object({
+  "clientId": zod.coerce.number().optional()
+})
+
+export const ListOrdersResponseItem = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "buyerName": zod.string(),
+  "buyerEmail": zod.string(),
+  "buyerPhone": zod.string().nullish(),
+  "shippingAddress": zod.record(zod.string(), zod.string()).nullish(),
+  "status": zod.enum(['pending', 'paid', 'fulfilled', 'cancelled']),
+  "currency": zod.string(),
+  "subtotalCents": zod.number(),
+  "shippingCents": zod.number(),
+  "totalCents": zod.number(),
+  "paypalOrderId": zod.string().nullish(),
+  "paidAt": zod.string().nullish(),
+  "fulfilledAt": zod.string().nullish(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.string().nullish(),
+  "nameSnapshot": zod.string(),
+  "priceCentsSnapshot": zod.number(),
+  "quantity": zod.number(),
+  "subtotalCents": zod.number()
+})),
+  "createdAt": zod.string()
+})
+export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
+
+
+export const GetOrderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetOrderResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "buyerName": zod.string(),
+  "buyerEmail": zod.string(),
+  "buyerPhone": zod.string().nullish(),
+  "shippingAddress": zod.record(zod.string(), zod.string()).nullish(),
+  "status": zod.enum(['pending', 'paid', 'fulfilled', 'cancelled']),
+  "currency": zod.string(),
+  "subtotalCents": zod.number(),
+  "shippingCents": zod.number(),
+  "totalCents": zod.number(),
+  "paypalOrderId": zod.string().nullish(),
+  "paidAt": zod.string().nullish(),
+  "fulfilledAt": zod.string().nullish(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.string().nullish(),
+  "nameSnapshot": zod.string(),
+  "priceCentsSnapshot": zod.number(),
+  "quantity": zod.number(),
+  "subtotalCents": zod.number()
+})),
+  "createdAt": zod.string()
+})
+
+
+export const FulfillOrderParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const FulfillOrderResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "buyerName": zod.string(),
+  "buyerEmail": zod.string(),
+  "buyerPhone": zod.string().nullish(),
+  "shippingAddress": zod.record(zod.string(), zod.string()).nullish(),
+  "status": zod.enum(['pending', 'paid', 'fulfilled', 'cancelled']),
+  "currency": zod.string(),
+  "subtotalCents": zod.number(),
+  "shippingCents": zod.number(),
+  "totalCents": zod.number(),
+  "paypalOrderId": zod.string().nullish(),
+  "paidAt": zod.string().nullish(),
+  "fulfilledAt": zod.string().nullish(),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "productId": zod.string().nullish(),
+  "nameSnapshot": zod.string(),
+  "priceCentsSnapshot": zod.number(),
+  "quantity": zod.number(),
+  "subtotalCents": zod.number()
+})),
+  "createdAt": zod.string()
+})
+
+
+export const ListPublicCatalogProductsParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const ListPublicCatalogProductsResponseItem = zod.object({
+  "id": zod.string(),
+  "clientId": zod.number(),
+  "nameEs": zod.string(),
+  "nameEn": zod.string(),
+  "description": zod.string().nullish(),
+  "category": zod.string(),
+  "priceCents": zod.number(),
+  "currency": zod.string(),
+  "stock": zod.number().nullish(),
+  "sku": zod.string().nullish(),
+  "available": zod.boolean(),
+  "imageUrls": zod.array(zod.string()),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+export const ListPublicCatalogProductsResponse = zod.array(ListPublicCatalogProductsResponseItem)
+
+
+export const CreatePublicCatalogOrderParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+
+export const createPublicCatalogOrderBodyBuyerEmailMin = 3;
+
+
+
+
+
+export const CreatePublicCatalogOrderBody = zod.object({
+  "buyerName": zod.string().min(1),
+  "buyerEmail": zod.string().min(createPublicCatalogOrderBodyBuyerEmailMin),
+  "buyerPhone": zod.string().optional(),
+  "shippingAddress": zod.record(zod.string(), zod.string()).optional(),
+  "items": zod.array(zod.object({
+  "productId": zod.string(),
+  "quantity": zod.number().min(1)
+})).min(1)
+})
+
+
+export const CapturePublicCatalogOrderParams = zod.object({
+  "clientId": zod.coerce.number(),
+  "orderId": zod.coerce.number()
+})
+
+export const CapturePublicCatalogOrderBody = zod.object({
+  "paypalOrderId": zod.string()
+})
+
+export const CapturePublicCatalogOrderResponse = zod.object({
+  "status": zod.string()
 })
 
 

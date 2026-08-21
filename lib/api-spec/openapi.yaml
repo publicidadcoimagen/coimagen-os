@@ -37,6 +37,9 @@ tags:
   - name: automations
   - name: sequences
   - name: prospecting-audits
+  - name: catalog
+  - name: orders
+  - name: public-catalog
 
 paths:
   # ─── AUTH ───────────────────────────────────────────────────────────────────
@@ -3870,56 +3873,68 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/IntegrationTestResult" }
 
-  # ─── BECKY BECK CATALOG (P-77) ───────────────────────────────────────────────
-  /becky-beck/products:
+  # ─── PRODUCT CATALOG (pendiente #5 — generalizes P-77's Becky-Beck-only catalog) ──
+  /products:
     get:
-      operationId: listBeckyBeckProducts
-      tags: [becky-beck]
+      operationId: listProducts
+      tags: [catalog]
+      parameters:
+        - { name: clientId, in: query, required: false, schema: { type: integer }, description: "Staff only — cliente-role callers are always scoped to their own client" }
       responses:
         "200":
           description: OK
           content:
             application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/BeckyBeckProduct"
+              schema: { type: array, items: { $ref: "#/components/schemas/Product" } }
     post:
-      operationId: createBeckyBeckProduct
-      tags: [becky-beck]
+      operationId: createProduct
+      tags: [catalog]
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/BeckyBeckProductInput" }
+            schema: { $ref: "#/components/schemas/ProductInput" }
       responses:
         "201":
           description: Created
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/BeckyBeckProduct" }
-  /becky-beck/products/{id}:
+              schema: { $ref: "#/components/schemas/Product" }
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [catalog]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+        "404":
+          description: Not found
     patch:
-      operationId: updateBeckyBeckProduct
-      tags: [becky-beck]
+      operationId: updateProduct
+      tags: [catalog]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string } }
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/BeckyBeckProductUpdate" }
+            schema: { $ref: "#/components/schemas/ProductUpdate" }
       responses:
         "200":
           description: OK
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/BeckyBeckProduct" }
+              schema: { $ref: "#/components/schemas/Product" }
         "404":
           description: Not found
     delete:
-      operationId: deleteBeckyBeckProduct
-      tags: [becky-beck]
+      operationId: deleteProduct
+      tags: [catalog]
       parameters:
         - { name: id, in: path, required: true, schema: { type: string } }
       responses:
@@ -3927,6 +3942,101 @@ paths:
           description: Deleted
         "404":
           description: Not found
+
+  # ─── ORDERS (staff/client-room view of e-commerce checkout orders) ──────────
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      parameters:
+        - { name: clientId, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Order" } }
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "404":
+          description: Not found
+  /orders/{id}/fulfill:
+    post:
+      operationId: fulfillOrder
+      tags: [orders]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "404":
+          description: Not found
+        "409":
+          description: Order is not paid yet
+
+  # ─── PUBLIC CATALOG / CHECKOUT (guest, unauthenticated storefront) ──────────
+  /public/catalog/{clientId}/products:
+    get:
+      operationId: listPublicCatalogProducts
+      tags: [public-catalog]
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Product" } }
+  /public/catalog/{clientId}/orders:
+    post:
+      operationId: createPublicCatalogOrder
+      tags: [public-catalog]
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePublicOrderBody" }
+      responses:
+        "201":
+          description: Created — order + PayPal order created together
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CreatePublicOrderResponse" }
+        "400":
+          description: Invalid cart (empty, unavailable product, or insufficient stock)
+  /public/catalog/{clientId}/orders/{orderId}/capture:
+    post:
+      operationId: capturePublicCatalogOrder
+      tags: [public-catalog]
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+        - { name: orderId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CapturePublicOrderBody" }
+      responses:
+        "200":
+          description: OK — optimistic UI feedback only, webhook is the durable source of truth
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CapturePublicOrderResponse" }
 
   # ─── SEQUENCES (read-only status views for automated email sequences) ──────
   # Reuses the same eligibility.ts pure functions each cron already runs — no
@@ -4381,39 +4491,118 @@ components:
         priority: { type: string, enum: [low, medium, high, urgent] }
         dueDate: { type: string }
 
-    # ── BECKY BECK CATALOG (P-77) ─────────────────────────────────────────────
-    BeckyBeckProduct:
+    # ── PRODUCT CATALOG (pendiente #5) ────────────────────────────────────────
+    Product:
       type: object
-      required: [id, nameEs, nameEn, category, priceUsd, available, createdAt]
+      required: [id, clientId, nameEs, nameEn, category, priceCents, currency, available, imageUrls, createdAt]
       properties:
         id: { type: string }
+        clientId: { type: integer }
         nameEs: { type: string }
         nameEn: { type: string }
-        category: { type: string, enum: [bolso, mochila, llavero] }
-        priceUsd: { type: number }
+        description: { type: ["string", "null"] }
+        category: { type: string }
+        priceCents: { type: integer }
+        currency: { type: string }
+        stock: { type: ["integer", "null"] }
+        sku: { type: ["string", "null"] }
         available: { type: boolean }
-        imageUrl: { type: ["string", "null"] }
+        imageUrls: { type: array, items: { type: string } }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
-    BeckyBeckProductInput:
+    ProductInput:
       type: object
-      required: [nameEs, nameEn, category, priceUsd]
+      required: [nameEs, nameEn, category, priceCents]
       properties:
+        clientId: { type: integer, description: "Required for staff callers; ignored and forced to the caller's own client for cliente-role callers" }
         nameEs: { type: string, minLength: 1 }
         nameEn: { type: string, minLength: 1 }
-        category: { type: string, enum: [bolso, mochila, llavero] }
-        priceUsd: { type: number, minimum: 0 }
+        description: { type: string }
+        category: { type: string, minLength: 1 }
+        priceCents: { type: integer, minimum: 0 }
+        currency: { type: string, default: USD }
+        stock: { type: ["integer", "null"], minimum: 0 }
+        sku: { type: string }
         available: { type: boolean, default: true }
-        imageBase64: { type: string, description: "data: URI — uploaded to Netlify Blobs on save" }
-    BeckyBeckProductUpdate:
+        imagesBase64: { type: array, items: { type: string }, description: "data: URIs — uploaded to Netlify Blobs on save, in order" }
+    ProductUpdate:
       type: object
       properties:
         nameEs: { type: string, minLength: 1 }
         nameEn: { type: string, minLength: 1 }
-        category: { type: string, enum: [bolso, mochila, llavero] }
-        priceUsd: { type: number, minimum: 0 }
+        description: { type: string }
+        category: { type: string, minLength: 1 }
+        priceCents: { type: integer, minimum: 0 }
+        currency: { type: string }
+        stock: { type: ["integer", "null"], minimum: 0 }
+        sku: { type: string }
         available: { type: boolean }
-        imageBase64: { type: string, description: "data: URI — replaces the existing image if provided" }
+        imagesBase64: { type: array, items: { type: string }, description: "If provided, REPLACES the entire existing image set" }
+
+    # ── ORDERS / CHECKOUT (pendiente #5) ──────────────────────────────────────
+    OrderItem:
+      type: object
+      required: [id, nameSnapshot, priceCentsSnapshot, quantity, subtotalCents]
+      properties:
+        id: { type: integer }
+        productId: { type: ["string", "null"] }
+        nameSnapshot: { type: string }
+        priceCentsSnapshot: { type: integer }
+        quantity: { type: integer }
+        subtotalCents: { type: integer }
+    Order:
+      type: object
+      required: [id, clientId, buyerName, buyerEmail, status, currency, subtotalCents, shippingCents, totalCents, items, createdAt]
+      properties:
+        id: { type: integer }
+        clientId: { type: integer }
+        buyerName: { type: string }
+        buyerEmail: { type: string }
+        buyerPhone: { type: ["string", "null"] }
+        shippingAddress: { type: ["object", "null"], additionalProperties: { type: string } }
+        status: { type: string, enum: [pending, paid, fulfilled, cancelled] }
+        currency: { type: string }
+        subtotalCents: { type: integer }
+        shippingCents: { type: integer }
+        totalCents: { type: integer }
+        paypalOrderId: { type: ["string", "null"] }
+        paidAt: { type: ["string", "null"] }
+        fulfilledAt: { type: ["string", "null"] }
+        items: { type: array, items: { $ref: "#/components/schemas/OrderItem" } }
+        createdAt: { type: string }
+    OrderItemInput:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId: { type: string }
+        quantity: { type: integer, minimum: 1 }
+    CreatePublicOrderBody:
+      type: object
+      required: [buyerName, buyerEmail, items]
+      properties:
+        buyerName: { type: string, minLength: 1 }
+        buyerEmail: { type: string, minLength: 3 }
+        buyerPhone: { type: string }
+        shippingAddress: { type: object, additionalProperties: { type: string } }
+        items: { type: array, minItems: 1, items: { $ref: "#/components/schemas/OrderItemInput" } }
+    CreatePublicOrderResponse:
+      type: object
+      required: [orderId, paypalOrderId, totalCents, currency]
+      properties:
+        orderId: { type: integer }
+        paypalOrderId: { type: string }
+        totalCents: { type: integer }
+        currency: { type: string }
+    CapturePublicOrderBody:
+      type: object
+      required: [paypalOrderId]
+      properties:
+        paypalOrderId: { type: string }
+    CapturePublicOrderResponse:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
 
     # ── DASHBOARD ─────────────────────────────────────────────────────────────
     DashboardSummary:
