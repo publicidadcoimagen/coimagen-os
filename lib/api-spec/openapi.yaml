@@ -36,6 +36,7 @@ tags:
   - name: ideas
   - name: automations
   - name: sequences
+  - name: prospecting-audits
 
 paths:
   # ─── AUTH ───────────────────────────────────────────────────────────────────
@@ -3960,6 +3961,53 @@ paths:
                 items:
                   $ref: "#/components/schemas/InvoiceReminderStatus"
 
+  # ─── PROSPECTING AUDITS (P-82 Agente Prospectador) ─────────────────────────
+  # Manual-review queue only — the 10-item checklist's 8 auto-checkable items
+  # (Google Places/PageSpeed APIs + HTML analysis) are a later phase, not
+  # built yet. These 2 endpoints cover the 2 items with no reliable API
+  # (abandoned social media, no content published), which a staff member
+  # answers by hand before a prospecting audit can be scored/classified.
+  /prospecting-audits/pending:
+    get:
+      operationId: listPendingProspectingAudits
+      summary: List prospecting audits awaiting the 2 manual checklist answers
+      tags: [prospecting-audits]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ProspectingAuditPending" }
+
+  /prospecting-audits/{id}:
+    patch:
+      operationId: submitProspectingAuditReview
+      summary: Submit the 2 manual checklist answers; computes final score/tier
+      tags: [prospecting-audits]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ProspectingAuditReviewSubmit" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProspectingAuditReviewed" }
+        "404":
+          description: Not found (no such id, not a prospecting audit, or already reviewed)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -4830,6 +4878,53 @@ components:
         clientWindowStage: { type: ["string", "null"], enum: [upcoming, overdue, null] }
         clientSentStages: { type: array, items: { type: string } }
         clientLastSentAt: { type: ["string", "null"] }
+
+    # ── PROSPECTING AUDITS (P-82) ───────────────────────────────────────────────
+    ProspectingChecklist:
+      type: object
+      description: >-
+        The 10-item digital-presence checklist. abandonedSocial and
+        noContentPublished are manual-only (no reliable API) — see
+        ProspectingAuditReviewSubmit. All others are auto-checkable in a
+        later phase, not built yet, so they are always null today.
+      required: [noWebsite, oldWebsite, slowWebsite, noGoogleBusiness, incompleteGoogleBusiness, noVisibleWhatsapp, abandonedSocial, noContentPublished, noAutomation, noLeadCapture]
+      properties:
+        noWebsite: { type: ["boolean", "null"] }
+        oldWebsite: { type: ["boolean", "null"] }
+        slowWebsite: { type: ["boolean", "null"] }
+        noGoogleBusiness: { type: ["boolean", "null"] }
+        incompleteGoogleBusiness: { type: ["boolean", "null"] }
+        noVisibleWhatsapp: { type: ["boolean", "null"] }
+        abandonedSocial: { type: ["boolean", "null"], description: "Manual-only — filled in via PATCH /prospecting-audits/:id" }
+        noContentPublished: { type: ["boolean", "null"], description: "Manual-only — filled in via PATCH /prospecting-audits/:id" }
+        noAutomation: { type: ["boolean", "null"] }
+        noLeadCapture: { type: ["boolean", "null"] }
+    ProspectingAuditPending:
+      type: object
+      required: [diagnosisId, prospectId, prospectName, prospectPhone, prospectIndustry, checklist, createdAt]
+      properties:
+        diagnosisId: { type: integer }
+        prospectId: { type: integer }
+        prospectName: { type: string }
+        prospectPhone: { type: ["string", "null"] }
+        prospectIndustry: { type: ["string", "null"] }
+        checklist: { $ref: "#/components/schemas/ProspectingChecklist" }
+        createdAt: { type: string }
+    ProspectingAuditReviewSubmit:
+      type: object
+      required: [abandonedSocial, noContentPublished]
+      properties:
+        abandonedSocial: { type: boolean }
+        noContentPublished: { type: boolean }
+    ProspectingAuditReviewed:
+      type: object
+      required: [diagnosisId, status, score, tier, checklist]
+      properties:
+        diagnosisId: { type: integer }
+        status: { type: string }
+        score: { type: integer, description: "Count of true checklist values across all 10 keys" }
+        tier: { type: string, enum: [A, B, C, D], description: "0-2=D, 3-5=C, 6-8=B, 9-10=A" }
+        checklist: { $ref: "#/components/schemas/ProspectingChecklist" }
 
     # ── SUBSCRIPTION ──────────────────────────────────────────────────────────
     Subscription:

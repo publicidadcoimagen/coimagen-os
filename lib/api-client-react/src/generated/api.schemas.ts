@@ -1375,6 +1375,78 @@ export interface InvoiceReminderStatus {
   clientLastSentAt: string | null;
 }
 
+/**
+ * The 10-item digital-presence checklist. abandonedSocial and noContentPublished are manual-only (no reliable API) — see ProspectingAuditReviewSubmit. All others are auto-checkable in a later phase, not built yet, so they are always null today.
+ */
+export interface ProspectingChecklist {
+  /** @nullable */
+  noWebsite: boolean | null;
+  /** @nullable */
+  oldWebsite: boolean | null;
+  /** @nullable */
+  slowWebsite: boolean | null;
+  /** @nullable */
+  noGoogleBusiness: boolean | null;
+  /** @nullable */
+  incompleteGoogleBusiness: boolean | null;
+  /** @nullable */
+  noVisibleWhatsapp: boolean | null;
+  /**
+     * Manual-only — filled in via PATCH /prospecting-audits/:id
+     * @nullable
+     */
+  abandonedSocial: boolean | null;
+  /**
+     * Manual-only — filled in via PATCH /prospecting-audits/:id
+     * @nullable
+     */
+  noContentPublished: boolean | null;
+  /** @nullable */
+  noAutomation: boolean | null;
+  /** @nullable */
+  noLeadCapture: boolean | null;
+}
+
+export interface ProspectingAuditPending {
+  diagnosisId: number;
+  prospectId: number;
+  prospectName: string;
+  /** @nullable */
+  prospectPhone: string | null;
+  /** @nullable */
+  prospectIndustry: string | null;
+  checklist: ProspectingChecklist;
+  createdAt: string;
+}
+
+export interface ProspectingAuditReviewSubmit {
+  abandonedSocial: boolean;
+  noContentPublished: boolean;
+}
+
+/**
+ * 0-2=D, 3-5=C, 6-8=B, 9-10=A
+ */
+export type ProspectingAuditReviewedTier = typeof ProspectingAuditReviewedTier[keyof typeof ProspectingAuditReviewedTier];
+
+
+export const ProspectingAuditReviewedTier = {
+  A: 'A',
+  B: 'B',
+  C: 'C',
+  D: 'D',
+} as const;
+
+export interface ProspectingAuditReviewed {
+  diagnosisId: number;
+  status: string;
+  /** Count of true checklist values across all 10 keys */
+  score: number;
+  /** 0-2=D, 3-5=C, 6-8=B, 9-10=A */
+  tier: ProspectingAuditReviewedTier;
+  checklist: ProspectingChecklist;
+}
+
 export type SubscriptionBillingCycle = typeof SubscriptionBillingCycle[keyof typeof SubscriptionBillingCycle];
 
 

@@ -5224,3 +5224,61 @@ export const ListInvoiceReminderStatusesResponseItem = zod.object({
 export const ListInvoiceReminderStatusesResponse = zod.array(ListInvoiceReminderStatusesResponseItem)
 
 
+/**
+ * @summary List prospecting audits awaiting the 2 manual checklist answers
+ */
+export const ListPendingProspectingAuditsResponseItem = zod.object({
+  "diagnosisId": zod.number(),
+  "prospectId": zod.number(),
+  "prospectName": zod.string(),
+  "prospectPhone": zod.string().nullable(),
+  "prospectIndustry": zod.string().nullable(),
+  "checklist": zod.object({
+  "noWebsite": zod.boolean().nullable(),
+  "oldWebsite": zod.boolean().nullable(),
+  "slowWebsite": zod.boolean().nullable(),
+  "noGoogleBusiness": zod.boolean().nullable(),
+  "incompleteGoogleBusiness": zod.boolean().nullable(),
+  "noVisibleWhatsapp": zod.boolean().nullable(),
+  "abandonedSocial": zod.boolean().nullable().describe('Manual-only — filled in via PATCH \/prospecting-audits\/:id'),
+  "noContentPublished": zod.boolean().nullable().describe('Manual-only — filled in via PATCH \/prospecting-audits\/:id'),
+  "noAutomation": zod.boolean().nullable(),
+  "noLeadCapture": zod.boolean().nullable()
+}).describe('The 10-item digital-presence checklist. abandonedSocial and noContentPublished are manual-only (no reliable API) — see ProspectingAuditReviewSubmit. All others are auto-checkable in a later phase, not built yet, so they are always null today.'),
+  "createdAt": zod.string()
+})
+export const ListPendingProspectingAuditsResponse = zod.array(ListPendingProspectingAuditsResponseItem)
+
+
+/**
+ * @summary Submit the 2 manual checklist answers; computes final score/tier
+ */
+export const SubmitProspectingAuditReviewParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SubmitProspectingAuditReviewBody = zod.object({
+  "abandonedSocial": zod.boolean(),
+  "noContentPublished": zod.boolean()
+})
+
+export const SubmitProspectingAuditReviewResponse = zod.object({
+  "diagnosisId": zod.number(),
+  "status": zod.string(),
+  "score": zod.number().describe('Count of true checklist values across all 10 keys'),
+  "tier": zod.enum(['A', 'B', 'C', 'D']).describe('0-2=D, 3-5=C, 6-8=B, 9-10=A'),
+  "checklist": zod.object({
+  "noWebsite": zod.boolean().nullable(),
+  "oldWebsite": zod.boolean().nullable(),
+  "slowWebsite": zod.boolean().nullable(),
+  "noGoogleBusiness": zod.boolean().nullable(),
+  "incompleteGoogleBusiness": zod.boolean().nullable(),
+  "noVisibleWhatsapp": zod.boolean().nullable(),
+  "abandonedSocial": zod.boolean().nullable().describe('Manual-only — filled in via PATCH \/prospecting-audits\/:id'),
+  "noContentPublished": zod.boolean().nullable().describe('Manual-only — filled in via PATCH \/prospecting-audits\/:id'),
+  "noAutomation": zod.boolean().nullable(),
+  "noLeadCapture": zod.boolean().nullable()
+}).describe('The 10-item digital-presence checklist. abandonedSocial and noContentPublished are manual-only (no reliable API) — see ProspectingAuditReviewSubmit. All others are auto-checkable in a later phase, not built yet, so they are always null today.')
+})
+
+

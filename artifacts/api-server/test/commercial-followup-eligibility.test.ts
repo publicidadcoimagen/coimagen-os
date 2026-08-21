@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { nextStageToSend } from "../src/lib/commercial-followup/eligibility";
+import { nextStageToSend, PROSPECTING_FUNNEL_SOURCES } from "../src/lib/commercial-followup/eligibility";
 
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = new Date("2026-08-08T12:00:00Z");
@@ -49,5 +49,15 @@ describe("nextStageToSend", () => {
     // jul 26 → 13 days old, same story
     const jul26 = new Date("2026-07-26T10:00:00Z");
     assert.equal(nextStageToSend(jul26, NOW, new Set()), 2);
+  });
+});
+
+// P-82: repository.ts and routes/sequences.ts both scope the internal
+// (clientId-null) funnel to this exact list — asserted here so a future
+// edit to either file can't silently drift from the other, and so this
+// widening from diagnostico_digital-only stays visible as its own change.
+describe("PROSPECTING_FUNNEL_SOURCES (P-82 widening)", () => {
+  test("includes both the original diagnóstico funnel and the new prospecting agent", () => {
+    assert.deepEqual([...PROSPECTING_FUNNEL_SOURCES].sort(), ["agente_prospectador", "diagnostico_digital"].sort());
   });
 });
