@@ -89,6 +89,22 @@ export async function setOrderPaypalOrderId(orderId: number, paypalOrderId: stri
   await db.update(ordersTable).set({ paypalOrderId, updatedAt: new Date() }).where(eq(ordersTable.id, orderId));
 }
 
+export interface OversoldItem {
+  productId: string;
+  nameSnapshot: string;
+  quantityOrdered: number;
+}
+
+export interface MarkOrderPaidResult {
+  status: "paid" | "already_paid";
+  // Non-empty only when the conditional stock decrement below didn't apply
+  // for one or more items — a real oversell race, not a bug in this
+  // function. The order still ends up "paid" (the PayPal charge already
+  // happened and can't be undone here), so the caller is responsible for
+  // alerting staff — see sendOversoldAlertEmail in ./email.ts.
+  oversoldItems: OversoldItem[];
+}
+
 // Durable source of truth for "this order was actually paid" — called only
 // from the PAYMENT.CAPTURE.COMPLETED webhook handler, never from the
 // synchronous capture route (same principle as invoices/payment-schedule).
@@ -97,25 +113,32 @@ export async function setOrderPaypalOrderId(orderId: number, paypalOrderId: stri
 // (not just re-decremented blindly) here — the soft check at order-creation
 // time doesn't protect against two buyers racing for the last unit between
 // order creation and payment.
-export async function markOrderPaidAndDecrementStock(orderId: number, paypalCaptureId: string | null): Promise<"paid" | "already_paid"> {
+export async function markOrderPaidAndDecrementStock(orderId: number, paypalCaptureId: string | null): Promise<MarkOrderPaidResult> {
   return db.transaction(async (tx) => {
     const [order] = await tx.select().from(ordersTable).where(eq(ordersTable.id, orderId)).limit(1);
     if (!order) throw new Error(`Orden no encontrada: ${orderId}`);
-    if (order.status !== "pending") return "already_paid";
+    if (order.status !== "pending") return { status: "already_paid", oversoldItems: [] };
 
     const items = await tx.select().from(orderItemsTable).where(eq(orderItemsTable.orderId, orderId));
+    const oversoldItems: OversoldItem[] = [];
     for (const item of items) {
       if (!item.productId) continue;
       // Conditional decrement — only applies if enough stock remains,
       // guarding the race between order creation and payment (a second
-      // buyer's order could have been created and paid first).
-      await tx.update(productsTable)
+      // buyer's order could have been created and paid first). `returning`
+      // is how we detect whether the WHERE actually matched — an empty
+      // result means the stock condition failed, i.e. a real oversell.
+      const updated = await tx.update(productsTable)
         .set({ stock: sql`${productsTable.stock} - ${item.quantity}`, updatedAt: new Date() })
-        .where(and(eq(productsTable.id, item.productId), sql`${productsTable.stock} IS NULL OR ${productsTable.stock} >= ${item.quantity}`));
+        .where(and(eq(productsTable.id, item.productId), sql`${productsTable.stock} IS NULL OR ${productsTable.stock} >= ${item.quantity}`))
+        .returning({ id: productsTable.id });
+      if (updated.length === 0) {
+        oversoldItems.push({ productId: item.productId, nameSnapshot: item.nameSnapshot, quantityOrdered: item.quantity });
+      }
     }
 
     await tx.update(ordersTable).set({ status: "paid", paypalCaptureId, paidAt: new Date(), updatedAt: new Date() }).where(eq(ordersTable.id, orderId));
-    return "paid";
+    return { status: "paid", oversoldItems };
   });
 }
 

@@ -9,6 +9,7 @@ import { getInvoiceFiscalData, getClientFiscalData } from "../lib/fiscal-data/re
 import { sendFiscalInvoiceAlertEmail } from "../lib/fiscal-data/email";
 import { getFiscalDocument } from "../lib/fiscal-blobs";
 import { markOrderPaidAndDecrementStock } from "../lib/catalog/repository";
+import { sendOversoldAlertEmail } from "../lib/catalog/email";
 import { logger } from "../lib/logger";
 
 // Fires the staff fiscal-invoice alert for one captured payment — never
@@ -77,7 +78,19 @@ async function handleCaptureCompleted(event: PaypalEvent): Promise<void> {
   const [catalogOrder] = await db.select({ id: ordersTable.id }).from(ordersTable).where(eq(ordersTable.paypalOrderId, orderId));
   if (catalogOrder) {
     const result = await markOrderPaidAndDecrementStock(catalogOrder.id, captureId ?? null);
-    if (result === "already_paid") logger.info({ orderId: catalogOrder.id }, "Webhook de PayPal duplicado para una orden de catálogo ya pagada — ignorado");
+    if (result.status === "already_paid") {
+      logger.info({ orderId: catalogOrder.id }, "Webhook de PayPal duplicado para una orden de catálogo ya pagada — ignorado");
+    } else if (result.oversoldItems.length > 0) {
+      // The charge already went through — this can't be undone here, only
+      // reported. Logged unconditionally (before attempting the email) so
+      // the oversell is never silent even if Resend itself fails.
+      logger.error({ orderId: catalogOrder.id, oversoldItems: result.oversoldItems }, "Sobreventa detectada al confirmar el pago de una orden de catálogo");
+      try {
+        await sendOversoldAlertEmail(catalogOrder.id, result.oversoldItems);
+      } catch (err) {
+        logger.error({ err, orderId: catalogOrder.id }, "No se pudo enviar la alerta de sobreventa");
+      }
+    }
     return;
   }
 
