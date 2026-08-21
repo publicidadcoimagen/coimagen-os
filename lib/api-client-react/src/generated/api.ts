@@ -46,14 +46,13 @@ import type {
   BacklogItem,
   BacklogItemCreate,
   BacklogItemUpdate,
-  BeckyBeckProduct,
-  BeckyBeckProductInput,
-  BeckyBeckProductUpdate,
   Bug,
   BugCreate,
   BugUpdate,
   CapturePaypalOrderRequest,
   CapturePaypalOrderResponse,
+  CapturePublicOrderBody,
+  CapturePublicOrderResponse,
   ChangePasswordRequest,
   ChangePasswordSuccess,
   Client,
@@ -93,6 +92,8 @@ import type {
   CostUpdate,
   CreatePaypalOrderRequest,
   CreatePaypalOrderResponse,
+  CreatePublicOrderBody,
+  CreatePublicOrderResponse,
   DailySprint,
   DailySprintCreate,
   DailySprintUpdate,
@@ -140,6 +141,8 @@ import type {
   ListInvoicesParams,
   ListOrchestrationEventsParams,
   ListOrchestrationRulesParams,
+  ListOrdersParams,
+  ListProductsParams,
   ListProjectsParams,
   ListProposalsParams,
   ListProspectsParams,
@@ -162,9 +165,13 @@ import type {
   OrchestrationRule,
   OrchestrationRuleCreate,
   OrchestrationRuleUpdate,
+  Order,
   Organization,
   OrganizationCreate,
   OrganizationUpdate,
+  Product,
+  ProductInput,
+  ProductUpdate,
   Project,
   ProjectInput,
   ProjectUpdate,
@@ -16938,17 +16945,24 @@ export const useTestIntegration = <TError = ErrorType<unknown>,
       return useMutation(getTestIntegrationMutationOptions(options));
     }
 
-export const getListBeckyBeckProductsUrl = () => {
+export const getListProductsUrl = (params?: ListProductsParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/becky-beck/products`
+  return stringifiedParams.length > 0 ? `/api/products?${stringifiedParams}` : `/api/products`
 }
 
-export const listBeckyBeckProducts = async ( options?: RequestInit): Promise<BeckyBeckProduct[]> => {
+export const listProducts = async (params?: ListProductsParams, options?: RequestInit): Promise<Product[]> => {
 
-  return customFetch<BeckyBeckProduct[]>(getListBeckyBeckProductsUrl(),
+  return customFetch<Product[]>(getListProductsUrl(params),
   {
     ...options,
     method: 'GET'
@@ -16961,42 +16975,42 @@ export const listBeckyBeckProducts = async ( options?: RequestInit): Promise<Bec
 
 
 
-export const getListBeckyBeckProductsQueryKey = () => {
+export const getListProductsQueryKey = (params?: ListProductsParams,) => {
     return [
-    `/api/becky-beck/products`
+    `/api/products`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListBeckyBeckProductsQueryOptions = <TData = Awaited<ReturnType<typeof listBeckyBeckProducts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBeckyBeckProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListProductsQueryOptions = <TData = Awaited<ReturnType<typeof listProducts>>, TError = ErrorType<unknown>>(params?: ListProductsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListBeckyBeckProductsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListProductsQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBeckyBeckProducts>>> = ({ signal }) => listBeckyBeckProducts({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listProducts>>> = ({ signal }) => listProducts(params, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBeckyBeckProducts>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListBeckyBeckProductsQueryResult = NonNullable<Awaited<ReturnType<typeof listBeckyBeckProducts>>>
-export type ListBeckyBeckProductsQueryError = ErrorType<unknown>
+export type ListProductsQueryResult = NonNullable<Awaited<ReturnType<typeof listProducts>>>
+export type ListProductsQueryError = ErrorType<unknown>
 
 
 
-export function useListBeckyBeckProducts<TData = Awaited<ReturnType<typeof listBeckyBeckProducts>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBeckyBeckProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export function useListProducts<TData = Awaited<ReturnType<typeof listProducts>>, TError = ErrorType<unknown>>(
+ params?: ListProductsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListBeckyBeckProductsQueryOptions(options)
+  const queryOptions = getListProductsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -17009,34 +17023,34 @@ export function useListBeckyBeckProducts<TData = Awaited<ReturnType<typeof listB
 
 
 
-export const getCreateBeckyBeckProductUrl = () => {
+export const getCreateProductUrl = () => {
 
 
 
 
-  return `/api/becky-beck/products`
+  return `/api/products`
 }
 
-export const createBeckyBeckProduct = async (beckyBeckProductInput: BeckyBeckProductInput, options?: RequestInit): Promise<BeckyBeckProduct> => {
+export const createProduct = async (productInput: ProductInput, options?: RequestInit): Promise<Product> => {
 
-  return customFetch<BeckyBeckProduct>(getCreateBeckyBeckProductUrl(),
+  return customFetch<Product>(getCreateProductUrl(),
   {
     ...options,
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      beckyBeckProductInput,)
+      productInput,)
   }
 );}
 
 
 
 
-export const getCreateBeckyBeckProductMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBeckyBeckProduct>>, TError,{data: BodyType<BeckyBeckProductInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof createBeckyBeckProduct>>, TError,{data: BodyType<BeckyBeckProductInput>}, TContext> => {
+export const getCreateProductMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProduct>>, TError,{data: BodyType<ProductInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createProduct>>, TError,{data: BodyType<ProductInput>}, TContext> => {
 
-const mutationKey = ['createBeckyBeckProduct'];
+const mutationKey = ['createProduct'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -17046,10 +17060,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBeckyBeckProduct>>, {data: BodyType<BeckyBeckProductInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createProduct>>, {data: BodyType<ProductInput>}> = (props) => {
           const {data} = props ?? {};
 
-          return  createBeckyBeckProduct(data,requestOptions)
+          return  createProduct(data,requestOptions)
         }
 
 
@@ -17059,50 +17073,121 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type CreateBeckyBeckProductMutationResult = NonNullable<Awaited<ReturnType<typeof createBeckyBeckProduct>>>
-    export type CreateBeckyBeckProductMutationBody = BodyType<BeckyBeckProductInput>
-    export type CreateBeckyBeckProductMutationError = ErrorType<unknown>
+    export type CreateProductMutationResult = NonNullable<Awaited<ReturnType<typeof createProduct>>>
+    export type CreateProductMutationBody = BodyType<ProductInput>
+    export type CreateProductMutationError = ErrorType<unknown>
 
-    export const useCreateBeckyBeckProduct = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBeckyBeckProduct>>, TError,{data: BodyType<BeckyBeckProductInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useCreateProduct = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProduct>>, TError,{data: BodyType<ProductInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof createBeckyBeckProduct>>,
+        Awaited<ReturnType<typeof createProduct>>,
         TError,
-        {data: BodyType<BeckyBeckProductInput>},
+        {data: BodyType<ProductInput>},
         TContext
       > => {
-      return useMutation(getCreateBeckyBeckProductMutationOptions(options));
+      return useMutation(getCreateProductMutationOptions(options));
     }
 
-export const getUpdateBeckyBeckProductUrl = (id: string,) => {
+export const getGetProductUrl = (id: string,) => {
 
 
 
 
-  return `/api/becky-beck/products/${id}`
+  return `/api/products/${id}`
 }
 
-export const updateBeckyBeckProduct = async (id: string,
-    beckyBeckProductUpdate: BeckyBeckProductUpdate, options?: RequestInit): Promise<BeckyBeckProduct> => {
+export const getProduct = async (id: string, options?: RequestInit): Promise<Product> => {
 
-  return customFetch<BeckyBeckProduct>(getUpdateBeckyBeckProductUrl(id),
+  return customFetch<Product>(getGetProductUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProductQueryKey = (id: string,) => {
+    return [
+    `/api/products/${id}`
+    ] as const;
+    }
+
+
+export const getGetProductQueryOptions = <TData = Awaited<ReturnType<typeof getProduct>>, TError = ErrorType<void>>(id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProductQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProduct>>> = ({ signal }) => getProduct(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetProductQueryResult = NonNullable<Awaited<ReturnType<typeof getProduct>>>
+export type GetProductQueryError = ErrorType<void>
+
+
+
+export function useGetProduct<TData = Awaited<ReturnType<typeof getProduct>>, TError = ErrorType<void>>(
+ id: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProduct>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetProductQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateProductUrl = (id: string,) => {
+
+
+
+
+  return `/api/products/${id}`
+}
+
+export const updateProduct = async (id: string,
+    productUpdate: ProductUpdate, options?: RequestInit): Promise<Product> => {
+
+  return customFetch<Product>(getUpdateProductUrl(id),
   {
     ...options,
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
-      beckyBeckProductUpdate,)
+      productUpdate,)
   }
 );}
 
 
 
 
-export const getUpdateBeckyBeckProductMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeckyBeckProduct>>, TError,{id: string;data: BodyType<BeckyBeckProductUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateBeckyBeckProduct>>, TError,{id: string;data: BodyType<BeckyBeckProductUpdate>}, TContext> => {
+export const getUpdateProductMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProduct>>, TError,{id: string;data: BodyType<ProductUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateProduct>>, TError,{id: string;data: BodyType<ProductUpdate>}, TContext> => {
 
-const mutationKey = ['updateBeckyBeckProduct'];
+const mutationKey = ['updateProduct'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -17112,10 +17197,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBeckyBeckProduct>>, {id: string;data: BodyType<BeckyBeckProductUpdate>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProduct>>, {id: string;data: BodyType<ProductUpdate>}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  updateBeckyBeckProduct(id,data,requestOptions)
+          return  updateProduct(id,data,requestOptions)
         }
 
 
@@ -17125,32 +17210,32 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type UpdateBeckyBeckProductMutationResult = NonNullable<Awaited<ReturnType<typeof updateBeckyBeckProduct>>>
-    export type UpdateBeckyBeckProductMutationBody = BodyType<BeckyBeckProductUpdate>
-    export type UpdateBeckyBeckProductMutationError = ErrorType<void>
+    export type UpdateProductMutationResult = NonNullable<Awaited<ReturnType<typeof updateProduct>>>
+    export type UpdateProductMutationBody = BodyType<ProductUpdate>
+    export type UpdateProductMutationError = ErrorType<void>
 
-    export const useUpdateBeckyBeckProduct = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeckyBeckProduct>>, TError,{id: string;data: BodyType<BeckyBeckProductUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useUpdateProduct = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProduct>>, TError,{id: string;data: BodyType<ProductUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof updateBeckyBeckProduct>>,
+        Awaited<ReturnType<typeof updateProduct>>,
         TError,
-        {id: string;data: BodyType<BeckyBeckProductUpdate>},
+        {id: string;data: BodyType<ProductUpdate>},
         TContext
       > => {
-      return useMutation(getUpdateBeckyBeckProductMutationOptions(options));
+      return useMutation(getUpdateProductMutationOptions(options));
     }
 
-export const getDeleteBeckyBeckProductUrl = (id: string,) => {
+export const getDeleteProductUrl = (id: string,) => {
 
 
 
 
-  return `/api/becky-beck/products/${id}`
+  return `/api/products/${id}`
 }
 
-export const deleteBeckyBeckProduct = async (id: string, options?: RequestInit): Promise<void> => {
+export const deleteProduct = async (id: string, options?: RequestInit): Promise<void> => {
 
-  return customFetch<void>(getDeleteBeckyBeckProductUrl(id),
+  return customFetch<void>(getDeleteProductUrl(id),
   {
     ...options,
     method: 'DELETE'
@@ -17162,11 +17247,11 @@ export const deleteBeckyBeckProduct = async (id: string, options?: RequestInit):
 
 
 
-export const getDeleteBeckyBeckProductMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeckyBeckProduct>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteBeckyBeckProduct>>, TError,{id: string}, TContext> => {
+export const getDeleteProductMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProduct>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteProduct>>, TError,{id: string}, TContext> => {
 
-const mutationKey = ['deleteBeckyBeckProduct'];
+const mutationKey = ['deleteProduct'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -17176,10 +17261,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBeckyBeckProduct>>, {id: string}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteProduct>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deleteBeckyBeckProduct(id,requestOptions)
+          return  deleteProduct(id,requestOptions)
         }
 
 
@@ -17189,19 +17274,437 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type DeleteBeckyBeckProductMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBeckyBeckProduct>>>
+    export type DeleteProductMutationResult = NonNullable<Awaited<ReturnType<typeof deleteProduct>>>
 
-    export type DeleteBeckyBeckProductMutationError = ErrorType<void>
+    export type DeleteProductMutationError = ErrorType<void>
 
-    export const useDeleteBeckyBeckProduct = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeckyBeckProduct>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+    export const useDeleteProduct = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProduct>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof deleteBeckyBeckProduct>>,
+        Awaited<ReturnType<typeof deleteProduct>>,
         TError,
         {id: string},
         TContext
       > => {
-      return useMutation(getDeleteBeckyBeckProductMutationOptions(options));
+      return useMutation(getDeleteProductMutationOptions(options));
+    }
+
+export const getListOrdersUrl = (params?: ListOrdersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/orders?${stringifiedParams}` : `/api/orders`
+}
+
+export const listOrders = async (params?: ListOrdersParams, options?: RequestInit): Promise<Order[]> => {
+
+  return customFetch<Order[]>(getListOrdersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListOrdersQueryKey = (params?: ListOrdersParams,) => {
+    return [
+    `/api/orders`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListOrdersQueryOptions = <TData = Awaited<ReturnType<typeof listOrders>>, TError = ErrorType<unknown>>(params?: ListOrdersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOrders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListOrdersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listOrders>>> = ({ signal }) => listOrders(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listOrders>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListOrdersQueryResult = NonNullable<Awaited<ReturnType<typeof listOrders>>>
+export type ListOrdersQueryError = ErrorType<unknown>
+
+
+
+export function useListOrders<TData = Awaited<ReturnType<typeof listOrders>>, TError = ErrorType<unknown>>(
+ params?: ListOrdersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listOrders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListOrdersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetOrderUrl = (id: number,) => {
+
+
+
+
+  return `/api/orders/${id}`
+}
+
+export const getOrder = async (id: number, options?: RequestInit): Promise<Order> => {
+
+  return customFetch<Order>(getGetOrderUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOrderQueryKey = (id: number,) => {
+    return [
+    `/api/orders/${id}`
+    ] as const;
+    }
+
+
+export const getGetOrderQueryOptions = <TData = Awaited<ReturnType<typeof getOrder>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrder>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOrderQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrder>>> = ({ signal }) => getOrder(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrder>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOrderQueryResult = NonNullable<Awaited<ReturnType<typeof getOrder>>>
+export type GetOrderQueryError = ErrorType<void>
+
+
+
+export function useGetOrder<TData = Awaited<ReturnType<typeof getOrder>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrder>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOrderQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getFulfillOrderUrl = (id: number,) => {
+
+
+
+
+  return `/api/orders/${id}/fulfill`
+}
+
+export const fulfillOrder = async (id: number, options?: RequestInit): Promise<Order> => {
+
+  return customFetch<Order>(getFulfillOrderUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getFulfillOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof fulfillOrder>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof fulfillOrder>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['fulfillOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof fulfillOrder>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  fulfillOrder(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type FulfillOrderMutationResult = NonNullable<Awaited<ReturnType<typeof fulfillOrder>>>
+
+    export type FulfillOrderMutationError = ErrorType<void>
+
+    export const useFulfillOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof fulfillOrder>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof fulfillOrder>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getFulfillOrderMutationOptions(options));
+    }
+
+export const getListPublicCatalogProductsUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/public/catalog/${clientId}/products`
+}
+
+export const listPublicCatalogProducts = async (clientId: number, options?: RequestInit): Promise<Product[]> => {
+
+  return customFetch<Product[]>(getListPublicCatalogProductsUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPublicCatalogProductsQueryKey = (clientId: number,) => {
+    return [
+    `/api/public/catalog/${clientId}/products`
+    ] as const;
+    }
+
+
+export const getListPublicCatalogProductsQueryOptions = <TData = Awaited<ReturnType<typeof listPublicCatalogProducts>>, TError = ErrorType<unknown>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublicCatalogProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPublicCatalogProductsQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPublicCatalogProducts>>> = ({ signal }) => listPublicCatalogProducts(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPublicCatalogProducts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPublicCatalogProductsQueryResult = NonNullable<Awaited<ReturnType<typeof listPublicCatalogProducts>>>
+export type ListPublicCatalogProductsQueryError = ErrorType<unknown>
+
+
+
+export function useListPublicCatalogProducts<TData = Awaited<ReturnType<typeof listPublicCatalogProducts>>, TError = ErrorType<unknown>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPublicCatalogProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPublicCatalogProductsQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreatePublicCatalogOrderUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/public/catalog/${clientId}/orders`
+}
+
+export const createPublicCatalogOrder = async (clientId: number,
+    createPublicOrderBody: CreatePublicOrderBody, options?: RequestInit): Promise<CreatePublicOrderResponse> => {
+
+  return customFetch<CreatePublicOrderResponse>(getCreatePublicCatalogOrderUrl(clientId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createPublicOrderBody,)
+  }
+);}
+
+
+
+
+export const getCreatePublicCatalogOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPublicCatalogOrder>>, TError,{clientId: number;data: BodyType<CreatePublicOrderBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPublicCatalogOrder>>, TError,{clientId: number;data: BodyType<CreatePublicOrderBody>}, TContext> => {
+
+const mutationKey = ['createPublicCatalogOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPublicCatalogOrder>>, {clientId: number;data: BodyType<CreatePublicOrderBody>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  createPublicCatalogOrder(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePublicCatalogOrderMutationResult = NonNullable<Awaited<ReturnType<typeof createPublicCatalogOrder>>>
+    export type CreatePublicCatalogOrderMutationBody = BodyType<CreatePublicOrderBody>
+    export type CreatePublicCatalogOrderMutationError = ErrorType<void>
+
+    export const useCreatePublicCatalogOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPublicCatalogOrder>>, TError,{clientId: number;data: BodyType<CreatePublicOrderBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPublicCatalogOrder>>,
+        TError,
+        {clientId: number;data: BodyType<CreatePublicOrderBody>},
+        TContext
+      > => {
+      return useMutation(getCreatePublicCatalogOrderMutationOptions(options));
+    }
+
+export const getCapturePublicCatalogOrderUrl = (clientId: number,
+    orderId: number,) => {
+
+
+
+
+  return `/api/public/catalog/${clientId}/orders/${orderId}/capture`
+}
+
+export const capturePublicCatalogOrder = async (clientId: number,
+    orderId: number,
+    capturePublicOrderBody: CapturePublicOrderBody, options?: RequestInit): Promise<CapturePublicOrderResponse> => {
+
+  return customFetch<CapturePublicOrderResponse>(getCapturePublicCatalogOrderUrl(clientId,orderId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      capturePublicOrderBody,)
+  }
+);}
+
+
+
+
+export const getCapturePublicCatalogOrderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof capturePublicCatalogOrder>>, TError,{clientId: number;orderId: number;data: BodyType<CapturePublicOrderBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof capturePublicCatalogOrder>>, TError,{clientId: number;orderId: number;data: BodyType<CapturePublicOrderBody>}, TContext> => {
+
+const mutationKey = ['capturePublicCatalogOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof capturePublicCatalogOrder>>, {clientId: number;orderId: number;data: BodyType<CapturePublicOrderBody>}> = (props) => {
+          const {clientId,orderId,data} = props ?? {};
+
+          return  capturePublicCatalogOrder(clientId,orderId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CapturePublicCatalogOrderMutationResult = NonNullable<Awaited<ReturnType<typeof capturePublicCatalogOrder>>>
+    export type CapturePublicCatalogOrderMutationBody = BodyType<CapturePublicOrderBody>
+    export type CapturePublicCatalogOrderMutationError = ErrorType<unknown>
+
+    export const useCapturePublicCatalogOrder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof capturePublicCatalogOrder>>, TError,{clientId: number;orderId: number;data: BodyType<CapturePublicOrderBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof capturePublicCatalogOrder>>,
+        TError,
+        {clientId: number;orderId: number;data: BodyType<CapturePublicOrderBody>},
+        TContext
+      > => {
+      return useMutation(getCapturePublicCatalogOrderMutationOptions(options));
     }
 
 export const getListCommercialFollowupStatusesUrl = () => {

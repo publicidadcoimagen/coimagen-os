@@ -77,7 +77,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Client Room",
     items: [
       { href: "/client", label: "Portales de Clientes", icon: Users },
-      { href: "/becky-beck", label: "Catálogo Becky Beck", icon: ShoppingBag },
+      { href: "/catalog", label: "Catálogo (E-commerce)", icon: ShoppingBag },
     ],
   },
   {

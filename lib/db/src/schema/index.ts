@@ -59,3 +59,5 @@ export * from "./invoice-fiscal-data";
 export * from "./client-fiscal-data";
 export * from "./invoice-fiscal-documents";
 export * from "./social-monthly-reports";
+export * from "./products";
+export * from "./orders";

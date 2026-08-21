@@ -5,17 +5,23 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { BeckyBeckProductCategory } from './beckyBeckProductCategory';
 
-export interface BeckyBeckProduct {
+export interface Product {
   id: string;
+  clientId: number;
   nameEs: string;
   nameEn: string;
-  category: BeckyBeckProductCategory;
-  priceUsd: number;
-  available: boolean;
   /** @nullable */
-  imageUrl?: string | null;
+  description?: string | null;
+  category: string;
+  priceCents: number;
+  currency: string;
+  /** @nullable */
+  stock?: number | null;
+  /** @nullable */
+  sku?: string | null;
+  available: boolean;
+  imageUrls: string[];
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
