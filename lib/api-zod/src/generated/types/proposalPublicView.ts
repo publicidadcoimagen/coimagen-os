@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { InvoicePublicView } from './invoicePublicView';
+import type { PaymentScheduleItem } from './paymentScheduleItem';
 import type { ProposalPublicViewStatus } from './proposalPublicViewStatus';
 
 export interface ProposalPublicView {
@@ -18,4 +19,5 @@ export interface ProposalPublicView {
   /** @nullable */
   validUntil?: string | null;
   nextInvoice?: InvoicePublicView | null;
+  paymentSchedule?: PaymentScheduleItem[];
 }

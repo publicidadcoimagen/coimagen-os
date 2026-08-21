@@ -144,7 +144,14 @@ export const GetPublicProposalResponse = zod.object({
   "subscriptionApproveUrl": zod.string().nullish(),
   "subscriptionPending": zod.boolean(),
   "discountApplied": zod.boolean()
-}),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "paymentSchedule": zod.array(zod.object({
+  "label": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "publicToken": zod.string().uuid().nullable()
+})).optional()
 })
 
 
@@ -170,7 +177,14 @@ export const ApprovePublicProposalResponse = zod.object({
   "subscriptionApproveUrl": zod.string().nullish(),
   "subscriptionPending": zod.boolean(),
   "discountApplied": zod.boolean()
-}),zod.null()]).optional()
+}),zod.null()]).optional(),
+  "paymentSchedule": zod.array(zod.object({
+  "label": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
+  "publicToken": zod.string().uuid().nullable()
+})).optional()
 })
 
 

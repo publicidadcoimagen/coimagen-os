@@ -1049,6 +1049,26 @@ export interface InvoicePublicView {
   discountApplied: boolean;
 }
 
+export type PaymentScheduleItemStatus = typeof PaymentScheduleItemStatus[keyof typeof PaymentScheduleItemStatus];
+
+
+export const PaymentScheduleItemStatus = {
+  draft: 'draft',
+  sent: 'sent',
+  paid: 'paid',
+  overdue: 'overdue',
+  cancelled: 'cancelled',
+} as const;
+
+export interface PaymentScheduleItem {
+  label: string;
+  amount: number;
+  currency: string;
+  status: PaymentScheduleItemStatus;
+  /** @nullable */
+  publicToken: string | null;
+}
+
 export interface ProposalPublicView {
   title: string;
   status: ProposalPublicViewStatus;
@@ -1059,6 +1079,7 @@ export interface ProposalPublicView {
   /** @nullable */
   validUntil?: string | null;
   nextInvoice?: InvoicePublicView | null;
+  paymentSchedule?: PaymentScheduleItem[];
 }
 
 export interface FiscalDataBody {
