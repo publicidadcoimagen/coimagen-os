@@ -14,8 +14,28 @@ async function findActiveInvoice(proposalId: number) {
   return invoice ?? null;
 }
 
+// Pendiente #6a — every installment generated for this proposal, not just
+// the one currently payable, so the client can see their whole payment
+// plan from the same public page. Read-only: this endpoint already existed
+// and was already public (same token, same scope) — this only adds more of
+// what it returns, no new access surface, per the agreed design ("vista
+// previa en la misma página", not a new session/token type).
+async function findPaymentSchedule(proposalId: number) {
+  const rows = await db.select().from(invoicesTable)
+    .where(eq(invoicesTable.proposalId, proposalId))
+    .orderBy(invoicesTable.id);
+  return rows.map((invoice) => ({
+    label: invoice.installmentLabel ?? invoice.description ?? "Pago",
+    amount: parseFloat(invoice.amount),
+    currency: invoice.currency,
+    status: invoice.status as "draft" | "sent" | "paid" | "overdue" | "cancelled",
+    publicToken: invoice.publicToken,
+  }));
+}
+
 async function serializePublicView(p: Proposal) {
   const activeInvoice = p.status === "accepted" ? await findActiveInvoice(p.id) : null;
+  const paymentSchedule = p.status === "accepted" ? await findPaymentSchedule(p.id) : [];
   return {
     title: p.title,
     status: p.status,
@@ -33,6 +53,7 @@ async function serializePublicView(p: Proposal) {
           subscriptionPending: false, // ditto — only relevant once the deposit/milestone invoices are all paid
         }
       : null,
+    paymentSchedule,
   };
 }
 

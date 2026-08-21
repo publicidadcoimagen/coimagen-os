@@ -203,6 +203,8 @@ export * from './orchestrationRuleUpdate';
 export * from './organization';
 export * from './organizationCreate';
 export * from './organizationUpdate';
+export * from './paymentScheduleItem';
+export * from './paymentScheduleItemStatus';
 export * from './project';
 export * from './projectInput';
 export * from './projectInputPriority';

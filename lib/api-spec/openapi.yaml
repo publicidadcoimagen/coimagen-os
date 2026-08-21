@@ -4670,6 +4670,26 @@ components:
         # clientId/amount (can't generate invoices — see
         # payment-schedule/repository.ts's createInstallmentInvoices).
         nextInvoice: { oneOf: [{ $ref: "#/components/schemas/InvoicePublicView" }, { type: "null" }] }
+        # Pendiente #6a — every installment invoice generated for this
+        # proposal (paid, sent, or still draft/not-yet-due), so the client
+        # can see their whole payment plan from the same public page
+        # instead of only the one currently-payable cuota. Empty until the
+        # proposal is accepted (no invoices exist before then).
+        paymentSchedule: { type: array, items: { $ref: "#/components/schemas/PaymentScheduleItem" } }
+
+    PaymentScheduleItem:
+      type: object
+      required: [label, amount, currency, status, publicToken]
+      properties:
+        label:       { type: string }
+        amount:      { type: number }
+        currency:    { type: string }
+        status:      { type: string, enum: [draft, sent, paid, overdue, cancelled] }
+        # Null only for a draft installment not payable yet (see
+        # payment-schedule/repository.ts — only the first installment
+        # starts as "sent"; later ones stay "draft", unlinked to a public
+        # page, until the previous one is paid).
+        publicToken: { type: ["string", "null"], format: uuid }
 
     InvoicePublicView:
       type: object

@@ -9,6 +9,10 @@ import { registerAnthropicBalanceAlertCron } from "./lib/anthropic-balance-alert
 // webhook are configured (see PR #28). Reactivate alongside the two above.
 // import { registerSubscriptionAlertsCron } from "./lib/subscription-alerts/scheduler";
 // import { registerPaymentRecoveryCron } from "./lib/payment-recovery/scheduler";
+// Pendiente #6b, same reasoning as the block above — no client currently
+// has real Autopublicador activity to report on. Reactivate once at least
+// one client has real published posts for a full month.
+// import { registerSocialMonthlyReportCron } from "./lib/social-report/scheduler";
 
 const rawPort = process.env["PORT"];
 
@@ -51,4 +55,5 @@ app.listen(port, (err) => {
   // at the top of this file (PR #28).
   // registerSubscriptionAlertsCron();
   // registerPaymentRecoveryCron();
+  // registerSocialMonthlyReportCron();
 });
