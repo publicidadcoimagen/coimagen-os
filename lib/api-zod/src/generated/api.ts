@@ -327,6 +327,7 @@ export const ListClientsResponseItem = zod.object({
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
+  "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -338,6 +339,7 @@ export const ListClientsResponse = zod.array(ListClientsResponseItem)
  */
 
 export const createClientBodyStatusDefault = `prospect`;
+export const createClientBodyLanguageDefault = `es`;
 
 export const CreateClientBody = zod.object({
   "name": zod.string().min(1),
@@ -346,7 +348,8 @@ export const CreateClientBody = zod.object({
   "company": zod.string().optional(),
   "industry": zod.string().optional(),
   "status": zod.enum(['active', 'inactive', 'prospect']).default(createClientBodyStatusDefault),
-  "notes": zod.string().optional()
+  "notes": zod.string().optional(),
+  "language": zod.enum(['es', 'en']).default(createClientBodyLanguageDefault)
 })
 
 
@@ -366,6 +369,7 @@ export const GetClientResponse = zod.object({
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
+  "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -386,7 +390,8 @@ export const UpdateClientBody = zod.object({
   "industry": zod.string().optional(),
   "status": zod.enum(['active', 'inactive', 'prospect']).optional(),
   "notes": zod.string().optional(),
-  "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional()
+  "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
+  "language": zod.enum(['es', 'en']).optional()
 })
 
 export const UpdateClientResponse = zod.object({
@@ -401,6 +406,7 @@ export const UpdateClientResponse = zod.object({
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
+  "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -438,6 +444,7 @@ export const MarkClientFounderResponse = zod.object({
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
+  "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 }),
@@ -4111,7 +4118,13 @@ export const ListContractsResponseItem = zod.object({
   "createdBy": zod.string().nullish(),
   "signedBy": zod.string().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string().nullish()
+  "updatedAt": zod.string().nullish(),
+  "docusealSubmissionId": zod.string().nullish(),
+  "docusealExternalId": zod.string().nullish(),
+  "signingUrl": zod.string().nullish(),
+  "signedDocumentUrl": zod.string().nullish(),
+  "auditLogUrl": zod.string().nullish(),
+  "signerIp": zod.string().nullish()
 })
 export const ListContractsResponse = zod.array(ListContractsResponseItem)
 
@@ -4172,7 +4185,13 @@ export const GetContractResponse = zod.object({
   "createdBy": zod.string().nullish(),
   "signedBy": zod.string().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string().nullish()
+  "updatedAt": zod.string().nullish(),
+  "docusealSubmissionId": zod.string().nullish(),
+  "docusealExternalId": zod.string().nullish(),
+  "signingUrl": zod.string().nullish(),
+  "signedDocumentUrl": zod.string().nullish(),
+  "auditLogUrl": zod.string().nullish(),
+  "signerIp": zod.string().nullish()
 })
 
 
@@ -4229,7 +4248,13 @@ export const UpdateContractResponse = zod.object({
   "createdBy": zod.string().nullish(),
   "signedBy": zod.string().nullish(),
   "createdAt": zod.string(),
-  "updatedAt": zod.string().nullish()
+  "updatedAt": zod.string().nullish(),
+  "docusealSubmissionId": zod.string().nullish(),
+  "docusealExternalId": zod.string().nullish(),
+  "signingUrl": zod.string().nullish(),
+  "signedDocumentUrl": zod.string().nullish(),
+  "auditLogUrl": zod.string().nullish(),
+  "signerIp": zod.string().nullish()
 })
 
 
@@ -4238,6 +4263,46 @@ export const UpdateContractResponse = zod.object({
  */
 export const DeleteContractParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Send a draft contract for e-signature via DocuSeal (picks the ES/EN template from the client's language)
+ */
+export const SendContractParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SendContractResponse = zod.object({
+  "id": zod.number(),
+  "type": zod.string(),
+  "status": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "service": zod.string().nullish(),
+  "clientId": zod.number().nullish(),
+  "projectId": zod.number().nullish(),
+  "workflowId": zod.number().nullish(),
+  "invoiceId": zod.number().nullish(),
+  "approvalId": zod.number().nullish(),
+  "content": zod.string().nullish(),
+  "amount": zod.number().nullish(),
+  "currency": zod.string().nullish(),
+  "terms": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "sentAt": zod.string().nullish(),
+  "signedAt": zod.string().nullish(),
+  "expiresAt": zod.string().nullish(),
+  "createdBy": zod.string().nullish(),
+  "signedBy": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish(),
+  "docusealSubmissionId": zod.string().nullish(),
+  "docusealExternalId": zod.string().nullish(),
+  "signingUrl": zod.string().nullish(),
+  "signedDocumentUrl": zod.string().nullish(),
+  "auditLogUrl": zod.string().nullish(),
+  "signerIp": zod.string().nullish()
 })
 
 
@@ -4254,6 +4319,7 @@ export const ListOrganizationsResponseItem = zod.object({
   "primaryColor": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
   "contactPhone": zod.string().nullish(),
+  "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -4263,6 +4329,8 @@ export const ListOrganizationsResponse = zod.array(ListOrganizationsResponseItem
 /**
  * @summary Create organization
  */
+export const createOrganizationBodyLanguageDefault = `es`;
+
 export const CreateOrganizationBody = zod.object({
   "slug": zod.string(),
   "name": zod.string(),
@@ -4271,7 +4339,8 @@ export const CreateOrganizationBody = zod.object({
   "logoUrl": zod.string().optional(),
   "primaryColor": zod.string().optional(),
   "contactEmail": zod.string().optional(),
-  "contactPhone": zod.string().optional()
+  "contactPhone": zod.string().optional(),
+  "language": zod.enum(['es', 'en']).default(createOrganizationBodyLanguageDefault)
 })
 
 
@@ -4292,6 +4361,7 @@ export const GetOrganizationResponse = zod.object({
   "primaryColor": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
   "contactPhone": zod.string().nullish(),
+  "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -4312,7 +4382,8 @@ export const UpdateOrganizationBody = zod.object({
   "logoUrl": zod.string().optional(),
   "primaryColor": zod.string().optional(),
   "contactEmail": zod.string().optional(),
-  "contactPhone": zod.string().optional()
+  "contactPhone": zod.string().optional(),
+  "language": zod.enum(['es', 'en']).optional()
 })
 
 export const UpdateOrganizationResponse = zod.object({
@@ -4325,6 +4396,7 @@ export const UpdateOrganizationResponse = zod.object({
   "primaryColor": zod.string().nullish(),
   "contactEmail": zod.string().nullish(),
   "contactPhone": zod.string().nullish(),
+  "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })

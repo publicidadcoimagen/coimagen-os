@@ -19,6 +19,10 @@ export const clientsTable = pgTable("clients", {
   isFounder: boolean("is_founder").notNull().default(false),
   founderNumber: integer("founder_number"),
   enabledModules: jsonb("enabled_modules").$type<ClientModuleKey[]>().notNull().default([]),
+  // Drives which language variant of outbound docs/emails a client receives
+  // (e.g. the DocuSeal contract template picked in POST /contracts/:id/send —
+  // see routes/contracts.ts). Same "es"/"en" convention as prospects.language.
+  language: text("language").notNull().default("es"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });

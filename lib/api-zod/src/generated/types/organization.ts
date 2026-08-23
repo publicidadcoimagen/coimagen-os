@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrganizationLanguage } from './organizationLanguage';
 
 export interface Organization {
   id: number;
@@ -22,6 +23,7 @@ export interface Organization {
   contactEmail?: string | null;
   /** @nullable */
   contactPhone?: string | null;
+  language?: OrganizationLanguage;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

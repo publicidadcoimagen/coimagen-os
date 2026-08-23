@@ -89,6 +89,14 @@ export const ClientEnabledModulesItem = {
   seo: 'seo',
 } as const;
 
+export type ClientLanguage = typeof ClientLanguage[keyof typeof ClientLanguage];
+
+
+export const ClientLanguage = {
+  es: 'es',
+  en: 'en',
+} as const;
+
 export interface Client {
   id: number;
   name: string;
@@ -107,6 +115,7 @@ export interface Client {
   /** @nullable */
   founderNumber?: number | null;
   enabledModules?: ClientEnabledModulesItem[];
+  language?: ClientLanguage;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -121,6 +130,14 @@ export const ClientInputStatus = {
   prospect: 'prospect',
 } as const;
 
+export type ClientInputLanguage = typeof ClientInputLanguage[keyof typeof ClientInputLanguage];
+
+
+export const ClientInputLanguage = {
+  es: 'es',
+  en: 'en',
+} as const;
+
 export interface ClientInput {
   /** @minLength 1 */
   name: string;
@@ -130,6 +147,7 @@ export interface ClientInput {
   industry?: string;
   status?: ClientInputStatus;
   notes?: string;
+  language?: ClientInputLanguage;
 }
 
 export type ClientUpdateStatus = typeof ClientUpdateStatus[keyof typeof ClientUpdateStatus];
@@ -150,6 +168,14 @@ export const ClientUpdateEnabledModulesItem = {
   seo: 'seo',
 } as const;
 
+export type ClientUpdateLanguage = typeof ClientUpdateLanguage[keyof typeof ClientUpdateLanguage];
+
+
+export const ClientUpdateLanguage = {
+  es: 'es',
+  en: 'en',
+} as const;
+
 export interface ClientUpdate {
   /** @minLength 1 */
   name?: string;
@@ -160,6 +186,7 @@ export interface ClientUpdate {
   status?: ClientUpdateStatus;
   notes?: string;
   enabledModules?: ClientUpdateEnabledModulesItem[];
+  language?: ClientUpdateLanguage;
 }
 
 export interface MarkClientFounderInput {
@@ -2866,6 +2893,18 @@ export interface Contract {
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
+  /** @nullable */
+  docusealSubmissionId?: string | null;
+  /** @nullable */
+  docusealExternalId?: string | null;
+  /** @nullable */
+  signingUrl?: string | null;
+  /** @nullable */
+  signedDocumentUrl?: string | null;
+  /** @nullable */
+  auditLogUrl?: string | null;
+  /** @nullable */
+  signerIp?: string | null;
 }
 
 export interface ContractCreate {
@@ -2913,6 +2952,14 @@ export interface ContractUpdate {
   signedBy?: string;
 }
 
+export type OrganizationLanguage = typeof OrganizationLanguage[keyof typeof OrganizationLanguage];
+
+
+export const OrganizationLanguage = {
+  es: 'es',
+  en: 'en',
+} as const;
+
 export interface Organization {
   id: number;
   slug: string;
@@ -2929,10 +2976,19 @@ export interface Organization {
   contactEmail?: string | null;
   /** @nullable */
   contactPhone?: string | null;
+  language?: OrganizationLanguage;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
 }
+
+export type OrganizationCreateLanguage = typeof OrganizationCreateLanguage[keyof typeof OrganizationCreateLanguage];
+
+
+export const OrganizationCreateLanguage = {
+  es: 'es',
+  en: 'en',
+} as const;
 
 export interface OrganizationCreate {
   slug: string;
@@ -2943,7 +2999,16 @@ export interface OrganizationCreate {
   primaryColor?: string;
   contactEmail?: string;
   contactPhone?: string;
+  language?: OrganizationCreateLanguage;
 }
+
+export type OrganizationUpdateLanguage = typeof OrganizationUpdateLanguage[keyof typeof OrganizationUpdateLanguage];
+
+
+export const OrganizationUpdateLanguage = {
+  es: 'es',
+  en: 'en',
+} as const;
 
 export interface OrganizationUpdate {
   slug?: string;
@@ -2954,6 +3019,7 @@ export interface OrganizationUpdate {
   primaryColor?: string;
   contactEmail?: string;
   contactPhone?: string;
+  language?: OrganizationUpdateLanguage;
 }
 
 export interface ClientApproval {

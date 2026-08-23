@@ -5,6 +5,7 @@ import {
   useGetContract, getGetContractQueryKey,
   getListContractsQueryKey,
   useUpdateContract,
+  useSendContract,
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import {
   FileSignature, ChevronLeft, ChevronRight, Edit2,
   CheckCircle2, Send, Eye, AlertCircle, XCircle, Clock,
@@ -80,9 +82,16 @@ function typeLabel(t: string) {
 }
 
 // ─── Status Actions Bar ───────────────────────────────────────────────────────
-function StatusActions({ contract, onUpdate }: { contract: Contract; onUpdate: (s: string) => void }) {
+// "draft" -> "sent" is handled separately (onSend) since it now creates a
+// real DocuSeal submission server-side instead of a plain status flip — see
+// POST /contracts/:id/send in routes/contracts.ts.
+function StatusActions({
+  contract, onUpdate, onSend, sending,
+}: {
+  contract: Contract; onUpdate: (s: string) => void; onSend: () => void; sending: boolean;
+}) {
   const transitions: Record<string, { to: string; label: string; icon: React.ComponentType<{ className?: string }> }[]> = {
-    draft:    [{ to: "sent",      label: "Marcar enviado",   icon: Send },    { to: "cancelled", label: "Cancelar", icon: XCircle }],
+    draft:    [{ to: "cancelled", label: "Cancelar", icon: XCircle }],
     sent:     [{ to: "viewed",    label: "Marcar visto",     icon: Eye },     { to: "rejected", label: "Rechazado", icon: XCircle }],
     viewed:   [{ to: "rejected",  label: "Rechazado",        icon: XCircle }],
     signed:   [{ to: "active",    label: "Activar",          icon: CheckCircle2 }, { to: "expired", label: "Marcar vencido", icon: AlertCircle }],
@@ -93,11 +102,16 @@ function StatusActions({ contract, onUpdate }: { contract: Contract; onUpdate: (
   };
 
   const actions = transitions[contract.status] ?? [];
-  if (actions.length === 0) return null;
+  if (actions.length === 0 && contract.status !== "draft") return null;
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <span className="text-xs text-muted-foreground">Cambiar estado:</span>
+      {contract.status === "draft" && (
+        <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={onSend} disabled={sending}>
+          <Send className="h-3 w-3" />{sending ? "Enviando a firma..." : "Enviar a firma (DocuSeal)"}
+        </Button>
+      )}
       {actions.map(({ to, label, icon: Icon }) => (
         <Button key={to} variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={() => onUpdate(to)}>
           <Icon className="h-3 w-3" />{label}
@@ -229,11 +243,27 @@ export function ContractDetail() {
     query: { queryKey: getGetContractQueryKey(id), enabled: id > 0 },
   });
 
+  const { toast } = useToast();
+
   const { mutate: update } = useUpdateContract({
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetContractQueryKey(id) });
         queryClient.invalidateQueries({ queryKey: getListContractsQueryKey() });
+      },
+    },
+  });
+
+  const { mutate: send, isPending: sending } = useSendContract({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: getGetContractQueryKey(id) });
+        queryClient.invalidateQueries({ queryKey: getListContractsQueryKey() });
+        toast({ title: "Contrato enviado a firma", description: "Se creó la submission en DocuSeal." });
+      },
+      onError: (err) => {
+        const message = err instanceof Error ? err.message : String(err);
+        toast({ title: "No se pudo enviar el contrato", description: message, variant: "destructive" });
       },
     },
   });
@@ -292,7 +322,12 @@ export function ContractDetail() {
       </div>
 
       {/* Status actions */}
-      <StatusActions contract={contract} onUpdate={(s) => update({ id: contract.id, data: { status: s } })} />
+      <StatusActions
+        contract={contract}
+        onUpdate={(s) => update({ id: contract.id, data: { status: s } })}
+        onSend={() => send({ id: contract.id })}
+        sending={sending}
+      />
 
       {/* Body */}
       <div className="grid grid-cols-3 gap-4">

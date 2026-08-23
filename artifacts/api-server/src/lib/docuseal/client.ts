@@ -1,0 +1,112 @@
+// Server-side DocuSeal submission creation — distinct from
+// routes/webhooks-docuseal.ts, which only verifies inbound webhooks. Same
+// fail-loud-if-unconfigured pattern as lib/paypal/client.ts: no silent
+// fallback to a broken client.
+//
+// Verified against DocuSeal's actual deployed source on the IONOS VPS
+// (config/routes.rb, app/controllers/api/submissions_controller.rb,
+// lib/params/submission_create_validator.rb) rather than assumed from
+// generic docs, since the earlier webhook integration already burned time
+// on a wrong generic assumption once (see webhooks-docuseal.ts):
+// - Real endpoint: POST {DOCUSEAL_BASE_URL}/api/submissions (namespace
+//   :api in routes.rb), authenticated via the X-Auth-Token header.
+// - Body: { template_id, submitters: [{ email, name, role, external_id }],
+//   send_email }. template_id can be sent in the body even without using
+//   the nested /api/templates/:id/submissions route — the controller reads
+//   params[:template_id] either way.
+// - Response is a flat JSON array (one entry per submitter, not wrapped in
+//   an object), serialized by Submitters::SerializeForApi with
+//   with_urls: true — confirmed fields: id, submission_id, external_id,
+//   embed_src (the signing link), status, role.
+
+export interface DocusealSubmitter {
+  email: string;
+  name: string;
+  // Both templates in use (id 3 "Contrato_Maestro_Coimagen_V2" and id 4
+  // "Coimagen_Master_Agreement_V2") define a single role named "Primera
+  // Parte" (confirmed via `select submitters from templates` on the real
+  // DocuSeal DB) — passed explicitly rather than relying on positional
+  // inference so this keeps working if a template ever grows more roles.
+  role?: string;
+  externalId?: string;
+}
+
+export interface DocusealSubmissionResult {
+  submitterId: number;
+  submissionId: number;
+  externalId: string | null;
+  signingUrl: string | null;
+  status: string;
+}
+
+export class DocusealNotConfiguredError extends Error {}
+
+export class DocusealApiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+    this.name = "DocusealApiError";
+  }
+}
+
+function docusealConfig(): { baseUrl: string; token: string } {
+  const baseUrl = process.env.DOCUSEAL_BASE_URL;
+  const token = process.env.DOCUSEAL_API_TOKEN;
+  if (!baseUrl || !token) {
+    throw new DocusealNotConfiguredError("DOCUSEAL_BASE_URL / DOCUSEAL_API_TOKEN no están configuradas");
+  }
+  return { baseUrl: baseUrl.replace(/\/+$/, ""), token };
+}
+
+export async function createDocusealSubmission(
+  templateId: number,
+  submitter: DocusealSubmitter,
+): Promise<DocusealSubmissionResult> {
+  const { baseUrl, token } = docusealConfig();
+
+  const res = await fetch(`${baseUrl}/api/submissions`, {
+    method: "POST",
+    headers: {
+      "X-Auth-Token": token,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      template_id: templateId,
+      send_email: true,
+      submitters: [{
+        email: submitter.email,
+        name: submitter.name,
+        role: submitter.role,
+        external_id: submitter.externalId,
+      }],
+    }),
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new DocusealApiError(`DocuSeal rechazó la creación de la submission (${res.status}): ${text}`, res.status);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new DocusealApiError("Respuesta de DocuSeal no es JSON válido", res.status);
+  }
+
+  // build_create_json returns a flat array (one entry per submitter) for a
+  // normal (non-/init) create call — Coimagen sends exactly one submitter
+  // per contract, so the first entry is the one we want.
+  const entry = Array.isArray(parsed) ? parsed[0] : undefined;
+  if (!entry || typeof entry !== "object") {
+    throw new DocusealApiError("Respuesta de DocuSeal sin submitters", res.status);
+  }
+
+  const e = entry as Record<string, unknown>;
+  return {
+    submitterId: Number(e.id),
+    submissionId: Number(e.submission_id),
+    externalId: typeof e.external_id === "string" ? e.external_id : null,
+    signingUrl: typeof e.embed_src === "string" ? e.embed_src : null,
+    status: typeof e.status === "string" ? e.status : "pending",
+  };
+}

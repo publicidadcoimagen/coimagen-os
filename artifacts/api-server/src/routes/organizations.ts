@@ -50,6 +50,7 @@ router.post("/organizations", requireRole("ceo", "admin"), async (req, res): Pro
     primaryColor: d.primaryColor ?? null,
     contactEmail: d.contactEmail ?? null,
     contactPhone: d.contactPhone ?? null,
+    language: d.language ?? "es",
   }).returning();
 
   res.status(201).json(serialize(row));
@@ -79,6 +80,7 @@ router.patch("/organizations/:slug", requireRole("ceo", "admin"), async (req, re
   if (d.primaryColor !== undefined) update.primaryColor = d.primaryColor;
   if (d.contactEmail !== undefined) update.contactEmail = d.contactEmail;
   if (d.contactPhone !== undefined) update.contactPhone = d.contactPhone;
+  if (d.language !== undefined) update.language = d.language;
 
   await db.update(organizationsTable).set(update).where(eq(organizationsTable.slug, params.data.slug));
   const [updated] = await db.select().from(organizationsTable).where(eq(organizationsTable.slug, d.slug ?? params.data.slug));

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ClientUpdateEnabledModulesItem } from './clientUpdateEnabledModulesItem';
+import type { ClientUpdateLanguage } from './clientUpdateLanguage';
 import type { ClientUpdateStatus } from './clientUpdateStatus';
 
 export interface ClientUpdate {
@@ -18,4 +19,5 @@ export interface ClientUpdate {
   status?: ClientUpdateStatus;
   notes?: string;
   enabledModules?: ClientUpdateEnabledModulesItem[];
+  language?: ClientUpdateLanguage;
 }

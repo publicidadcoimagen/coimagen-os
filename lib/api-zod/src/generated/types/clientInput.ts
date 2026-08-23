@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ClientInputLanguage } from './clientInputLanguage';
 import type { ClientInputStatus } from './clientInputStatus';
 
 export interface ClientInput {
@@ -16,4 +17,5 @@ export interface ClientInput {
   industry?: string;
   status?: ClientInputStatus;
   notes?: string;
+  language?: ClientInputLanguage;
 }

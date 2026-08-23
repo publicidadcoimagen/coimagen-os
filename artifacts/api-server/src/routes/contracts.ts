@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, and } from "drizzle-orm";
-import { db, contractsTable } from "@workspace/db";
+import { db, contractsTable, clientsTable } from "@workspace/db";
 import {
   ListContractsQueryParams,
   CreateContractBody,
@@ -11,8 +11,20 @@ import {
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 import { isClienteRole, ownClientId } from "../middlewares/clientScope";
+import { createDocusealSubmission, DocusealApiError, DocusealNotConfiguredError } from "../lib/docuseal/client";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
+
+// Both templates (id 3 "Contrato_Maestro_Coimagen_V2", id 4
+// "Coimagen_Master_Agreement_V2") were created directly in DocuSeal by
+// Camila for this flow — confirmed against the real DocuSeal DB, not
+// guessed. No env var indirection: these are stable content templates,
+// not per-environment config like DOCUSEAL_BASE_URL.
+const DOCUSEAL_TEMPLATE_ID_ES = 3;
+const DOCUSEAL_TEMPLATE_ID_EN = 4;
+// The one submitter role both templates define — see lib/docuseal/client.ts.
+const DOCUSEAL_SUBMITTER_ROLE = "Primera Parte";
 
 function serialize(r: typeof contractsTable.$inferSelect) {
   return {
@@ -135,6 +147,71 @@ router.patch("/contracts/:id", async (req, res): Promise<void> => {
   const [updated] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
   if (!updated) { res.status(404).json({ error: "Not found" }); return; }
   res.json(serialize(updated));
+});
+
+// Real send: creates the DocuSeal submission (picking the ES/EN template
+// from the client's language) and moves the contract to "sent" only once
+// DocuSeal confirms it — replaces the old flow where the frontend flipped
+// status straight to "sent" with a plain PATCH and no signature request
+// was ever actually sent. Signing itself still only happens via the
+// webhook (see webhooks-docuseal.ts) — this route never sets "signed".
+router.post("/contracts/:id/send", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const params = GetContractParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [contract] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
+  if (!contract) { res.status(404).json({ error: "Not found" }); return; }
+  if (contract.status !== "draft") {
+    res.status(409).json({ error: "Solo un contrato en borrador puede enviarse a firma" });
+    return;
+  }
+  if (!contract.clientId) {
+    res.status(400).json({ error: "El contrato no tiene un cliente asignado" });
+    return;
+  }
+
+  const [client] = await db.select().from(clientsTable).where(eq(clientsTable.id, contract.clientId));
+  if (!client) { res.status(400).json({ error: "Cliente no encontrado" }); return; }
+  if (!client.email) { res.status(400).json({ error: "El cliente no tiene email registrado" }); return; }
+
+  const templateId = client.language === "en" ? DOCUSEAL_TEMPLATE_ID_EN : DOCUSEAL_TEMPLATE_ID_ES;
+
+  let submission;
+  try {
+    submission = await createDocusealSubmission(templateId, {
+      email: client.email,
+      name: client.name,
+      role: DOCUSEAL_SUBMITTER_ROLE,
+      externalId: String(contract.id),
+    });
+  } catch (err) {
+    if (err instanceof DocusealNotConfiguredError) {
+      logger.error({ err, contractId: contract.id }, "DocuSeal no está configurado — envío rechazado");
+      res.status(503).json({ error: "DocuSeal no está configurado" });
+      return;
+    }
+    if (err instanceof DocusealApiError) {
+      logger.error({ err, contractId: contract.id }, "DocuSeal rechazó la creación de la submission");
+      res.status(502).json({ error: err.message });
+      return;
+    }
+    logger.error({ err, contractId: contract.id }, "Error inesperado creando la submission de DocuSeal");
+    res.status(502).json({ error: "No se pudo crear la submission en DocuSeal" });
+    return;
+  }
+
+  await db.update(contractsTable).set({
+    status: "sent",
+    sentAt: new Date(),
+    docusealSubmissionId: String(submission.submissionId),
+    docusealExternalId: submission.externalId ?? String(contract.id),
+    signingUrl: submission.signingUrl,
+    updatedAt: new Date(),
+  }).where(eq(contractsTable.id, contract.id));
+
+  const [updated] = await db.select().from(contractsTable).where(eq(contractsTable.id, contract.id));
+  logger.info({ contractId: contract.id, templateId, submissionId: submission.submissionId }, "Contrato enviado a firma vía DocuSeal");
+  res.json(serialize(updated!));
 });
 
 router.delete("/contracts/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {

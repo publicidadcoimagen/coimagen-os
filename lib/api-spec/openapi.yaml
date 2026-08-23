@@ -3216,6 +3216,42 @@ paths:
         "204":
           description: No Content
 
+  /contracts/{id}/send:
+    post:
+      operationId: sendContract
+      summary: Send a draft contract for e-signature via DocuSeal (picks the ES/EN template from the client's language)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Contract" }
+        "400":
+          description: Contract has no client, or the client has no email
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "409":
+          description: Contract is not in draft status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "502":
+          description: DocuSeal rejected the submission request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "503":
+          description: DocuSeal is not configured
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
   /organizations:
     get:
       operationId: listOrganizations
@@ -4245,6 +4281,7 @@ components:
         enabledModules:
           type: array
           items: { type: string, enum: [ecommerce, autopublicador, seo] }
+        language: { type: string, enum: [es, en] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     ClientInput:
@@ -4258,6 +4295,7 @@ components:
         industry: { type: string }
         status: { type: string, enum: [active, inactive, prospect], default: prospect }
         notes: { type: string }
+        language: { type: string, enum: [es, en], default: es }
     ClientUpdate:
       type: object
       properties:
@@ -4271,6 +4309,7 @@ components:
         enabledModules:
           type: array
           items: { type: string, enum: [ecommerce, autopublicador, seo] }
+        language: { type: string, enum: [es, en] }
     MarkClientFounderInput:
       type: object
       required: [packageName]
@@ -6288,6 +6327,14 @@ components:
         signedBy: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
+        # Written only by the DocuSeal webhook / send flow — never
+        # client-editable. See routes/webhooks-docuseal.ts, routes/contracts.ts.
+        docusealSubmissionId: { type: ["string", "null"] }
+        docusealExternalId: { type: ["string", "null"] }
+        signingUrl: { type: ["string", "null"] }
+        signedDocumentUrl: { type: ["string", "null"] }
+        auditLogUrl: { type: ["string", "null"] }
+        signerIp: { type: ["string", "null"] }
     ContractCreate:
       type: object
       required: [type, title]
@@ -6348,6 +6395,7 @@ components:
         primaryColor: { type: ["string", "null"] }
         contactEmail: { type: ["string", "null"] }
         contactPhone: { type: ["string", "null"] }
+        language: { type: string, enum: [es, en] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     OrganizationCreate:
@@ -6362,6 +6410,7 @@ components:
         primaryColor: { type: string }
         contactEmail: { type: string }
         contactPhone: { type: string }
+        language: { type: string, enum: [es, en], default: es }
     OrganizationUpdate:
       type: object
       properties:
@@ -6373,6 +6422,7 @@ components:
         primaryColor: { type: string }
         contactEmail: { type: string }
         contactPhone: { type: string }
+        language: { type: string, enum: [es, en] }
     ClientApproval:
       type: object
       required: [id, orgId, type, title, status, createdAt]

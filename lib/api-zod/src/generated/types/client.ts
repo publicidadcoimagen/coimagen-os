@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ClientEnabledModulesItem } from './clientEnabledModulesItem';
+import type { ClientLanguage } from './clientLanguage';
 import type { ClientStatus } from './clientStatus';
 
 export interface Client {
@@ -26,6 +27,7 @@ export interface Client {
   /** @nullable */
   founderNumber?: number | null;
   enabledModules?: ClientEnabledModulesItem[];
+  language?: ClientLanguage;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
