@@ -43,6 +43,7 @@ router.post("/clients", requireRole("ceo", "admin"), async (req, res): Promise<v
     industry: parsed.data.industry ?? null,
     status: parsed.data.status ?? "prospect",
     notes: parsed.data.notes ?? null,
+    language: parsed.data.language ?? "es",
   }).returning();
   res.status(201).json({
     ...client,

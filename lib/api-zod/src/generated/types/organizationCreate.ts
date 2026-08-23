@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrganizationCreateLanguage } from './organizationCreateLanguage';
 
 export interface OrganizationCreate {
   slug: string;
@@ -15,4 +16,5 @@ export interface OrganizationCreate {
   primaryColor?: string;
   contactEmail?: string;
   contactPhone?: string;
+  language?: OrganizationCreateLanguage;
 }

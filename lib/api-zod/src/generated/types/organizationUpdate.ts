@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { OrganizationUpdateLanguage } from './organizationUpdateLanguage';
 
 export interface OrganizationUpdate {
   slug?: string;
@@ -15,4 +16,5 @@ export interface OrganizationUpdate {
   primaryColor?: string;
   contactEmail?: string;
   contactPhone?: string;
+  language?: OrganizationUpdateLanguage;
 }

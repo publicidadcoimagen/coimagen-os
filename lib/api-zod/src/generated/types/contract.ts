@@ -48,4 +48,16 @@ export interface Contract {
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
+  /** @nullable */
+  docusealSubmissionId?: string | null;
+  /** @nullable */
+  docusealExternalId?: string | null;
+  /** @nullable */
+  signingUrl?: string | null;
+  /** @nullable */
+  signedDocumentUrl?: string | null;
+  /** @nullable */
+  auditLogUrl?: string | null;
+  /** @nullable */
+  signerIp?: string | null;
 }

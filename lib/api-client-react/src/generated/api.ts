@@ -14121,6 +14121,76 @@ export const useDeleteContract = <TError = ErrorType<unknown>,
       return useMutation(getDeleteContractMutationOptions(options));
     }
 
+export const getSendContractUrl = (id: number,) => {
+
+
+
+
+  return `/api/contracts/${id}/send`
+}
+
+/**
+ * @summary Send a draft contract for e-signature via DocuSeal (picks the ES/EN template from the client's language)
+ */
+export const sendContract = async (id: number, options?: RequestInit): Promise<Contract> => {
+
+  return customFetch<Contract>(getSendContractUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getSendContractMutationOptions = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendContract>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendContract>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['sendContract'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendContract>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  sendContract(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendContractMutationResult = NonNullable<Awaited<ReturnType<typeof sendContract>>>
+
+    export type SendContractMutationError = ErrorType<ErrorEnvelope>
+
+    /**
+ * @summary Send a draft contract for e-signature via DocuSeal (picks the ES/EN template from the client's language)
+ */
+export const useSendContract = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendContract>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendContract>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getSendContractMutationOptions(options));
+    }
+
 export const getListOrganizationsUrl = () => {
 
 
