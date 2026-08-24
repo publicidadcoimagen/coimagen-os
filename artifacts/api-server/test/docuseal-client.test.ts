@@ -2,6 +2,7 @@ import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import {
   createDocusealSubmission,
+  getDocusealCombinedDocumentUrl,
   DocusealApiError,
   DocusealNotConfiguredError,
 } from "../src/lib/docuseal/client";
@@ -138,6 +139,92 @@ describe("createDocusealSubmission", () => {
     await assert.rejects(
       () => createDocusealSubmission(3, { email: "a@b.com", name: "A" }),
       DocusealApiError,
+    );
+  });
+});
+
+// getDocusealCombinedDocumentUrl — the submission.completed webhook payload
+// itself doesn't carry combined_document_url (verified against DocuSeal's
+// deployed lib/submissions/serialize_for_api.rb: the webhook job serializes
+// with no extra params, so the on-demand-generation branch in
+// maybe_build_combined_url never triggers). This is the follow-up GET that
+// requests it explicitly via ?include=combined_document_url, which
+// api/submissions_controller.rb#show passes straight through — confirmed
+// live against the real, already-signed contract 1's submission this
+// session (see the fix's commit message for the real before/after values).
+describe("getDocusealCombinedDocumentUrl", () => {
+  let originalBaseUrl: string | undefined;
+  let originalToken: string | undefined;
+
+  before(() => {
+    originalBaseUrl = process.env.DOCUSEAL_BASE_URL;
+    originalToken = process.env.DOCUSEAL_API_TOKEN;
+  });
+
+  after(() => {
+    if (originalBaseUrl === undefined) delete process.env.DOCUSEAL_BASE_URL;
+    else process.env.DOCUSEAL_BASE_URL = originalBaseUrl;
+    if (originalToken === undefined) delete process.env.DOCUSEAL_API_TOKEN;
+    else process.env.DOCUSEAL_API_TOKEN = originalToken;
+  });
+
+  test("GETs {baseUrl}/api/submissions/{id}?include=combined_document_url with X-Auth-Token", async (t) => {
+    process.env.DOCUSEAL_BASE_URL = "https://firmas.example.com";
+    process.env.DOCUSEAL_API_TOKEN = "test-token-not-for-real-use";
+
+    let capturedUrl: string | undefined;
+    let capturedHeaders: Headers | undefined;
+    t.mock.method(globalThis, "fetch", async (url: unknown, options: RequestInit) => {
+      capturedUrl = String(url);
+      capturedHeaders = new Headers(options.headers);
+      return new Response(
+        JSON.stringify({ id: 2, combined_document_url: "https://firmas.example.com/file/abc/Contrato.pdf" }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    });
+
+    const url = await getDocusealCombinedDocumentUrl("2");
+
+    assert.equal(capturedUrl, "https://firmas.example.com/api/submissions/2?include=combined_document_url");
+    assert.equal(capturedHeaders!.get("x-auth-token"), "test-token-not-for-real-use");
+    assert.equal(url, "https://firmas.example.com/file/abc/Contrato.pdf");
+  });
+
+  test("returns null when the response has no combined_document_url (not yet generated, most real cases)", async (t) => {
+    process.env.DOCUSEAL_BASE_URL = "https://firmas.example.com";
+    process.env.DOCUSEAL_API_TOKEN = "test-token-not-for-real-use";
+
+    t.mock.method(globalThis, "fetch", async () =>
+      new Response(JSON.stringify({ id: 2, combined_document_url: null }), { status: 200, headers: { "Content-Type": "application/json" } }));
+
+    const url = await getDocusealCombinedDocumentUrl("2");
+    assert.equal(url, null);
+  });
+
+  test("throws DocusealApiError on a non-2xx response", async (t) => {
+    process.env.DOCUSEAL_BASE_URL = "https://firmas.example.com";
+    process.env.DOCUSEAL_API_TOKEN = "test-token-not-for-real-use";
+
+    t.mock.method(globalThis, "fetch", async () =>
+      new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { "Content-Type": "application/json" } }));
+
+    await assert.rejects(
+      () => getDocusealCombinedDocumentUrl("999"),
+      (err: unknown) => {
+        assert.ok(err instanceof DocusealApiError);
+        assert.equal(err.status, 404);
+        return true;
+      },
+    );
+  });
+
+  test("throws DocusealNotConfiguredError when env vars are missing", async () => {
+    delete process.env.DOCUSEAL_BASE_URL;
+    delete process.env.DOCUSEAL_API_TOKEN;
+
+    await assert.rejects(
+      () => getDocusealCombinedDocumentUrl("2"),
+      DocusealNotConfiguredError,
     );
   });
 });

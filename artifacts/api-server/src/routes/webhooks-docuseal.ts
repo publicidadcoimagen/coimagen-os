@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { eq, or } from "drizzle-orm";
 import { db, contractsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
+import { getDocusealCombinedDocumentUrl } from "../lib/docuseal/client";
 
 // DocuSeal (self-hosted elsewhere) calls this on submission lifecycle
 // events. Verified against DocuSeal's actual source (lib/webhook_urls/
@@ -96,11 +97,30 @@ async function handleSubmissionCompleted(payload: DocusealWebhookPayload): Promi
 
   const submitter = firstSubmitter(data);
 
+  // The webhook payload itself almost never carries combined_document_url —
+  // verified against the real deployed source: SendSubmissionCompletedWebhookRequestJob
+  // serializes with no extra params, so the combined PDF is only built
+  // on-demand when a caller's own request explicitly asks for it (see
+  // getDocusealCombinedDocumentUrl's own comment). Fetch it as an explicit
+  // follow-up right here, since this IS that request. Best-effort: a
+  // transient failure here must not stop the signature itself — status,
+  // signedAt, signedBy and auditLogUrl are the load-bearing evidence — so
+  // this only ever downgrades signedDocumentUrl to null and logs, never
+  // blocks the update below.
+  let signedDocumentUrl = data.combined_document_url ?? null;
+  if (!signedDocumentUrl && submissionId) {
+    try {
+      signedDocumentUrl = await getDocusealCombinedDocumentUrl(submissionId);
+    } catch (err) {
+      logger.warn({ err, submissionId, contractId: contract.id }, "No se pudo obtener signedDocumentUrl de DocuSeal — se deja null");
+    }
+  }
+
   await db.update(contractsTable).set({
     status: "signed",
     signedAt: data.completed_at ? new Date(data.completed_at) : new Date(),
     signedBy: submitter?.email ?? null,
-    signedDocumentUrl: data.combined_document_url ?? null,
+    signedDocumentUrl,
     auditLogUrl: data.audit_log_url ?? null,
     // DocuSeal's webhook payload doesn't expose signer IP in this version
     // (confirmed against the deployed serializer source) — left null until
