@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { toast } from "@/hooks/use-toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layout";
+import { ClientRoomErrorBoundary } from "@/components/client-room-error-boundary";
 import { useAuth, AuthProvider } from "@workspace/better-auth-web";
 import { useListOrganizations, getListOrganizationsQueryKey } from "@workspace/api-client-react";
 import { LoginForm } from "@/components/login-form";
@@ -200,19 +201,24 @@ function Router() {
   return (
     <Switch>
       {/* ── Client Room — own layout, no AppLayout ─────────────────────── */}
-      <Route path="/client/:slug/onboarding" component={ClientOnboarding} />
-      <Route path="/client/:slug/catalog"   component={ClientCatalog} />
-      <Route path="/client/:slug/projects"  component={ClientProjects} />
-      <Route path="/client/:slug/workflow"  component={ClientWorkflow} />
-      <Route path="/client/:slug/approvals" component={ClientApprovals} />
-      <Route path="/client/:slug/contracts" component={ClientContracts} />
-      <Route path="/client/:slug/invoices"  component={ClientInvoices} />
-      <Route path="/client/:slug/documents" component={ClientDocuments} />
-      <Route path="/client/:slug/calendar"  component={ClientCalendar} />
-      <Route path="/client/:slug/messages"  component={ClientMessages} />
-      <Route path="/client/:slug/ai"        component={ClientAI} />
-      <Route path="/client/:slug/profile"   component={ClientProfile} />
-      <Route path="/client/:slug"           component={ClientDashboard} />
+      {/* Each page is wrapped in ClientRoomErrorBoundary here, at the Route
+          level — not inside ClientRoomLayout — so it also catches a crash
+          in the page's own top-level render, before ClientRoomLayout even
+          mounts (exactly how the useLang-outside-LanguageProvider bug
+          crashed with no boundary catching it, 2026-08-26). */}
+      <Route path="/client/:slug/onboarding">{() => <ClientRoomErrorBoundary><ClientOnboarding /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/catalog">{() => <ClientRoomErrorBoundary><ClientCatalog /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/projects">{() => <ClientRoomErrorBoundary><ClientProjects /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/workflow">{() => <ClientRoomErrorBoundary><ClientWorkflow /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/approvals">{() => <ClientRoomErrorBoundary><ClientApprovals /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/contracts">{() => <ClientRoomErrorBoundary><ClientContracts /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/invoices">{() => <ClientRoomErrorBoundary><ClientInvoices /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/documents">{() => <ClientRoomErrorBoundary><ClientDocuments /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/calendar">{() => <ClientRoomErrorBoundary><ClientCalendar /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/messages">{() => <ClientRoomErrorBoundary><ClientMessages /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/ai">{() => <ClientRoomErrorBoundary><ClientAI /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/profile">{() => <ClientRoomErrorBoundary><ClientProfile /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug">{() => <ClientRoomErrorBoundary><ClientDashboard /></ClientRoomErrorBoundary>}</Route>
       {/* Catch-all for any unmatched /client/:slug/* sub-path — without
           this, an invalid sub-path (e.g. a typo, or a stale link into an
           old page) falls through past this whole block into the OS
