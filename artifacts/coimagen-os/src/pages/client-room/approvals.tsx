@@ -167,6 +167,18 @@ function CreateApprovalDialog({ orgId, open, onClose }: { orgId: number; open: b
 export function ClientApprovals() {
   const [, params] = useRoute("/client/:slug/approvals");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientApprovalsBody slug={slug} />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientApprovalsBody({ slug }: { slug: string }) {
   const { t } = useLang();
   const { user } = useAuth();
   const isCliente = user?.role === "cliente";
@@ -272,7 +284,7 @@ export function ClientApprovals() {
   };
 
   return (
-    <ClientRoomLayout slug={slug}>
+    <>
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -353,6 +365,6 @@ export function ClientApprovals() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </ClientRoomLayout>
+    </>
   );
 }

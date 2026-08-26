@@ -18,6 +18,18 @@ type Contract = {
 export function ClientDocuments() {
   const [, params] = useRoute("/client/:slug/documents");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientDocumentsBody slug={slug} />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientDocumentsBody({ slug }: { slug: string }) {
   const { t, lang } = useLang();
 
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
@@ -33,8 +45,7 @@ export function ClientDocuments() {
   );
 
   return (
-    <ClientRoomLayout slug={slug}>
-      <div className="space-y-5">
+    <div className="space-y-5">
         <div className="flex items-center gap-3">
           <FileText className="h-5 w-5 text-primary" />
           <div>
@@ -85,6 +96,5 @@ export function ClientDocuments() {
           </CardContent>
         </Card>
       </div>
-    </ClientRoomLayout>
   );
 }

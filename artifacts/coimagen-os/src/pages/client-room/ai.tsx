@@ -10,12 +10,23 @@ const CAPABILITY_ICONS = [Sparkles, Shield, Zap, Lock];
 export function ClientAI() {
   const [, params] = useRoute("/client/:slug/ai");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientAIBody />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientAIBody() {
   const { t } = useLang();
   const capabilities = t.ai.capabilities.map((label, i) => ({ label, icon: CAPABILITY_ICONS[i]! }));
 
   return (
-    <ClientRoomLayout slug={slug}>
-      <div className="space-y-5">
+    <div className="space-y-5">
         <div className="flex items-center gap-3">
           <Bot className="h-5 w-5 text-primary" />
           <div>
@@ -65,6 +76,5 @@ export function ClientAI() {
           </CardContent>
         </Card>
       </div>
-    </ClientRoomLayout>
   );
 }

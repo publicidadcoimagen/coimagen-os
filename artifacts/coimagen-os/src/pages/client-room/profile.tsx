@@ -69,6 +69,18 @@ function EditProfileDialog({ org, open, onClose }: { org: Org; open: boolean; on
 export function ClientProfile() {
   const [, params] = useRoute("/client/:slug/profile");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientProfileBody slug={slug} />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientProfileBody({ slug }: { slug: string }) {
   const { t, lang } = useLang();
   const [editOpen, setEditOpen] = useState(false);
 
@@ -76,15 +88,13 @@ export function ClientProfile() {
   const org = rawOrg as Org | undefined;
 
   if (isLoading) return (
-    <ClientRoomLayout slug={slug}>
       <div className="flex items-center justify-center min-h-[50vh]">
         <p className="text-sm text-muted-foreground animate-pulse">{t.common.loading}</p>
       </div>
-    </ClientRoomLayout>
   );
 
   return (
-    <ClientRoomLayout slug={slug}>
+    <>
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -165,6 +175,6 @@ export function ClientProfile() {
       </div>
 
       {org && <EditProfileDialog org={org} open={editOpen} onClose={() => setEditOpen(false)} />}
-    </ClientRoomLayout>
+    </>
   );
 }

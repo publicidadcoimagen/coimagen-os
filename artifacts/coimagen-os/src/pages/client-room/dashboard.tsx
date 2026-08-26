@@ -47,6 +47,19 @@ function StageProgress({ current = 6 }: { current?: number }) {
 export function ClientDashboard() {
   const [, params] = useRoute("/client/:slug");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientDashboardBody slug={slug} />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree — which ClientRoomLayout
+// mounts as a *child* of ClientDashboard, not an ancestor. Calling it directly
+// in ClientDashboard's own body throws "useLang must be used within
+// LanguageProvider" on every render, for every org (fixed 2026-08-26).
+function ClientDashboardBody({ slug }: { slug: string }) {
   const { t, lang } = useLang();
 
   const { data: rawOrg } = useGetOrganization(slug, {
@@ -81,7 +94,6 @@ export function ClientDashboard() {
   ];
 
   return (
-    <ClientRoomLayout slug={slug}>
       <div className="space-y-6">
         {/* Welcome */}
         <div className="space-y-1">
@@ -195,6 +207,5 @@ export function ClientDashboard() {
           </div>
         </div>
       </div>
-    </ClientRoomLayout>
   );
 }
