@@ -8,11 +8,22 @@ import { useLang } from "@/context/LanguageContext";
 export function ClientMessages() {
   const [, params] = useRoute("/client/:slug/messages");
   const slug = params?.slug ?? "";
-  const { t } = useLang();
 
   return (
     <ClientRoomLayout slug={slug}>
-      <div className="space-y-5">
+      <ClientMessagesBody />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientMessagesBody() {
+  const { t } = useLang();
+
+  return (
+    <div className="space-y-5">
         <div className="flex items-center gap-3">
           <MessageSquare className="h-5 w-5 text-primary" />
           <div>
@@ -63,6 +74,5 @@ export function ClientMessages() {
           </CardContent>
         </Card>
       </div>
-    </ClientRoomLayout>
   );
 }

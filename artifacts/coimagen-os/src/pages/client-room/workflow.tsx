@@ -14,13 +14,24 @@ const STAGE_ICONS = [UserSearch, Stethoscope, FileText, FileText, DollarSign, Us
 export function ClientWorkflow() {
   const [, params] = useRoute("/client/:slug/workflow");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientWorkflowBody />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientWorkflowBody() {
   const { t } = useLang();
   const currentStage = 6;
   const stages = t.workflow.stages.map((s, i) => ({ ...s, icon: STAGE_ICONS[i]! }));
 
   return (
-    <ClientRoomLayout slug={slug}>
-      <div className="space-y-5">
+    <div className="space-y-5">
         <div className="flex items-center gap-3">
           <GitBranch className="h-5 w-5 text-primary" />
           <div>
@@ -100,6 +111,5 @@ export function ClientWorkflow() {
           })}
         </div>
       </div>
-    </ClientRoomLayout>
   );
 }

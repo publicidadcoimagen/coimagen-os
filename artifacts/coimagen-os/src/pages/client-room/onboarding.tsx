@@ -21,6 +21,18 @@ const CHECKLIST_KEYS: ChecklistKey[] = [
 export function ClientOnboarding() {
   const [, params] = useRoute("/client/:slug/onboarding");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientOnboardingBody slug={slug} />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientOnboardingBody({ slug }: { slug: string }) {
   const { t } = useLang();
 
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
@@ -33,8 +45,7 @@ export function ClientOnboarding() {
   const done = onboarding ? CHECKLIST_KEYS.filter((k) => onboarding[k]).length : 0;
 
   return (
-    <ClientRoomLayout slug={slug}>
-      <div className="space-y-5">
+    <div className="space-y-5">
         <div className="flex items-center gap-3">
           <ClipboardCheck className="h-5 w-5 text-primary" />
           <div>
@@ -96,6 +107,5 @@ export function ClientOnboarding() {
           </>
         )}
       </div>
-    </ClientRoomLayout>
   );
 }

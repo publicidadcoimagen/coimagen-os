@@ -30,6 +30,18 @@ const STATUS_ICON: Record<string, React.ComponentType<{ className?: string }>> =
 export function ClientInvoices() {
   const [, params] = useRoute("/client/:slug/invoices");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientInvoicesBody slug={slug} />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientInvoicesBody({ slug }: { slug: string }) {
   const { t } = useLang();
 
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
@@ -45,8 +57,7 @@ export function ClientInvoices() {
   const totalPending = invoices.filter((i) => i.status === "sent" || i.status === "draft").reduce((acc, i) => acc + (i.amount ?? 0), 0);
 
   return (
-    <ClientRoomLayout slug={slug}>
-      <div className="space-y-5">
+    <div className="space-y-5">
         <div className="flex items-center gap-3">
           <Receipt className="h-5 w-5 text-primary" />
           <div>
@@ -106,6 +117,5 @@ export function ClientInvoices() {
           </div>
         )}
       </div>
-    </ClientRoomLayout>
   );
 }

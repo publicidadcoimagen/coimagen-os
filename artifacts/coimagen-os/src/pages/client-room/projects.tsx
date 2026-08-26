@@ -26,6 +26,18 @@ const STATUS_COLOR: Record<string, string> = {
 export function ClientProjects() {
   const [, params] = useRoute("/client/:slug/projects");
   const slug = params?.slug ?? "";
+
+  return (
+    <ClientRoomLayout slug={slug}>
+      <ClientProjectsBody slug={slug} />
+    </ClientRoomLayout>
+  );
+}
+
+// useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
+// mounts as a child — calling it in the exported route component (an ancestor
+// of ClientRoomLayout) throws on every render (fixed 2026-08-26).
+function ClientProjectsBody({ slug }: { slug: string }) {
   const { t, lang } = useLang();
 
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
@@ -39,8 +51,7 @@ export function ClientProjects() {
   const projects = (rawProjects as Project[]).filter((p) => org?.clientId ? p.clientId === org.clientId : false);
 
   return (
-    <ClientRoomLayout slug={slug}>
-      <div className="space-y-5">
+    <div className="space-y-5">
         <div className="flex items-center gap-3">
           <FolderKanban className="h-5 w-5 text-primary" />
           <div>
@@ -98,6 +109,5 @@ export function ClientProjects() {
           </div>
         )}
       </div>
-    </ClientRoomLayout>
   );
 }
