@@ -1,4 +1,4 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import { db, productsTable, ordersTable, orderItemsTable, type Product, type Order, type OrderItem } from "@workspace/db";
 import type { PricedOrder } from "./pricing";
 
@@ -15,7 +15,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 
 export async function getProductsByIds(ids: string[]): Promise<Map<string, Product>> {
   if (ids.length === 0) return new Map();
-  const rows = await db.select().from(productsTable).where(sql`${productsTable.id} = ANY(${ids})`);
+  const rows = await db.select().from(productsTable).where(inArray(productsTable.id, ids));
   return new Map(rows.map((r) => [r.id, r]));
 }
 
@@ -27,7 +27,7 @@ export async function listOrders(clientId: number | null): Promise<OrderWithItem
   const query = db.select().from(ordersTable).$dynamic();
   const orders = clientId != null ? await query.where(eq(ordersTable.clientId, clientId)) : await query;
   if (orders.length === 0) return [];
-  const items = await db.select().from(orderItemsTable).where(sql`${orderItemsTable.orderId} = ANY(${orders.map((o) => o.id)})`);
+  const items = await db.select().from(orderItemsTable).where(inArray(orderItemsTable.orderId, orders.map((o) => o.id)));
   const itemsByOrder = new Map<number, OrderItem[]>();
   for (const item of items) {
     const list = itemsByOrder.get(item.orderId) ?? [];
