@@ -1,9 +1,20 @@
 // Real-Postgres integration tests for POST /prospects/:id/convert, against a
 // PGlite (embedded, ephemeral WASM Postgres) instance — never the real Neon
-// database. Transaction atomicity and the UNIQUE constraint's idempotency
-// guarantee are only meaningfully provable against a real Postgres, not a
-// mock (same reasoning as the Content Intelligence Fase 1 audit this
-// session, tests/content/postgres-rls.test.ts and repository-concurrency).
+// database. Transaction atomicity (rollback-on-failure) is meaningfully
+// provable here, against a real Postgres, not a mock.
+//
+// Real CONCURRENCY is NOT provable here, and test #8 below no longer
+// pretends otherwise: PGlite is a single physical connection/backend — two
+// `db.transaction()` calls fired via Promise.allSettled against the same
+// PGlite instance do not overlap, they queue (empirically confirmed: a
+// transaction B fired 100ms into transaction A's held-open 1s `pg_sleep`
+// does not even start its own BEGIN until A commits). So test #8 only
+// proves the sequential-retry path (already covered by test #1 in the
+// negative block below) — it can't exercise the real race this function
+// guards against. That race (two genuinely parallel connections against
+// real Postgres, converting the same prospect at once) was reproduced and
+// fixed against the real Neon database instead — see the commit message /
+// PR for the before/after evidence, not a unit test in this file.
 import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import type { Request, Response } from "express";
@@ -100,6 +111,22 @@ const SCHEMA_SQL = `
     occurred_at timestamp not null default now(),
     created_at timestamp not null default now()
   );
+  create table invoices (
+    id serial primary key,
+    number text not null,
+    client_id integer references clients(id) on delete cascade,
+    amount numeric not null,
+    status text not null default 'draft',
+    issued_date text, due_date text,
+    description text,
+    proposal_id integer references proposals(id) on delete set null,
+    public_token uuid unique,
+    installment_label text,
+    currency text not null default 'MXN',
+    requires_fiscal_invoice boolean not null default false,
+    created_at timestamp not null default now(),
+    updated_at timestamp
+  );
 `;
 
 let pglite: PGlite;
@@ -129,7 +156,7 @@ before(async () => {
 after(async () => pglite.close());
 
 describe("POST /prospects/:id/convert — casos positivos", () => {
-  test("convierte un prospecto con propuesta aceptada: crea el cliente, enlaza historial, marca converted_client_id", async () => {
+  test("convierte un prospecto con propuesta aceptada: crea el cliente, enlaza historial, marca converted_client_id + status, genera cuotas", async () => {
     const prospect = await seedProspect({ notes: "Le interesa el paquete completo" });
     const proposal = await seedAcceptedProposal(prospect.id);
     await testDb.insert(schema.diagnosesTable).values({ title: "Diagnóstico", prospectId: prospect.id, type: "digital_diagnosis", status: "completed" });
@@ -143,6 +170,7 @@ describe("POST /prospects/:id/convert — casos positivos", () => {
 
     const [updatedProspect] = await testDb.select().from(schema.prospectsTable).where(eq(schema.prospectsTable.id, prospect.id));
     assert.equal(updatedProspect.convertedClientId, result.client.id);
+    assert.equal(updatedProspect.status, "converted");
 
     const [linkedProposal] = await testDb.select().from(schema.proposalsTable).where(eq(schema.proposalsTable.id, proposal.id));
     assert.equal(linkedProposal.clientId, result.client.id);
@@ -160,6 +188,16 @@ describe("POST /prospects/:id/convert — casos positivos", () => {
     assert.equal(timeline[0].eventType, "converted_from_prospect");
     assert.match(timeline[0].description ?? "", new RegExp(`Prospecto #${prospect.id}`));
     assert.match(timeline[0].description ?? "", /Camila \(ceo\)/);
+
+    // pendiente #3 del audit de Chati: sin esto, un cliente convertido desde
+    // prospecto nunca recibía cuotas de pago (createInstallmentInvoices solo
+    // se llamaba al aceptar la propuesta, cuando clientId todavía era null).
+    const invoices = await testDb.select().from(schema.invoicesTable).where(eq(schema.invoicesTable.proposalId, proposal.id));
+    assert.equal(invoices.length, 2, "plan standard: anticipo + pago final");
+    assert.equal(invoices[0].status, "sent", "el anticipo es pagable de inmediato");
+    assert.equal(parseFloat(invoices[0].amount), 22500, "50% del amount de la propuesta (45000)");
+    assert.equal(invoices[1].status, "draft");
+    assert.equal(invoices.every((i) => i.clientId === result.client.id), true);
   });
 
   test("prospecto de prueba con confirmTestSource:true sí se convierte — la fricción es deliberada, no un bloqueo permanente", async () => {
@@ -275,7 +313,17 @@ describe("POST /prospects/:id/convert — 8 pruebas negativas obligatorias", () 
     assert.equal(nextCalled, false);
   });
 
-  test("8. Conversión concurrente del mismo prospecto: exactamente una gana, la constraint UNIQUE de converted_client_id rechaza la otra", async () => {
+  // NO es una prueba de concurrencia real — ver el comentario al inicio del
+  // archivo. PGlite serializa las dos `db.transaction()` de abajo (la
+  // segunda ni siquiera arranca su BEGIN hasta que la primera hace commit),
+  // así que esto solo ejercita el camino de la Capa 2 (el precheck que lee
+  // convertedClientId ya confirmado) — nunca llega a ejercitar la guarda real
+  // (WHERE ... AND converted_client_id IS NULL + rowCount) que existe
+  // específicamente para el caso en que dos conexiones SÍ se solapan de
+  // verdad. Esa guarda fue reproducida y verificada contra Neon real (ver
+  // PR/commit) — aquí solo queda como regresión de "dos llamadas al mismo
+  // prospecto, aunque lleguen una detrás de otra, nunca crean dos clientes".
+  test("8. Doble conversión vía Promise.allSettled (PGlite serializa — no es una race real): la segunda es rechazada por el precheck, nunca se crean dos clientes", async () => {
     const prospect = await seedProspect();
     await seedAcceptedProposal(prospect.id);
     // testDb is shared across the whole file (one PGlite instance, see
@@ -291,10 +339,10 @@ describe("POST /prospects/:id/convert — 8 pruebas negativas obligatorias", () 
 
     const succeeded = [first, second].filter((r) => r.status === "fulfilled" && r.value.ok);
     const rejectedOrFailed = [first, second].filter((r) => r.status === "rejected" || (r.status === "fulfilled" && !r.value.ok));
-    assert.equal(succeeded.length, 1, "exactamente una conversión concurrente debe tener éxito");
-    assert.equal(rejectedOrFailed.length, 1, "la otra debe fallar — por el chequeo previo o por la constraint UNIQUE real");
+    assert.equal(succeeded.length, 1, "exactamente una de las dos debe tener éxito");
+    assert.equal(rejectedOrFailed.length, 1, "la otra debe fallar — aquí, vía el precheck (already_converted), porque PGlite ya serializó las dos transacciones");
 
     const clientCountAfter = (await testDb.select().from(schema.clientsTable)).length;
-    assert.equal(clientCountAfter - clientCountBefore, 1, "nunca deben quedar dos clientes del mismo prospecto, sin importar cuál camino rechazó a la perdedora");
+    assert.equal(clientCountAfter - clientCountBefore, 1, "nunca deben quedar dos clientes del mismo prospecto");
   });
 });

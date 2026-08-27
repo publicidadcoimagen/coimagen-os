@@ -1,5 +1,6 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db, clientsTable, prospectsTable, proposalsTable, diagnosesTable, clientNotesTable, clientTimelineTable, type Client } from "@workspace/db";
+import { createInstallmentInvoices } from "../payment-schedule/repository";
 
 // Prospects whose `source` marks them as test/synthetic data, not a real
 // lead — see routes/prospects.ts and Corte 1 (prospect 23, source
@@ -21,9 +22,22 @@ export type ConvertProspectResult =
 // Everything below runs inside one transaction (see lib/catalog/repository.ts
 // for the one other real precedent of db.transaction in this codebase): if
 // any step fails, nothing is left half-done — the prospect stays exactly as
-// it was, converted_client_id stays null, safe to retry (see the UNIQUE
-// constraint on that column, the real idempotency guard, not this
-// pre-check).
+// it was, converted_client_id stays null, safe to retry.
+//
+// The early convertedClientId read-check above is NOT the real guard against
+// a concurrent double-conversion — under READ COMMITTED, two transactions
+// starting at nearly the same time both read convertedClientId as null and
+// both pass it. Nor does the UNIQUE constraint on converted_client_id save
+// this by itself: an UPDATE ... WHERE id = prospectId targets the row by its
+// primary key, not by the column being guarded, so a second transaction that
+// was blocked on the first's row lock proceeds anyway once that lock is
+// released (Postgres re-checks the WHERE clause against the fresh row, which
+// still matches) and overwrites converted_client_id to point at ITS OWN
+// newly created client — a real client, fully linked, now orphaned. The
+// actual guard is the final UPDATE below: it filters on
+// `converted_client_id IS NULL` too, so the loser's UPDATE affects zero rows,
+// which this function turns into a thrown error to force that transaction's
+// own client (and every other write it made) to roll back completely.
 export async function convertProspectToClient(
   prospectId: number,
   actor: { id: string; label: string },
@@ -73,6 +87,16 @@ export async function convertProspectToClient(
     await tx.update(diagnosesTable).set({ clientId: client.id }).where(eq(diagnosesTable.prospectId, prospectId));
     await tx.update(proposalsTable).set({ clientId: client.id }).where(eq(proposalsTable.prospectId, prospectId));
 
+    // Generates the deposit/cuota invoices for the proposal that justified
+    // this conversion — client.id wasn't available yet when the proposal was
+    // publicly accepted (createInstallmentInvoices requires it and silently
+    // no-ops there for exactly this reason, see public-proposals.ts), so
+    // without this call a prospect-converted client would never get a
+    // payment schedule at all. Runs on the same `tx`: if this fails, the
+    // client that was just created rolls back too, rather than existing
+    // with no way to pay.
+    await createInstallmentInvoices({ ...acceptedProposal, clientId: client.id }, tx);
+
     if (prospect.notes && prospect.notes.trim()) {
       await tx.insert(clientNotesTable).values({
         clientId: client.id,
@@ -89,7 +113,18 @@ export async function convertProspectToClient(
       description: `Prospecto #${prospect.id} (${prospect.name}) convertido por ${actor.label}. Propuesta aceptada: #${acceptedProposal.id} — "${acceptedProposal.title}".`,
     });
 
-    await tx.update(prospectsTable).set({ convertedClientId: client.id, updatedAt: new Date() }).where(eq(prospectsTable.id, prospectId));
+    // The real concurrency guard (see the comment above this function):
+    // filters on convertedClientId IS NULL too, not just id, so a
+    // transaction that lost the race to another one converting the same
+    // prospect affects zero rows here and gets caught below — never silently
+    // overwrites the winner's convertedClientId with its own.
+    const updatedProspects = await tx.update(prospectsTable)
+      .set({ convertedClientId: client.id, status: "converted", updatedAt: new Date() })
+      .where(and(eq(prospectsTable.id, prospectId), isNull(prospectsTable.convertedClientId)))
+      .returning({ id: prospectsTable.id });
+    if (updatedProspects.length === 0) {
+      throw new Error(`Conversión concurrente detectada para el prospecto ${prospectId} — otra transacción ganó la carrera; esta se revierte por completo.`);
+    }
 
     return { ok: true, client };
   });

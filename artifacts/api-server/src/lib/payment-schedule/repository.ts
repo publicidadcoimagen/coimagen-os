@@ -18,7 +18,17 @@ function todayIso(): string {
 // stay "draft" (not shown/payable) until the previous one is paid, see
 // advanceNextInstallment. Invoice numbers are traceable back to the
 // proposal: "P{proposalId}-{n}".
-export async function createInstallmentInvoices(proposal: Proposal): Promise<Invoice[]> {
+//
+// Accepts an optional dbClient (same pattern as
+// prospect-conversion/repository.ts's convertProspectToClient) so a caller
+// that already holds an open transaction — like that function, generating
+// cuotas for a just-converted client — can pass its `tx` and get real
+// atomicity: if invoice creation fails, the whole conversion rolls back
+// too, instead of leaving a client with no payment schedule.
+export async function createInstallmentInvoices(
+  proposal: Proposal,
+  dbClient: Pick<typeof db, "insert"> = db,
+): Promise<Invoice[]> {
   if (!proposal.amount) {
     throw new Error(`No se pueden generar cuotas: la propuesta ${proposal.id} no tiene amount`);
   }
@@ -30,7 +40,7 @@ export async function createInstallmentInvoices(proposal: Proposal): Promise<Inv
   const installments = generateInstallments(parseFloat(proposal.amount), plan);
   const today = todayIso();
 
-  const rows = await db.insert(invoicesTable).values(
+  const rows = await dbClient.insert(invoicesTable).values(
     installments.map((installment, i) => ({
       number: `P${proposal.id}-${i + 1}`,
       clientId: proposal.clientId,
