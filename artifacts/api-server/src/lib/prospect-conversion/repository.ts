@@ -78,7 +78,15 @@ export async function convertProspectToClient(
       // Explicit — clientsTable.status defaults to "prospect", which would
       // be actively misleading on a client that just came FROM a real
       // prospect (see the design doc's §4 callout on this exact collision).
-      status: "active",
+      // NOT "active" yet: Contrato Maestro V2 cláusula 4 — no production
+      // work starts before the anticipo (cuota 1) is actually paid, same
+      // rule for Founders and regular clients. `handleInstallmentPaid`
+      // flips this to "active" once that specific capture is confirmed
+      // (see on-installment-paid.ts). This does NOT gate Client Room access
+      // — `clients.status` isn't read by any auth/scope check today, and
+      // per Camila that stays true here on purpose; only the dashboard's
+      // "active clients" reporting count is affected by this status.
+      status: "pending_payment",
     }).returning();
 
     // Link, never migrate: diagnoses/proposals keep their original
