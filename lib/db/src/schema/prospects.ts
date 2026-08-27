@@ -34,6 +34,15 @@ export const prospectsTable = pgTable("prospects", {
   // manually created prospects) has no Google Place at all. Postgres allows
   // any number of NULLs under a unique constraint, so this is safe.
   googlePlaceId: text("google_place_id").unique(),
+  // Set exactly once, by POST /prospects/:id/convert, the moment this
+  // prospect becomes a real client. Distinct from `clientId` above on
+  // purpose — that column means "this prospect belongs to this client's own
+  // lead funnel" (P-81 Fase A), which is a different relationship and can
+  // point anywhere regardless of whether this prospect has ever converted.
+  // UNIQUE is the real idempotency guard: a second conversion attempt fails
+  // at the database itself, not just in application logic (same pattern as
+  // commercial_followups' unique(prospectId, stage)).
+  convertedClientId: integer("converted_client_id").references(() => clientsTable.id).unique(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });

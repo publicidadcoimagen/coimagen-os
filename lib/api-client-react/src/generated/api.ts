@@ -86,6 +86,7 @@ import type {
   Contract,
   ContractCreate,
   ContractUpdate,
+  ConvertProspectBody,
   ConvertTicketBody,
   Cost,
   CostInput,
@@ -6277,6 +6278,78 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteProspectMutationOptions(options));
+    }
+
+export const getConvertProspectUrl = (id: number,) => {
+
+
+
+
+  return `/api/prospects/${id}/convert`
+}
+
+/**
+ * @summary Formally convert a prospect into a client (creates clients, links diagnoses/proposals history, copies notes)
+ */
+export const convertProspect = async (id: number,
+    convertProspectBody?: ConvertProspectBody, options?: RequestInit): Promise<Client> => {
+
+  return customFetch<Client>(getConvertProspectUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      convertProspectBody,)
+  }
+);}
+
+
+
+
+export const getConvertProspectMutationOptions = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof convertProspect>>, TError,{id: number;data?: BodyType<ConvertProspectBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof convertProspect>>, TError,{id: number;data?: BodyType<ConvertProspectBody>}, TContext> => {
+
+const mutationKey = ['convertProspect'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof convertProspect>>, {id: number;data?: BodyType<ConvertProspectBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  convertProspect(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConvertProspectMutationResult = NonNullable<Awaited<ReturnType<typeof convertProspect>>>
+    export type ConvertProspectMutationBody = BodyType<ConvertProspectBody> | undefined
+    export type ConvertProspectMutationError = ErrorType<ErrorEnvelope>
+
+    /**
+ * @summary Formally convert a prospect into a client (creates clients, links diagnoses/proposals history, copies notes)
+ */
+export const useConvertProspect = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof convertProspect>>, TError,{id: number;data?: BodyType<ConvertProspectBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof convertProspect>>,
+        TError,
+        {id: number;data?: BodyType<ConvertProspectBody>},
+        TContext
+      > => {
+      return useMutation(getConvertProspectMutationOptions(options));
     }
 
 export const getListDiagnosesUrl = (params?: ListDiagnosesParams,) => {

@@ -1442,6 +1442,36 @@ paths:
         "404":
           description: Not found
 
+  /prospects/{id}/convert:
+    post:
+      operationId: convertProspect
+      tags: [prospects]
+      summary: Formally convert a prospect into a client (creates clients, links diagnoses/proposals history, copies notes)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConvertProspectBody"
+      responses:
+        "201":
+          description: Created — prospect converted, returns the new client
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Client" }
+        "404":
+          description: Prospect not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+        "409":
+          description: Already converted, no accepted proposal, or a test-source prospect without confirmTestSource
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
   # ─── DIAGNOSES ─────────────────────────────────────────────────────────────
   /diagnoses:
     get:
@@ -4769,6 +4799,11 @@ components:
         # Null = Coimagen's own leads (the internal tenant). Set = belongs to
         # a client whose plan includes prospect tracking (P-81 Fase A).
         clientId: { type: ["integer", "null"] }
+        # Set exactly once, by POST /prospects/{id}/convert, when this
+        # prospect becomes a real client. Distinct from clientId above (that
+        # one means "belongs to this client's lead funnel", P-81 Fase A) —
+        # see the conversion endpoint's own docs for why they're kept apart.
+        convertedClientId: { type: ["integer", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
     ProspectInput:
@@ -4796,6 +4831,13 @@ components:
         source: { type: string }
         notes: { type: string }
         clientId: { type: integer }
+    ConvertProspectBody:
+      type: object
+      properties:
+        # Required (and only meaningful) when prospects.source looks like
+        # test data (see routes/prospects.ts) — staff must explicitly opt in
+        # to converting a test-marked prospect into a real, billable client.
+        confirmTestSource: { type: boolean, default: false }
 
     # ── DIAGNOSIS ─────────────────────────────────────────────────────────────
     Diagnosis:
@@ -6337,6 +6379,10 @@ components:
         description: { type: ["string", "null"] }
         service: { type: ["string", "null"] }
         clientId: { type: ["integer", "null"] }
+        # Which proposal, if any, this contract came from. Nullable and
+        # additive — most existing contracts predate this link and simply
+        # leave it null.
+        proposalId: { type: ["integer", "null"] }
         projectId: { type: ["integer", "null"] }
         workflowId: { type: ["integer", "null"] }
         invoiceId: { type: ["integer", "null"] }
@@ -6370,6 +6416,7 @@ components:
         description: { type: string }
         service: { type: string }
         clientId: { type: integer }
+        proposalId: { type: integer }
         projectId: { type: integer }
         workflowId: { type: integer }
         invoiceId: { type: integer }
@@ -6393,6 +6440,7 @@ components:
         description: { type: string }
         service: { type: string }
         clientId: { type: integer }
+        proposalId: { type: integer }
         projectId: { type: integer }
         workflowId: { type: integer }
         invoiceId: { type: integer }
