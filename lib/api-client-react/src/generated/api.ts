@@ -46,6 +46,7 @@ import type {
   BacklogItem,
   BacklogItemCreate,
   BacklogItemUpdate,
+  BeckyBeckLegacyProduct,
   Bug,
   BugCreate,
   BugUpdate,
@@ -17358,6 +17359,77 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getDeleteProductMutationOptions(options));
     }
+
+export const getListBeckyBeckLegacyProductsUrl = () => {
+
+
+
+
+  return `/api/becky-beck-legacy/products`
+}
+
+export const listBeckyBeckLegacyProducts = async ( options?: RequestInit): Promise<BeckyBeckLegacyProduct[]> => {
+
+  return customFetch<BeckyBeckLegacyProduct[]>(getListBeckyBeckLegacyProductsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBeckyBeckLegacyProductsQueryKey = () => {
+    return [
+    `/api/becky-beck-legacy/products`
+    ] as const;
+    }
+
+
+export const getListBeckyBeckLegacyProductsQueryOptions = <TData = Awaited<ReturnType<typeof listBeckyBeckLegacyProducts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBeckyBeckLegacyProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBeckyBeckLegacyProductsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBeckyBeckLegacyProducts>>> = ({ signal }) => listBeckyBeckLegacyProducts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBeckyBeckLegacyProducts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBeckyBeckLegacyProductsQueryResult = NonNullable<Awaited<ReturnType<typeof listBeckyBeckLegacyProducts>>>
+export type ListBeckyBeckLegacyProductsQueryError = ErrorType<unknown>
+
+
+
+export function useListBeckyBeckLegacyProducts<TData = Awaited<ReturnType<typeof listBeckyBeckLegacyProducts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBeckyBeckLegacyProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBeckyBeckLegacyProductsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getListOrdersUrl = (params?: ListOrdersParams,) => {
   const normalizedParams = new URLSearchParams();

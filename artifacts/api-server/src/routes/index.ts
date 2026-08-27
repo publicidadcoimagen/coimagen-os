@@ -55,6 +55,7 @@ import contentCalendarRouter from "./content-calendar";
 import socialCredentialsRouter from "./social-credentials";
 import systemCredentialsRouter from "./system-credentials";
 import catalogRouter from "./catalog";
+import beckyBeckLegacyRouter from "./becky-beck-legacy";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 import { clientRoleGate } from "../middlewares/clientRoleGate";
@@ -123,5 +124,6 @@ router.use("/clients/:clientId/content-calendar", contentCalendarRouter);
 router.use("/clients/:clientId/social-credentials", socialCredentialsRouter);
 router.use("/system-credentials", systemCredentialsRouter);
 router.use(catalogRouter);
+router.use(beckyBeckLegacyRouter);
 
 export default router;

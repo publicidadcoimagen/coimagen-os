@@ -3979,6 +3979,20 @@ paths:
         "404":
           description: Not found
 
+  # ─── BECKY BECK LEGACY CATALOG (read-only proxy to the original P-77
+  # Netlify Functions + Blobs storefront — her real 48 products, never
+  # migrated into the Postgres `products` table above) ──────────────────────
+  /becky-beck-legacy/products:
+    get:
+      operationId: listBeckyBeckLegacyProducts
+      tags: [catalog]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/BeckyBeckLegacyProduct" } }
+
   # ─── ORDERS (staff/client-room view of e-commerce checkout orders) ──────────
   /orders:
     get:
@@ -4577,6 +4591,18 @@ components:
         sku: { type: string }
         available: { type: boolean }
         imagesBase64: { type: array, items: { type: string }, description: "If provided, REPLACES the entire existing image set" }
+
+    BeckyBeckLegacyProduct:
+      type: object
+      required: [id, nameEs, nameEn, category, priceUsd, available]
+      properties:
+        id: { type: string }
+        nameEs: { type: string }
+        nameEn: { type: string }
+        category: { type: string, enum: [bolso, mochila, llavero] }
+        priceUsd: { type: number }
+        available: { type: boolean }
+        imageUrl: { type: ["string", "null"] }
 
     # ── ORDERS / CHECKOUT (pendiente #5) ──────────────────────────────────────
     OrderItem:

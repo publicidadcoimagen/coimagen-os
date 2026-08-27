@@ -5329,6 +5329,18 @@ export const DeleteProductParams = zod.object({
 })
 
 
+export const ListBeckyBeckLegacyProductsResponseItem = zod.object({
+  "id": zod.string(),
+  "nameEs": zod.string(),
+  "nameEn": zod.string(),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']),
+  "priceUsd": zod.number(),
+  "available": zod.boolean(),
+  "imageUrl": zod.string().nullish()
+})
+export const ListBeckyBeckLegacyProductsResponse = zod.array(ListBeckyBeckLegacyProductsResponseItem)
+
+
 export const ListOrdersQueryParams = zod.object({
   "clientId": zod.coerce.number().optional()
 })

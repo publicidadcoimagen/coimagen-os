@@ -2,6 +2,7 @@ import { useRoute } from "wouter";
 import { useGetOrganization, getGetOrganizationQueryKey } from "@workspace/api-client-react";
 import { ClientRoomLayout } from "./layout";
 import { CatalogContent } from "@/pages/catalog/catalog-content";
+import { BeckyBeckLegacyCatalog } from "./becky-beck-legacy-catalog";
 
 export function ClientCatalog() {
   const [, params] = useRoute("/client/:slug/catalog");
@@ -14,7 +15,11 @@ export function ClientCatalog() {
 
   return (
     <ClientRoomLayout slug={slug}>
-      <CatalogContent clientId={org?.clientId ?? undefined} />
+      {slug === "beckybeck" ? (
+        <BeckyBeckLegacyCatalog />
+      ) : (
+        <CatalogContent clientId={org?.clientId ?? undefined} />
+      )}
     </ClientRoomLayout>
   );
 }
