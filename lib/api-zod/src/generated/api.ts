@@ -1727,6 +1727,7 @@ export const ListProspectsResponseItem = zod.object({
   "source": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "clientId": zod.number().nullish(),
+  "convertedClientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1764,6 +1765,7 @@ export const GetProspectResponse = zod.object({
   "source": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "clientId": zod.number().nullish(),
+  "convertedClientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1799,6 +1801,7 @@ export const UpdateProspectResponse = zod.object({
   "source": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "clientId": zod.number().nullish(),
+  "convertedClientId": zod.number().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -1806,6 +1809,20 @@ export const UpdateProspectResponse = zod.object({
 
 export const DeleteProspectParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Formally convert a prospect into a client (creates clients, links diagnoses/proposals history, copies notes)
+ */
+export const ConvertProspectParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const convertProspectBodyConfirmTestSourceDefault = false;
+
+export const ConvertProspectBody = zod.object({
+  "confirmTestSource": zod.boolean().default(convertProspectBodyConfirmTestSourceDefault)
 })
 
 
@@ -4103,6 +4120,7 @@ export const ListContractsResponseItem = zod.object({
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
+  "proposalId": zod.number().nullish(),
   "projectId": zod.number().nullish(),
   "workflowId": zod.number().nullish(),
   "invoiceId": zod.number().nullish(),
@@ -4138,6 +4156,7 @@ export const CreateContractBody = zod.object({
   "description": zod.string().optional(),
   "service": zod.string().optional(),
   "clientId": zod.number().optional(),
+  "proposalId": zod.number().optional(),
   "projectId": zod.number().optional(),
   "workflowId": zod.number().optional(),
   "invoiceId": zod.number().optional(),
@@ -4170,6 +4189,7 @@ export const GetContractResponse = zod.object({
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
+  "proposalId": zod.number().nullish(),
   "projectId": zod.number().nullish(),
   "workflowId": zod.number().nullish(),
   "invoiceId": zod.number().nullish(),
@@ -4209,6 +4229,7 @@ export const UpdateContractBody = zod.object({
   "description": zod.string().optional(),
   "service": zod.string().optional(),
   "clientId": zod.number().optional(),
+  "proposalId": zod.number().optional(),
   "projectId": zod.number().optional(),
   "workflowId": zod.number().optional(),
   "invoiceId": zod.number().optional(),
@@ -4233,6 +4254,7 @@ export const UpdateContractResponse = zod.object({
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
+  "proposalId": zod.number().nullish(),
   "projectId": zod.number().nullish(),
   "workflowId": zod.number().nullish(),
   "invoiceId": zod.number().nullish(),
@@ -4281,6 +4303,7 @@ export const SendContractResponse = zod.object({
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
+  "proposalId": zod.number().nullish(),
   "projectId": zod.number().nullish(),
   "workflowId": zod.number().nullish(),
   "invoiceId": zod.number().nullish(),

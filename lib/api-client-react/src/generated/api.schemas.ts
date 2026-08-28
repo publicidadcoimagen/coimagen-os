@@ -877,6 +877,8 @@ export interface Prospect {
   notes?: string | null;
   /** @nullable */
   clientId?: number | null;
+  /** @nullable */
+  convertedClientId?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -926,6 +928,10 @@ export interface ProspectUpdate {
   source?: string;
   notes?: string;
   clientId?: number;
+}
+
+export interface ConvertProspectBody {
+  confirmTestSource?: boolean;
 }
 
 export type DiagnosisStatus = typeof DiagnosisStatus[keyof typeof DiagnosisStatus];
@@ -2883,6 +2889,8 @@ export interface Contract {
   /** @nullable */
   clientId?: number | null;
   /** @nullable */
+  proposalId?: number | null;
+  /** @nullable */
   projectId?: number | null;
   /** @nullable */
   workflowId?: number | null;
@@ -2933,6 +2941,7 @@ export interface ContractCreate {
   description?: string;
   service?: string;
   clientId?: number;
+  proposalId?: number;
   projectId?: number;
   workflowId?: number;
   invoiceId?: number;
@@ -2956,6 +2965,7 @@ export interface ContractUpdate {
   description?: string;
   service?: string;
   clientId?: number;
+  proposalId?: number;
   projectId?: number;
   workflowId?: number;
   invoiceId?: number;

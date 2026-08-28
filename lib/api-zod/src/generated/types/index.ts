@@ -101,6 +101,7 @@ export * from './contentCalendarTarget';
 export * from './contract';
 export * from './contractCreate';
 export * from './contractUpdate';
+export * from './convertProspectBody';
 export * from './convertTicketBody';
 export * from './cost';
 export * from './costBreakdownItem';

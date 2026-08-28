@@ -12,6 +12,7 @@ export interface ContractCreate {
   description?: string;
   service?: string;
   clientId?: number;
+  proposalId?: number;
   projectId?: number;
   workflowId?: number;
   invoiceId?: number;

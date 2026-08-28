@@ -18,6 +18,8 @@ export interface Contract {
   /** @nullable */
   clientId?: number | null;
   /** @nullable */
+  proposalId?: number | null;
+  /** @nullable */
   projectId?: number | null;
   /** @nullable */
   workflowId?: number | null;

@@ -1,4 +1,5 @@
 import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { proposalsTable } from "./proposals";
 
 export const contractsTable = pgTable("contracts", {
   id: serial("id").primaryKey(),
@@ -8,6 +9,13 @@ export const contractsTable = pgTable("contracts", {
   description: text("description"),
   service: text("service"),
   clientId: integer("client_id"),
+  // Additive-only link, closes the gap flagged in the Corte 1 audit: before
+  // this column existed there was no way to query "which contract, if any,
+  // came from this proposal" — contracts were created by a fully separate
+  // manual staff action with no schema-level connection. Nullable: existing
+  // contracts and any contract created without a proposal (paper, manual
+  // override) simply leave this null.
+  proposalId: integer("proposal_id").references(() => proposalsTable.id),
   projectId: integer("project_id"),
   workflowId: integer("workflow_id"),
   invoiceId: integer("invoice_id"),

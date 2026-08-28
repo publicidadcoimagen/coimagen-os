@@ -25,6 +25,8 @@ export interface Prospect {
   notes?: string | null;
   /** @nullable */
   clientId?: number | null;
+  /** @nullable */
+  convertedClientId?: number | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
