@@ -43,6 +43,10 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   // blocks it for cliente accounts too, not just the UI's own omission).
   { method: "GET", pattern: /^\/orders$/ },
   { method: "GET", pattern: /^\/orders\/\d+$/ },
+  // Becky Beck's original P-77 catalog (Netlify Functions + Blobs) —
+  // read-only proxy, see becky-beck-legacy.ts.
+  { method: "GET", pattern: /^\/becky-beck-legacy\/products$/ },
+  { method: "GET", pattern: /^\/becky-beck-legacy\/products\/[^/]+\/image$/ },
 ];
 
 export function clientRoleGate(req: Request, res: Response, next: NextFunction): void {

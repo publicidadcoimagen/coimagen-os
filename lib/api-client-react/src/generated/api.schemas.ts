@@ -657,6 +657,26 @@ export interface ProductUpdate {
   imagesBase64?: string[];
 }
 
+export type BeckyBeckLegacyProductCategory = typeof BeckyBeckLegacyProductCategory[keyof typeof BeckyBeckLegacyProductCategory];
+
+
+export const BeckyBeckLegacyProductCategory = {
+  bolso: 'bolso',
+  mochila: 'mochila',
+  llavero: 'llavero',
+} as const;
+
+export interface BeckyBeckLegacyProduct {
+  id: string;
+  nameEs: string;
+  nameEn: string;
+  category: BeckyBeckLegacyProductCategory;
+  priceUsd: number;
+  available: boolean;
+  /** @nullable */
+  imageUrl?: string | null;
+}
+
 export interface OrderItem {
   id: number;
   /** @nullable */

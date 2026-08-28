@@ -51,6 +51,8 @@ export * from './automationUpdate';
 export * from './backlogItem';
 export * from './backlogItemCreate';
 export * from './backlogItemUpdate';
+export * from './beckyBeckLegacyProduct';
+export * from './beckyBeckLegacyProductCategory';
 export * from './bug';
 export * from './bugCreate';
 export * from './bugUpdate';
