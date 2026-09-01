@@ -166,7 +166,7 @@ describe("POST /prospects/:id/convert — casos positivos", () => {
     if (!result.ok) return;
 
     assert.equal(result.client.name, prospect.name);
-    assert.equal(result.client.status, "active", "nunca debe quedar en el default de esquema 'prospect'");
+    assert.equal(result.client.status, "pending_payment", "nunca 'active' de entrada — cláusula 4, activa hasta que se confirme el anticipo; tampoco el default de esquema 'prospect'");
 
     const [updatedProspect] = await testDb.select().from(schema.prospectsTable).where(eq(schema.prospectsTable.id, prospect.id));
     assert.equal(updatedProspect.convertedClientId, result.client.id);
