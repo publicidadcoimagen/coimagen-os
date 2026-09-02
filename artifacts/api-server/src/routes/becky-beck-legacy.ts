@@ -4,6 +4,15 @@ import { listLegacyProducts, getLegacyProductImage } from "../lib/becky-beck-leg
 
 const router: IRouter = Router();
 
+// The Client Room dashboard (portal.coimagenmedia.com) and this API
+// (api.coimagenmedia.com) are different origins, and <img src> — unlike the
+// generated API hooks' fetch calls — never goes through custom-fetch's
+// setBaseUrl() rewriting, so a path relative to "/" resolves against the
+// dashboard's own origin instead and gets swallowed by Vercel's SPA
+// catch-all rewrite (serves index.html, not the image). Same fix already
+// used by public-catalog.ts for the same reason.
+const API_PUBLIC_BASE_URL = process.env.API_PUBLIC_BASE_URL ?? "https://coimagen-os-api.onrender.com";
+
 // Same "ecommerce" module gate as catalog.ts — read-only, and the source
 // data is already public with no auth on becky-beck-site itself, so this
 // isn't a security boundary, just consistency with the sibling routes.
@@ -16,7 +25,7 @@ router.get("/becky-beck-legacy/products", async (_req, res): Promise<void> => {
   const products = await listLegacyProducts();
   res.json(products.map((p) => ({
     ...p,
-    imageUrl: p.imageUrl ? `/becky-beck-legacy/products/${encodeURIComponent(p.id)}/image` : null,
+    imageUrl: p.imageUrl ? `${API_PUBLIC_BASE_URL}/api/becky-beck-legacy/products/${encodeURIComponent(p.id)}/image` : null,
   })));
 });
 
