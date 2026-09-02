@@ -47,10 +47,15 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   // blocks it for cliente accounts too, not just the UI's own omission).
   { method: "GET", pattern: /^\/orders$/ },
   { method: "GET", pattern: /^\/orders\/\d+$/ },
-  // Becky Beck's original P-77 catalog (Netlify Functions + Blobs) —
-  // read-only proxy, see becky-beck-legacy.ts.
+  // Becky Beck's original P-77 catalog (Netlify Functions + Blobs) — see
+  // becky-beck-legacy.ts. Writes are further scoped to Becky's own
+  // clientId inside that route (not just "ecommerce" enabled), so listing
+  // them here doesn't open her catalog to any other cliente account.
   { method: "GET", pattern: /^\/becky-beck-legacy\/products$/ },
+  { method: "POST", pattern: /^\/becky-beck-legacy\/products$/ },
   { method: "GET", pattern: /^\/becky-beck-legacy\/products\/[^/]+\/image$/ },
+  { method: "PATCH", pattern: /^\/becky-beck-legacy\/products\/[^/]+$/ },
+  { method: "DELETE", pattern: /^\/becky-beck-legacy\/products\/[^/]+$/ },
   // Client Room crash reporting (PR #38/#39) — a cliente-role account is
   // exactly who fires this when their own Client Room crashes; this gate
   // was blocking it entirely (missing from this list), so no real client

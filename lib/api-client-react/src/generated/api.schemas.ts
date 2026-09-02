@@ -712,6 +712,52 @@ export interface BeckyBeckLegacyProduct {
   imageUrl?: string | null;
 }
 
+export type BeckyBeckLegacyProductInputCategory = typeof BeckyBeckLegacyProductInputCategory[keyof typeof BeckyBeckLegacyProductInputCategory];
+
+
+export const BeckyBeckLegacyProductInputCategory = {
+  bolso: 'bolso',
+  mochila: 'mochila',
+  llavero: 'llavero',
+} as const;
+
+export interface BeckyBeckLegacyProductInput {
+  /** @minLength 1 */
+  nameEs: string;
+  /** @minLength 1 */
+  nameEn: string;
+  category: BeckyBeckLegacyProductInputCategory;
+  /** @minimum 0 */
+  priceUsd: number;
+  available?: boolean;
+  /** data: URI, image/jpeg only (the public site always serves it as image/jpeg regardless of stored mime) — uploaded to the same Netlify Blobs store the public site reads from */
+  imageBase64?: string;
+}
+
+export type BeckyBeckLegacyProductUpdateCategory = typeof BeckyBeckLegacyProductUpdateCategory[keyof typeof BeckyBeckLegacyProductUpdateCategory];
+
+
+export const BeckyBeckLegacyProductUpdateCategory = {
+  bolso: 'bolso',
+  mochila: 'mochila',
+  llavero: 'llavero',
+} as const;
+
+export interface BeckyBeckLegacyProductUpdate {
+  /** @minLength 1 */
+  nameEs?: string;
+  /** @minLength 1 */
+  nameEn?: string;
+  category?: BeckyBeckLegacyProductUpdateCategory;
+  /** @minimum 0 */
+  priceUsd?: number;
+  available?: boolean;
+  /** data: URI, image/jpeg only — replaces the existing image if provided */
+  imageBase64?: string;
+  /** @nullable */
+  imageUrl?: string | null;
+}
+
 export interface OrderItem {
   id: number;
   /** @nullable */
