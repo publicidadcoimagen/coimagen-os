@@ -47,6 +47,12 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   // read-only proxy, see becky-beck-legacy.ts.
   { method: "GET", pattern: /^\/becky-beck-legacy\/products$/ },
   { method: "GET", pattern: /^\/becky-beck-legacy\/products\/[^/]+\/image$/ },
+  // Client Room crash reporting (PR #38/#39) — a cliente-role account is
+  // exactly who fires this when their own Client Room crashes; this gate
+  // was blocking it entirely (missing from this list), so no real client
+  // crash ever reached the rate limiter, the incident log, or the staff
+  // alert email. requireAuth + the per-user rate limiter still apply.
+  { method: "POST", pattern: /^\/client-room\/report-error$/ },
 ];
 
 export function clientRoleGate(req: Request, res: Response, next: NextFunction): void {
