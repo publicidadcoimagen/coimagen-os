@@ -29,14 +29,29 @@ export function Proposals() {
   const { data: proposals, isLoading } = useListProposals({}, { query: { queryKey: getListProposalsQueryKey() } });
   const createProposal = useCreateProposal();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", amount: "", status: "draft", validUntil: "", notes: "" });
+  // amount defaults to "0", not "", and is never allowed to go blank (see
+  // onBlur below) — a blank amount used to become `undefined` on submit,
+  // which the API then stored as `amount: null`. That silently broke the
+  // Founders pricing rule (their setup amount must be an explicit $0, not
+  // absent) and any other proposal where staff simply forgot to type a
+  // number. The conversion flow already throws a clear error on a null
+  // amount (payment-schedule/repository.ts) — this closes the gap before
+  // that point instead of relying on that guard to catch it.
+  const [form, setForm] = useState({ title: "", amount: "0", status: "draft", validUntil: "", notes: "" });
 
   const filtered = proposals?.filter((p) => tab === "all" || p.status === tab) ?? [];
 
+  const amountValue = Number(form.amount);
+  const isAmountValid = form.amount !== "" && !Number.isNaN(amountValue) && amountValue >= 0;
+
+  const handleAmountBlur = () => {
+    if (!isAmountValid) setForm((f) => ({ ...f, amount: "0" }));
+  };
+
   const handleSubmit = () => {
-    if (!form.title) return;
-    createProposal.mutate({ data: { title: form.title, amount: form.amount ? parseFloat(form.amount) : undefined, status: form.status as "draft", validUntil: form.validUntil || undefined, notes: form.notes || undefined } }, {
-      onSuccess: () => { qc.invalidateQueries({ queryKey: getListProposalsQueryKey() }); setOpen(false); setForm({ title: "", amount: "", status: "draft", validUntil: "", notes: "" }); }
+    if (!form.title || !isAmountValid) return;
+    createProposal.mutate({ data: { title: form.title, amount: amountValue, status: form.status as "draft", validUntil: form.validUntil || undefined, notes: form.notes || undefined } }, {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListProposalsQueryKey() }); setOpen(false); setForm({ title: "", amount: "0", status: "draft", validUntil: "", notes: "" }); }
     });
   };
 
@@ -90,7 +105,10 @@ export function Proposals() {
           <div className="space-y-3">
             <div><Label>Título *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Monto (USD)</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0.00" /></div>
+              <div>
+                <Label>Monto (USD) *</Label>
+                <Input type="number" min="0" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} onBlur={handleAmountBlur} placeholder="0.00" />
+              </div>
               <div>
                 <Label>Estado</Label>
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
@@ -104,7 +122,7 @@ export function Proposals() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSubmit} disabled={!form.title || createProposal.isPending}>{createProposal.isPending ? "Guardando..." : "Crear"}</Button>
+            <Button onClick={handleSubmit} disabled={!form.title || !isAmountValid || createProposal.isPending}>{createProposal.isPending ? "Guardando..." : "Crear"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
