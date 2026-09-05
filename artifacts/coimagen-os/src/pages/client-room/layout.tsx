@@ -13,7 +13,7 @@ import {
   LayoutDashboard, FolderKanban, GitBranch, CheckSquare,
   FileSignature, Receipt, FileText, Calendar, MessageSquare,
   Bot, User, ArrowLeft, Building2, ChevronRight, ClipboardCheck, KeyRound,
-  ShoppingBag, LogOut, Languages,
+  ShoppingBag, LogOut, Languages, Share2,
 } from "lucide-react";
 
 type Org = {
@@ -22,7 +22,7 @@ type Org = {
   contactEmail?: string | null;
 };
 
-type NavKey = "onboarding" | "dashboard" | "projects" | "contracts" | "invoices" | "approvals" | "catalog" | "workflow" | "documents" | "calendar" | "messages" | "ai" | "profile";
+type NavKey = "onboarding" | "dashboard" | "projects" | "contracts" | "invoices" | "approvals" | "catalog" | "autopublicador" | "workflow" | "documents" | "calendar" | "messages" | "ai" | "profile";
 
 // The 6 base modules every client always sees, scoped to their own
 // clientId (P-79) — order matches the spec. "" is the dashboard's own
@@ -37,12 +37,14 @@ const BASE_NAV_ITEMS: { sub: string; key: NavKey; icon: typeof LayoutDashboard }
   { sub: "approvals",  key: "approvals",  icon: CheckSquare },
 ];
 
-// Nav entries unlocked per enabledModules key (P-79). "ecommerce" now
-// points at the real Becky Beck catalog (migrated off its old standalone
-// staff-only page). "autopublicador" still needs a real content-calendar
-// integration, not a relabeled placeholder, so it stays unwired.
+// Nav entries unlocked per enabledModules key (P-79). "ecommerce" points at
+// the real Becky Beck catalog (migrated off its old standalone staff-only
+// page). "autopublicador" points at the real Autopublicador Social content
+// calendar (DeepSeek-generated drafts, client approves in-portal — approving
+// is what actually triggers the real publish, see content-calendar.ts).
 const MODULE_NAV_ITEMS: Record<string, { sub: string; key: NavKey; icon: typeof LayoutDashboard }[]> = {
   ecommerce: [{ sub: "catalog", key: "catalog", icon: ShoppingBag }],
+  autopublicador: [{ sub: "autopublicador", key: "autopublicador", icon: Share2 }],
 };
 
 // Staff-only extras: scaffolded client-room pages not in the P-79 base
