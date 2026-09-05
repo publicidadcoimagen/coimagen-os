@@ -4232,6 +4232,7 @@ components:
           type: [string, 'null']
         role:
           type: string
+          enum: [ceo, admin, viewer, cliente]
         status:
           type: string
         forcePasswordReset:
@@ -5542,7 +5543,7 @@ components:
         firstName: { type: ["string", "null"] }
         lastName: { type: ["string", "null"] }
         profileImageUrl: { type: ["string", "null"] }
-        role: { type: string }
+        role: { type: string, enum: [ceo, admin, viewer, cliente] }
         status: { type: string }
         lastLogin: { type: ["string", "null"] }
         clientId: { type: ["integer", "null"] }
@@ -5555,12 +5556,12 @@ components:
         firstName: { type: string }
         lastName: { type: string }
         email: { type: string }
-        role: { type: string }
+        role: { type: string, enum: [ceo, admin, viewer, cliente] }
         status: { type: string }
     SystemUserUpdate:
       type: object
       properties:
-        role: { type: string }
+        role: { type: string, enum: [ceo, admin, viewer, cliente] }
         status: { type: string }
         clientId: { type: ["integer", "null"] }
 

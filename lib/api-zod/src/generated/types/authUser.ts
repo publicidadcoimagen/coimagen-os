@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AuthUserRole } from './authUserRole';
 
 export interface AuthUser {
   id: string;
@@ -16,7 +17,7 @@ export interface AuthUser {
   lastName: string | null;
   /** @nullable */
   profileImageUrl: string | null;
-  role: string;
+  role: AuthUserRole;
   status: string;
   forcePasswordReset: boolean;
   /** @nullable */

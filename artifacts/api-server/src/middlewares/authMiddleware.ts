@@ -2,7 +2,7 @@ import { type Request, type Response, type NextFunction } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { eq } from "drizzle-orm";
 import { db, clientsTable } from "@workspace/db";
-import type { AuthUser } from "@workspace/api-zod";
+import type { AuthUser, AuthUserRole } from "@workspace/api-zod";
 import { auth } from "../lib/auth";
 
 declare global {
@@ -30,7 +30,14 @@ function toAuthUser(user: SessionUser): AuthUser {
     firstName: user.firstName ?? null,
     lastName: user.lastName ?? null,
     profileImageUrl: user.image ?? null,
-    role: user.role ?? "viewer",
+    // Better Auth's additionalFields config can only declare `role` as a
+    // plain "string" (see lib/auth.ts) — it has no way to express the
+    // ceo/admin/viewer/cliente literal union, so this cast is the one place
+    // that gap crosses into the AuthUser contract. Safe: this value only
+    // ever comes from users.role, which only ever gets written one of those
+    // four values (requireRole/isClienteRole/admin routes are the only
+    // writers/readers).
+    role: (user.role ?? "viewer") as AuthUserRole,
     status: user.status ?? "active",
     forcePasswordReset: user.forcePasswordReset ?? false,
     lastLogin: user.lastLogin?.toISOString() ?? null,

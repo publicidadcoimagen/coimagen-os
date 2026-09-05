@@ -5,11 +5,12 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SystemUserCreateRole } from './systemUserCreateRole';
 
 export interface SystemUserCreate {
   firstName?: string;
   lastName?: string;
   email?: string;
-  role: string;
+  role: SystemUserCreateRole;
   status?: string;
 }
