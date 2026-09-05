@@ -222,7 +222,7 @@ export function AdminUsers() {
                         {canEditRole ? (
                           <Select
                             value={u.role}
-                            onValueChange={(v) => updateUser.mutate({ id: u.id, data: { role: v } })}
+                            onValueChange={(v) => updateUser.mutate({ id: u.id, data: { role: v as Role } })}
                           >
                             <SelectTrigger className="h-7 w-28 text-xs">
                               <SelectValue />
@@ -373,7 +373,7 @@ export function AdminUsers() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
             <Button
-              onClick={() => createUser.mutate({ data: form })}
+              onClick={() => createUser.mutate({ data: { ...form, role: form.role as Role } })}
               disabled={createUser.isPending}
             >
               Crear Usuario

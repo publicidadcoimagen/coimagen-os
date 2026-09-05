@@ -22,7 +22,7 @@ export const GetCurrentAuthUserResponse = zod.object({
   "firstName": zod.string().nullable(),
   "lastName": zod.string().nullable(),
   "profileImageUrl": zod.string().nullable(),
-  "role": zod.string(),
+  "role": zod.enum(['ceo', 'admin', 'viewer', 'cliente']),
   "status": zod.string(),
   "forcePasswordReset": zod.boolean(),
   "lastLogin": zod.string().nullable(),
@@ -2549,7 +2549,7 @@ export const ListSystemUsersResponseItem = zod.object({
   "firstName": zod.string().nullish(),
   "lastName": zod.string().nullish(),
   "profileImageUrl": zod.string().nullish(),
-  "role": zod.string(),
+  "role": zod.enum(['ceo', 'admin', 'viewer', 'cliente']),
   "status": zod.string(),
   "lastLogin": zod.string().nullish(),
   "clientId": zod.number().nullish(),
@@ -2566,7 +2566,7 @@ export const CreateSystemUserBody = zod.object({
   "firstName": zod.string().optional(),
   "lastName": zod.string().optional(),
   "email": zod.string().optional(),
-  "role": zod.string(),
+  "role": zod.enum(['ceo', 'admin', 'viewer', 'cliente']),
   "status": zod.string().optional()
 })
 
@@ -2579,7 +2579,7 @@ export const UpdateSystemUserParams = zod.object({
 })
 
 export const UpdateSystemUserBody = zod.object({
-  "role": zod.string().optional(),
+  "role": zod.enum(['ceo', 'admin', 'viewer', 'cliente']).optional(),
   "status": zod.string().optional(),
   "clientId": zod.number().nullish()
 })
@@ -2590,7 +2590,7 @@ export const UpdateSystemUserResponse = zod.object({
   "firstName": zod.string().nullish(),
   "lastName": zod.string().nullish(),
   "profileImageUrl": zod.string().nullish(),
-  "role": zod.string(),
+  "role": zod.enum(['ceo', 'admin', 'viewer', 'cliente']),
   "status": zod.string(),
   "lastLogin": zod.string().nullish(),
   "clientId": zod.number().nullish(),

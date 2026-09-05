@@ -38,7 +38,7 @@ Sistema Operativo Interno de Coimagen Media Agency (CEO: Camila Segovia).
 
 - Contract-first: edit `openapi.yaml` → run codegen → use generated hooks. No Zod in new route files — use generated schemas.
 - Better Auth protects all `/api/*` routes except `/api/healthz`, `/api/auth/*` (Better Auth's own routes: sign-up/sign-in/sign-out/session), `/api/mobile-auth/*`, and `/api/public/*`.
-- Roles: `ceo`, `admin`, `viewer` stored in `users.role` (default: `viewer`). Use `requireRole()` middleware for protected mutations.
+- Roles: `ceo`, `admin`, `viewer`, `cliente` stored in `users.role` (default: `viewer`; enum enforced in `openapi.yaml`, column itself stays `varchar`). Use `requireRole()` middleware for protected mutations. `cliente` is the Client Room login — it's default-deny on the internal API: `clientRoleGate` middleware (`artifacts/api-server/src/middlewares/clientRoleGate.ts`) blocks every route except an explicit allowlist, and `clientScope` helpers (`artifacts/api-server/src/middlewares/clientScope.ts`: `isClienteRole`, `ownsClientId`, `ownsModule`, `ownOrgIds`) force every "whose data" check to the caller's own linked `clientId`/enabled modules.
 - FK constraints: cascade delete for client-owned data; set null for agent/prospect references.
 - Audit middleware auto-logs all 2xx POST/PATCH/DELETE to `audit_logs` table.
 

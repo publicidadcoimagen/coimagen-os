@@ -5,6 +5,16 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+export type AuthUserRole = typeof AuthUserRole[keyof typeof AuthUserRole];
+
+
+export const AuthUserRole = {
+  ceo: 'ceo',
+  admin: 'admin',
+  viewer: 'viewer',
+  cliente: 'cliente',
+} as const;
+
 export interface AuthUser {
   id: string;
   /** @nullable */
@@ -15,7 +25,7 @@ export interface AuthUser {
   lastName: string | null;
   /** @nullable */
   profileImageUrl: string | null;
-  role: string;
+  role: AuthUserRole;
   status: string;
   forcePasswordReset: boolean;
   /** @nullable */
@@ -2013,6 +2023,16 @@ export interface ClientOnboardingInput {
   notes?: string;
 }
 
+export type SystemUserRole = typeof SystemUserRole[keyof typeof SystemUserRole];
+
+
+export const SystemUserRole = {
+  ceo: 'ceo',
+  admin: 'admin',
+  viewer: 'viewer',
+  cliente: 'cliente',
+} as const;
+
 export interface SystemUser {
   id: string;
   /** @nullable */
@@ -2023,7 +2043,7 @@ export interface SystemUser {
   lastName?: string | null;
   /** @nullable */
   profileImageUrl?: string | null;
-  role: string;
+  role: SystemUserRole;
   status: string;
   /** @nullable */
   lastLogin?: string | null;
@@ -2034,16 +2054,36 @@ export interface SystemUser {
   updatedAt?: string | null;
 }
 
+export type SystemUserCreateRole = typeof SystemUserCreateRole[keyof typeof SystemUserCreateRole];
+
+
+export const SystemUserCreateRole = {
+  ceo: 'ceo',
+  admin: 'admin',
+  viewer: 'viewer',
+  cliente: 'cliente',
+} as const;
+
 export interface SystemUserCreate {
   firstName?: string;
   lastName?: string;
   email?: string;
-  role: string;
+  role: SystemUserCreateRole;
   status?: string;
 }
 
+export type SystemUserUpdateRole = typeof SystemUserUpdateRole[keyof typeof SystemUserUpdateRole];
+
+
+export const SystemUserUpdateRole = {
+  ceo: 'ceo',
+  admin: 'admin',
+  viewer: 'viewer',
+  cliente: 'cliente',
+} as const;
+
 export interface SystemUserUpdate {
-  role?: string;
+  role?: SystemUserUpdateRole;
   status?: string;
   /** @nullable */
   clientId?: number | null;

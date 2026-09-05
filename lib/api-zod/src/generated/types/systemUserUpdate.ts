@@ -5,9 +5,10 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SystemUserUpdateRole } from './systemUserUpdateRole';
 
 export interface SystemUserUpdate {
-  role?: string;
+  role?: SystemUserUpdateRole;
   status?: string;
   /** @nullable */
   clientId?: number | null;

@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { SystemUserRole } from './systemUserRole';
 
 export interface SystemUser {
   id: string;
@@ -16,7 +17,7 @@ export interface SystemUser {
   lastName?: string | null;
   /** @nullable */
   profileImageUrl?: string | null;
-  role: string;
+  role: SystemUserRole;
   status: string;
   /** @nullable */
   lastLogin?: string | null;
