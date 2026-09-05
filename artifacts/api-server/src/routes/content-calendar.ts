@@ -12,13 +12,24 @@ import {
   UpdateContentCalendarItemBody,
   GenerateContentCalendarItemBody,
 } from "@workspace/api-zod";
-import { requireRole } from "../middlewares/requireAuth";
+import { isClienteRole, ownsClientId, ownsModule } from "../middlewares/clientScope";
 import { getPublisherForClient } from "../lib/social-autopublisher/publisher";
 import { generateCaptionAndCreateDraft } from "../lib/social-autopublisher/caption";
 
 // Mounted at /clients/:clientId/content-calendar — mergeParams so :clientId
 // from the parent mount is visible on req.params here.
 const router: IRouter = Router({ mergeParams: true });
+
+// "autopublicador" module gate (P-79 module matrix), same pattern as
+// catalog.ts's "ecommerce" gate: a cliente-role caller whose client doesn't
+// have this module enabled, or who isn't the owner of :clientId, gets a
+// clean 403. Staff are always unrestricted (see clientScope).
+router.use(async (req, res, next): Promise<void> => {
+  const clientId = parseInt((req.params as Record<string, string>).clientId);
+  if (isNaN(clientId) || !ownsClientId(req, clientId)) { res.status(403).json({ error: "Not available for this account" }); return; }
+  if (!(await ownsModule(req, "autopublicador"))) { res.status(403).json({ error: "Not available for this account" }); return; }
+  next();
+});
 
 function serializeTarget(t: ContentCalendarTarget) {
   return {
@@ -151,33 +162,15 @@ router.post("/items/:id/submit", async (req, res): Promise<void> => {
   res.json(serializeItem(updated!.item, updated!.targets));
 });
 
-router.post("/items/:id/approve", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
-  const clientId = parseInt((req.params as Record<string, string>).clientId);
-  const id = parseInt(req.params.id as string);
+// Shared by both /publish (staff, manual) and /approve's client-portal
+// branch below (see there for why). Throws on a bad-state transition so
+// each caller can shape its own error response; returns null only for a
+// row that's disappeared between the caller's own lookup and this one.
+async function publishItem(clientId: number, id: number) {
   const found = await loadItemWithTargets(clientId, id);
-  if (!found) { res.status(404).json({ error: "Not found" }); return; }
-  if (found.item.status !== "pending_approval") {
-    res.status(409).json({ error: `Solo se puede aprobar un item en estado "pending_approval" (actual: "${found.item.status}") — primero hay que enviarlo a aprobación con /submit` });
-    return;
-  }
-  await db.update(contentCalendarItemsTable).set({
-    status: "approved",
-    approvedBy: req.user?.email ?? null,
-    approvedAt: new Date(),
-    updatedAt: new Date(),
-  }).where(eq(contentCalendarItemsTable.id, id));
-  const updated = await loadItemWithTargets(clientId, id);
-  res.json(serializeItem(updated!.item, updated!.targets));
-});
-
-router.post("/items/:id/publish", async (req, res): Promise<void> => {
-  const clientId = parseInt((req.params as Record<string, string>).clientId);
-  const id = parseInt(req.params.id as string);
-  const found = await loadItemWithTargets(clientId, id);
-  if (!found) { res.status(404).json({ error: "Not found" }); return; }
+  if (!found) return null;
   if (found.item.status !== "approved") {
-    res.status(409).json({ error: `Solo se puede publicar un item en estado "approved" (actual: "${found.item.status}")` });
-    return;
+    throw new Error(`Solo se puede publicar un item en estado "approved" (actual: "${found.item.status}")`);
   }
 
   for (const target of found.targets) {
@@ -212,8 +205,57 @@ router.post("/items/:id/publish", async (req, res): Promise<void> => {
     updatedAt: new Date(),
   }).where(eq(contentCalendarItemsTable.id, id));
 
-  const final = await loadItemWithTargets(clientId, id);
-  res.json(serializeItem(final!.item, final!.targets));
+  return loadItemWithTargets(clientId, id);
+}
+
+router.post("/items/:id/approve", async (req, res): Promise<void> => {
+  const clientId = parseInt((req.params as Record<string, string>).clientId);
+  const id = parseInt(req.params.id as string);
+  const isCliente = isClienteRole(req);
+  if (!isCliente) {
+    const staffRole = (req.user as { role?: string })?.role ?? "viewer";
+    if (!["ceo", "admin"].includes(staffRole)) { res.status(403).json({ error: "Insufficient permissions" }); return; }
+  }
+  const found = await loadItemWithTargets(clientId, id);
+  if (!found) { res.status(404).json({ error: "Not found" }); return; }
+  if (found.item.status !== "pending_approval") {
+    res.status(409).json({ error: `Solo se puede aprobar un item en estado "pending_approval" (actual: "${found.item.status}") — primero hay que enviarlo a aprobación con /submit` });
+    return;
+  }
+  await db.update(contentCalendarItemsTable).set({
+    status: "approved",
+    approvedBy: req.user?.email ?? null,
+    approvedAt: new Date(),
+    updatedAt: new Date(),
+  }).where(eq(contentCalendarItemsTable.id, id));
+
+  // A client's own approval inside the Client Room portal is the only human
+  // gate this agent has — nothing else in the system ever calls /publish (no
+  // scheduler exists, and the internal Autopublicador Social view never
+  // wires usePublishContentCalendarItem either), so completing a client's
+  // portal approval is what actually fires the real publish (Camila,
+  // 2026-09-05: "ningún contenido se autopublica sin aprobación explícita en
+  // el portal"). A staff approval from the internal view keeps the existing
+  // two-step behavior (approve now, a separate manual /publish call later).
+  if (isCliente) {
+    const final = await publishItem(clientId, id);
+    res.json(serializeItem(final!.item, final!.targets));
+    return;
+  }
+  const updated = await loadItemWithTargets(clientId, id);
+  res.json(serializeItem(updated!.item, updated!.targets));
+});
+
+router.post("/items/:id/publish", async (req, res): Promise<void> => {
+  const clientId = parseInt((req.params as Record<string, string>).clientId);
+  const id = parseInt(req.params.id as string);
+  try {
+    const final = await publishItem(clientId, id);
+    if (!final) { res.status(404).json({ error: "Not found" }); return; }
+    res.json(serializeItem(final.item, final.targets));
+  } catch (err) {
+    res.status(409).json({ error: err instanceof Error ? err.message : String(err) });
+  }
 });
 
 export default router;

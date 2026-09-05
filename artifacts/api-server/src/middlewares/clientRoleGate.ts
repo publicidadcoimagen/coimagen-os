@@ -47,6 +47,16 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   // read-only proxy, see becky-beck-legacy.ts.
   { method: "GET", pattern: /^\/becky-beck-legacy\/products$/ },
   { method: "GET", pattern: /^\/becky-beck-legacy\/products\/[^/]+\/image$/ },
+  // Autopublicador Social ("autopublicador" module, P-79/pendiente #agent-gap)
+  // — content-calendar.ts itself further gates these behind the caller's
+  // client having "autopublicador" enabled and owning :clientId, so listing
+  // them here doesn't open the calendar to every cliente account. No
+  // generate/submit/edit here on purpose — a cliente account only ever
+  // views what the agency drafted and approves it (which itself triggers
+  // the real publish, see content-calendar.ts's /approve).
+  { method: "GET", pattern: /^\/clients\/\d+\/content-calendar\/items$/ },
+  { method: "GET", pattern: /^\/clients\/\d+\/content-calendar\/items\/\d+$/ },
+  { method: "POST", pattern: /^\/clients\/\d+\/content-calendar\/items\/\d+\/approve$/ },
   // Client Room crash reporting (PR #38/#39) — a cliente-role account is
   // exactly who fires this when their own Client Room crashes; this gate
   // was blocking it entirely (missing from this list), so no real client

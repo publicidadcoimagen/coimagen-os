@@ -1,4 +1,5 @@
-import { useRoute } from "wouter";
+import { useRoute, Redirect } from "wouter";
+import { useAuth } from "@workspace/better-auth-web";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,17 @@ const CAPABILITY_ICONS = [Sparkles, Shield, Zap, Lock];
 export function ClientAI() {
   const [, params] = useRoute("/client/:slug/ai");
   const slug = params?.slug ?? "";
+  const { user } = useAuth();
+
+  // This page is a "coming soon" mockup with nothing real behind it — it's
+  // deliberately kept out of BASE_NAV_ITEMS/MODULE_NAV_ITEMS in layout.tsx
+  // for a real cliente-role login, but the route itself had no guard, so a
+  // client typing the URL directly could still land on an empty promise
+  // (Camila, 2026-09-05). Staff previewing a client room (isCliente false)
+  // still see it, unchanged.
+  if (user?.role === "cliente") {
+    return <Redirect to={`/client/${slug}`} />;
+  }
 
   return (
     <ClientRoomLayout slug={slug}>

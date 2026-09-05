@@ -92,6 +92,7 @@ import { ClientRoomAdmin } from "@/pages/client-room/admin";
 import { ClientDashboard } from "@/pages/client-room/dashboard";
 import { ClientOnboarding } from "@/pages/client-room/onboarding";
 import { ClientCatalog } from "@/pages/client-room/catalog";
+import { ClientAutopublicador } from "@/pages/client-room/autopublicador";
 import { ClientProjects } from "@/pages/client-room/projects";
 import { ClientWorkflow } from "@/pages/client-room/workflow";
 import { ClientApprovals } from "@/pages/client-room/approvals";
@@ -208,6 +209,7 @@ function Router() {
           crashed with no boundary catching it, 2026-08-26). */}
       <Route path="/client/:slug/onboarding">{() => <ClientRoomErrorBoundary><ClientOnboarding /></ClientRoomErrorBoundary>}</Route>
       <Route path="/client/:slug/catalog">{() => <ClientRoomErrorBoundary><ClientCatalog /></ClientRoomErrorBoundary>}</Route>
+      <Route path="/client/:slug/autopublicador">{() => <ClientRoomErrorBoundary><ClientAutopublicador /></ClientRoomErrorBoundary>}</Route>
       <Route path="/client/:slug/projects">{() => <ClientRoomErrorBoundary><ClientProjects /></ClientRoomErrorBoundary>}</Route>
       <Route path="/client/:slug/workflow">{() => <ClientRoomErrorBoundary><ClientWorkflow /></ClientRoomErrorBoundary>}</Route>
       <Route path="/client/:slug/approvals">{() => <ClientRoomErrorBoundary><ClientApprovals /></ClientRoomErrorBoundary>}</Route>
