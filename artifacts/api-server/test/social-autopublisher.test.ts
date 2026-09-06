@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { buildCaptionPrompt } from "../src/lib/social-autopublisher/caption";
+import { buildCaptionPrompt, findProhibitedClaim } from "../src/lib/social-autopublisher/caption";
 import { buildMetricoolPublishRequest } from "../src/lib/social-autopublisher/publisher";
 
 // These only exercise pure logic (prompt/request building) — no DB
@@ -29,6 +29,41 @@ describe("buildCaptionPrompt", () => {
   test("uses a custom tone when given", () => {
     const prompt = buildCaptionPrompt({ topic: "Promo", networks: ["linkedin"], tone: "formal y corporativo" });
     assert.match(prompt, /formal y corporativo/);
+  });
+});
+
+describe("findProhibitedClaim", () => {
+  // generateCaptionAndCreateDraft() calls this immediately after
+  // generateCaption() and before the content_calendar_items insert, and
+  // throws if it returns non-null — that call site can't be exercised here
+  // without a real DeepSeek call and a live DB (generateCaptionAndCreateDraft
+  // transitively imports @workspace/db, which requires DATABASE_URL at
+  // import time), consistent with the no-real-spend/no-DB scope already
+  // established for this test file. This covers the actual gate logic.
+
+  test("flags a fabricated results-guarantee claim", () => {
+    assert.equal(findProhibitedClaim("Resultados garantizados en 30 días."), "garantizados");
+  });
+
+  test("flags 'garantizado' and its variants", () => {
+    assert.ok(findProhibitedClaim("Te lo garantizamos: más ventas este mes."));
+    assert.ok(findProhibitedClaim("Éxito garantizado para tu negocio."));
+  });
+
+  test("flags absolute unsourced figures like 100% de resultados", () => {
+    assert.ok(findProhibitedClaim("100% de resultados o te devolvemos tu dinero."));
+  });
+
+  test("flags market-leader superlatives", () => {
+    assert.ok(findProhibitedClaim("Somos el mejor del mercado en marketing digital."));
+    assert.ok(findProhibitedClaim("El número 1 en resultados de la ciudad."));
+  });
+
+  test("does not flag an ordinary caption with no fabricated claims", () => {
+    assert.equal(
+      findProhibitedClaim("Abrimos este sábado con promociones especiales. ¡Te esperamos! #Promo #FinDeSemana"),
+      null,
+    );
   });
 });
 
