@@ -6,10 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export type ListProspectsParams = {
-status?: string;
+export type ListCommercialFollowupStatusesParams = {
 /**
- * Include is_test=true rows (excluded by default).
+ * Include is_test=true prospects (excluded by default).
  */
 includeTest?: boolean;
 };

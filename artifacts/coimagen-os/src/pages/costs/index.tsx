@@ -208,7 +208,7 @@ function ProviderCostsPanel({ data, isLoading }: { data?: ProviderCostsResponse;
               <p className="text-xs text-muted-foreground">Plan {data.netlify.planName}</p>
               <p className="text-xs text-muted-foreground">Créditos: {data.netlify.creditsUsed} / {data.netlify.creditsIncluded}</p>
             </>
-          ) : <ProviderError message={data.netlify.error} />}
+          ) : <ProviderError message={data.netlify.error ?? null} />}
         </ProviderCard>
 
         <ProviderCard icon={<Server className="h-4 w-4" />} name="Render">
@@ -220,7 +220,7 @@ function ProviderCostsPanel({ data, isLoading }: { data?: ProviderCostsResponse;
               ))}
               {(data.render.services ?? []).length === 0 && <p className="text-xs text-muted-foreground">Sin servicios.</p>}
             </>
-          ) : <ProviderError message={data.render.error} />}
+          ) : <ProviderError message={data.render.error ?? null} />}
         </ProviderCard>
 
         <ProviderCard icon={<Database className="h-4 w-4" />} name="Neon">
@@ -232,7 +232,7 @@ function ProviderCostsPanel({ data, isLoading }: { data?: ProviderCostsResponse;
                 <p className="text-muted-foreground">Transferencia: {(c.dataTransferBytes / 1e9).toFixed(2)} GB</p>
               </div>
             ))
-          ) : <ProviderError message={data.neon.error} />}
+          ) : <ProviderError message={data.neon.error ?? null} />}
         </ProviderCard>
       </CardContent>
     </Card>

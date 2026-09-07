@@ -48,6 +48,7 @@ const SCHEMA_SQL = `
   create table prospects (
     id serial primary key,
     name text not null,
+    is_test boolean not null default false,
     email text, phone text, company text, industry text,
     status text not null default 'lead',
     source text,
@@ -66,6 +67,7 @@ const SCHEMA_SQL = `
     client_id integer references clients(id),
     amount numeric,
     status text not null default 'draft',
+    is_test boolean not null default false,
     notes text,
     valid_until text,
     payment_plan text not null default 'standard',

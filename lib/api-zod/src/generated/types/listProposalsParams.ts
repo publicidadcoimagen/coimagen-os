@@ -10,4 +10,8 @@ export type ListProposalsParams = {
 status?: string;
 prospectId?: number;
 clientId?: number;
+/**
+ * Include is_test=true rows (excluded by default).
+ */
+includeTest?: boolean;
 };

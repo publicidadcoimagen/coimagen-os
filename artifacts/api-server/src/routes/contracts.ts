@@ -51,6 +51,9 @@ router.get("/contracts", async (req, res): Promise<void> => {
     conditions.push(eq(contractsTable.clientId, q.data.clientId));
   }
   if (q.data.projectId) conditions.push(eq(contractsTable.projectId, q.data.projectId));
+  // Excludes real is_test rows (self-labeled "PRUEBA — ...") from the
+  // Firmados/Activos KPI by default — pass includeTest=true to see them.
+  if (!q.data.includeTest) conditions.push(eq(contractsTable.isTest, false));
   if (conditions.length > 0) query = query.where(and(...conditions));
 
   const rows = await query.orderBy(desc(contractsTable.createdAt));

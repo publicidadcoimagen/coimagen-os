@@ -1392,6 +1392,7 @@ paths:
       tags: [prospects]
       parameters:
         - { name: status, in: query, required: false, schema: { type: string } }
+        - { name: includeTest, in: query, required: false, schema: { type: boolean }, description: "Include is_test=true rows (excluded by default)." }
       responses:
         "200":
           description: OK
@@ -1582,6 +1583,7 @@ paths:
         - { name: status, in: query, required: false, schema: { type: string } }
         - { name: prospectId, in: query, required: false, schema: { type: integer } }
         - { name: clientId, in: query, required: false, schema: { type: integer } }
+        - { name: includeTest, in: query, required: false, schema: { type: boolean }, description: "Include is_test=true rows (excluded by default)." }
       responses:
         "200":
           description: OK
@@ -3216,6 +3218,10 @@ paths:
         - in: query
           name: projectId
           schema: { type: integer }
+        - in: query
+          name: includeTest
+          schema: { type: boolean }
+          description: "Include is_test=true rows (excluded by default)."
       responses:
         "200":
           description: OK
@@ -4167,6 +4173,8 @@ paths:
     get:
       operationId: listCommercialFollowupStatuses
       tags: [sequences]
+      parameters:
+        - { name: includeTest, in: query, required: false, schema: { type: boolean }, description: "Include is_test=true prospects (excluded by default)." }
       responses:
         "200":
           description: OK
@@ -4825,10 +4833,11 @@ components:
     # ── PROSPECT ──────────────────────────────────────────────────────────────
     Prospect:
       type: object
-      required: [id, name, status, createdAt]
+      required: [id, name, status, createdAt, isTest]
       properties:
         id: { type: integer }
         name: { type: string }
+        isTest: { type: boolean, description: "Real production row created for verification/testing, not a real prospect. Excluded by default from GET /prospects and /sequences/commercial-followups." }
         email: { type: ["string", "null"] }
         phone: { type: ["string", "null"] }
         company: { type: ["string", "null"] }
@@ -4957,7 +4966,7 @@ components:
     # ── PROPOSAL ──────────────────────────────────────────────────────────────
     Proposal:
       type: object
-      required: [id, title, status, createdAt]
+      required: [id, title, status, createdAt, isTest]
       properties:
         id: { type: integer }
         title: { type: string }
@@ -4965,6 +4974,7 @@ components:
         clientId: { type: ["integer", "null"] }
         amount: { type: ["number", "null"] }
         status: { type: string, enum: [draft, sent, accepted, rejected] }
+        isTest: { type: boolean, description: "Real production row created for verification/testing, not a real proposal. Excluded by default from GET /proposals and pipeline value KPIs." }
         notes: { type: ["string", "null"] }
         validUntil: { type: ["string", "null"] }
         publicToken: { type: string, format: uuid }
@@ -6499,12 +6509,13 @@ components:
 
     Contract:
       type: object
-      required: [id, type, status, title, createdAt]
+      required: [id, type, status, title, createdAt, isTest]
       properties:
         id: { type: integer }
         type: { type: string }
         status: { type: string }
         title: { type: string }
+        isTest: { type: boolean, description: "Real production row created for verification/testing, not a real client contract. Excluded by default from GET /contracts and the Firmados/Activos KPI." }
         description: { type: ["string", "null"] }
         service: { type: ["string", "null"] }
         clientId: { type: ["integer", "null"] }

@@ -872,6 +872,8 @@ export const ProspectStatus = {
 export interface Prospect {
   id: number;
   name: string;
+  /** Real production row created for verification/testing, not a real prospect. Excluded by default from GET /prospects and /sequences/commercial-followups. */
+  isTest: boolean;
   /** @nullable */
   email?: string | null;
   /** @nullable */
@@ -1110,6 +1112,8 @@ export interface Proposal {
   /** @nullable */
   amount?: number | null;
   status: ProposalStatus;
+  /** Real production row created for verification/testing, not a real proposal. Excluded by default from GET /proposals and pipeline value KPIs. */
+  isTest: boolean;
   /** @nullable */
   notes?: string | null;
   /** @nullable */
@@ -3005,6 +3009,8 @@ export interface Contract {
   type: string;
   status: string;
   title: string;
+  /** Real production row created for verification/testing, not a real client contract. Excluded by default from GET /contracts and the Firmados/Activos KPI. */
+  isTest: boolean;
   /** @nullable */
   description?: string | null;
   /** @nullable */
@@ -3611,6 +3617,10 @@ status?: string;
 
 export type ListProspectsParams = {
 status?: string;
+/**
+ * Include is_test=true rows (excluded by default).
+ */
+includeTest?: boolean;
 };
 
 export type ListDiagnosesParams = {
@@ -3623,6 +3633,10 @@ export type ListProposalsParams = {
 status?: string;
 prospectId?: number;
 clientId?: number;
+/**
+ * Include is_test=true rows (excluded by default).
+ */
+includeTest?: boolean;
 };
 
 export type ListApprovalsParams = {
@@ -3669,6 +3683,10 @@ status?: string;
 type?: string;
 clientId?: number;
 projectId?: number;
+/**
+ * Include is_test=true rows (excluded by default).
+ */
+includeTest?: boolean;
 };
 
 export type ListClientApprovalsParams = {
@@ -3704,5 +3722,12 @@ clientId?: number;
 
 export type ListOrdersParams = {
 clientId?: number;
+};
+
+export type ListCommercialFollowupStatusesParams = {
+/**
+ * Include is_test=true prospects (excluded by default).
+ */
+includeTest?: boolean;
 };
 

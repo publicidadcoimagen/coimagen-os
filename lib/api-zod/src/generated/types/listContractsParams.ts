@@ -11,4 +11,8 @@ status?: string;
 type?: string;
 clientId?: number;
 projectId?: number;
+/**
+ * Include is_test=true rows (excluded by default).
+ */
+includeTest?: boolean;
 };

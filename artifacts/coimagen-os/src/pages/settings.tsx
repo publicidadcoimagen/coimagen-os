@@ -7,6 +7,8 @@ import {
   useListSystemCredentials,
   useUpsertSystemCredential,
   getListSystemCredentialsQueryKey,
+  useHealthCheck,
+  getHealthCheckQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,9 +141,26 @@ export function Settings() {
   const qc = useQueryClient();
   const { data: config, isLoading } = useListConfig({ query: { queryKey: getListConfigQueryKey() } });
   const upsert = useUpsertConfig();
+  const { data: health } = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey() } });
 
   const getVal = (key: string) => config?.find((c) => c.key === key)?.value ?? "";
-  const isConnected = (key: string) => getVal(`${key}_connected`) === "true";
+  // Real providers (anthropic, gemini) read whether the server actually has
+  // the env var set — via the same /healthz check used for infra monitoring
+  // — instead of a `${key}_connected` config flag nothing ever writes,
+  // which showed every provider as disconnected regardless of real usage
+  // (e.g. Anthropic showed "No configurada" despite real, successful
+  // Digital Diagnosis Agent calls). Providers with no real backend
+  // integration yet keep the placeholder flag so this doesn't fabricate a
+  // status for infrastructure that doesn't exist.
+  const HEALTH_BACKED_KEYS: Record<string, keyof NonNullable<typeof health>["providers"]> = {
+    anthropic: "anthropic",
+    gemini: "gemini",
+  };
+  const isConnected = (key: string) => {
+    const healthKey = HEALTH_BACKED_KEYS[key];
+    if (healthKey) return health?.providers[healthKey] ?? false;
+    return getVal(`${key}_connected`) === "true";
+  };
 
   const [companyName, setCompanyName] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#7c3aed");

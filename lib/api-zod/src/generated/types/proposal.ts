@@ -17,6 +17,8 @@ export interface Proposal {
   /** @nullable */
   amount?: number | null;
   status: ProposalStatus;
+  /** Real production row created for verification/testing, not a real proposal. Excluded by default from GET /proposals and pipeline value KPIs. */
+  isTest: boolean;
   /** @nullable */
   notes?: string | null;
   /** @nullable */

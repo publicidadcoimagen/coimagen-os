@@ -27,6 +27,10 @@ router.get("/proposals", async (req, res): Promise<void> => {
   if (qp.success && qp.data.status) conditions.push(eq(proposalsTable.status, qp.data.status));
   if (qp.success && qp.data.prospectId) conditions.push(eq(proposalsTable.prospectId, qp.data.prospectId));
   if (qp.success && qp.data.clientId) conditions.push(eq(proposalsTable.clientId, qp.data.clientId));
+  // Excludes real is_test rows (e.g. the $45,000 "Propuesta de Prueba" and
+  // NULL-AMOUNT-PROBE) from the Pipeline's "Valor cerrado" KPI by default —
+  // pass includeTest=true to see them.
+  if (!(qp.success && qp.data.includeTest)) conditions.push(eq(proposalsTable.isTest, false));
   if (conditions.length > 0) query = query.where(and(...conditions));
   const rows = await query.orderBy(proposalsTable.createdAt);
   res.json(rows.map(fmt));

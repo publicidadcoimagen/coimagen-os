@@ -136,6 +136,7 @@ import type {
   ListApprovalsParams,
   ListAuditLogsParams,
   ListClientApprovalsParams,
+  ListCommercialFollowupStatusesParams,
   ListContractsParams,
   ListCostsParams,
   ListDiagnosesParams,
@@ -18071,17 +18072,24 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getCapturePublicCatalogOrderMutationOptions(options));
     }
 
-export const getListCommercialFollowupStatusesUrl = () => {
+export const getListCommercialFollowupStatusesUrl = (params?: ListCommercialFollowupStatusesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
 
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/sequences/commercial-followups`
+  return stringifiedParams.length > 0 ? `/api/sequences/commercial-followups?${stringifiedParams}` : `/api/sequences/commercial-followups`
 }
 
-export const listCommercialFollowupStatuses = async ( options?: RequestInit): Promise<CommercialFollowupStatus[]> => {
+export const listCommercialFollowupStatuses = async (params?: ListCommercialFollowupStatusesParams, options?: RequestInit): Promise<CommercialFollowupStatus[]> => {
 
-  return customFetch<CommercialFollowupStatus[]>(getListCommercialFollowupStatusesUrl(),
+  return customFetch<CommercialFollowupStatus[]>(getListCommercialFollowupStatusesUrl(params),
   {
     ...options,
     method: 'GET'
@@ -18094,23 +18102,23 @@ export const listCommercialFollowupStatuses = async ( options?: RequestInit): Pr
 
 
 
-export const getListCommercialFollowupStatusesQueryKey = () => {
+export const getListCommercialFollowupStatusesQueryKey = (params?: ListCommercialFollowupStatusesParams,) => {
     return [
-    `/api/sequences/commercial-followups`
+    `/api/sequences/commercial-followups`, ...(params ? [params] : [])
     ] as const;
     }
 
 
-export const getListCommercialFollowupStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListCommercialFollowupStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError = ErrorType<unknown>>(params?: ListCommercialFollowupStatusesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListCommercialFollowupStatusesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListCommercialFollowupStatusesQueryKey(params);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>> = ({ signal }) => listCommercialFollowupStatuses({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>> = ({ signal }) => listCommercialFollowupStatuses(params, { signal, ...requestOptions });
 
 
 
@@ -18125,11 +18133,11 @@ export type ListCommercialFollowupStatusesQueryError = ErrorType<unknown>
 
 
 export function useListCommercialFollowupStatuses<TData = Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ params?: ListCommercialFollowupStatusesParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCommercialFollowupStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListCommercialFollowupStatusesQueryOptions(options)
+  const queryOptions = getListCommercialFollowupStatusesQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

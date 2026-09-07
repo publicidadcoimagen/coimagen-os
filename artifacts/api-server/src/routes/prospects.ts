@@ -24,7 +24,12 @@ const fmt = (p: typeof prospectsTable.$inferSelect) => ({
 router.get("/prospects", async (req, res): Promise<void> => {
   const qp = ListProspectsQueryParams.safeParse(req.query);
   let query = db.select().from(prospectsTable).$dynamic();
-  if (qp.success && qp.data.status) query = query.where(eq(prospectsTable.status, qp.data.status));
+  const conditions = [];
+  if (qp.success && qp.data.status) conditions.push(eq(prospectsTable.status, qp.data.status));
+  // Excludes real is_test rows (deploy/i18n verification leads) from the
+  // Pipeline Comercial by default — pass includeTest=true to see them.
+  if (!(qp.success && qp.data.includeTest)) conditions.push(eq(prospectsTable.isTest, false));
+  if (conditions.length > 0) query = query.where(and(...conditions));
   const rows = await query.orderBy(prospectsTable.createdAt);
   res.json(rows.map(fmt));
 });
