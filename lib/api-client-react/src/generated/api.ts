@@ -187,6 +187,7 @@ import type {
   ProspectingAuditPending,
   ProspectingAuditReviewSubmit,
   ProspectingAuditReviewed,
+  ProviderCostsResponse,
   PublicFoundersCount,
   QcTicket,
   QcTicketCreate,
@@ -8689,6 +8690,81 @@ export function useGetCostSummary<TData = Awaited<ReturnType<typeof getCostSumma
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetCostSummaryQueryOptions(month,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetProviderCostsUrl = () => {
+
+
+
+
+  return `/api/costs/live`
+}
+
+/**
+ * Read-only real usage/cost data pulled live from Netlify, Render and Neon's own APIs — no simulated numbers. Each provider is independent: one failing (e.g. a missing API key) does not fail the other two. Render's API exposes no billing/cost endpoint at all, so its section only reports real service inventory, not a dollar figure.
+
+ */
+export const getProviderCosts = async ( options?: RequestInit): Promise<ProviderCostsResponse> => {
+
+  return customFetch<ProviderCostsResponse>(getGetProviderCostsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetProviderCostsQueryKey = () => {
+    return [
+    `/api/costs/live`
+    ] as const;
+    }
+
+
+export const getGetProviderCostsQueryOptions = <TData = Awaited<ReturnType<typeof getProviderCosts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProviderCosts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetProviderCostsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProviderCosts>>> = ({ signal }) => getProviderCosts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProviderCosts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetProviderCostsQueryResult = NonNullable<Awaited<ReturnType<typeof getProviderCosts>>>
+export type GetProviderCostsQueryError = ErrorType<unknown>
+
+
+
+export function useGetProviderCosts<TData = Awaited<ReturnType<typeof getProviderCosts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProviderCosts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetProviderCostsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

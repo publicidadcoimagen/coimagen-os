@@ -2430,6 +2430,45 @@ export const GetCostSummaryResponse = zod.object({
 })
 
 
+/**
+ * Read-only real usage/cost data pulled live from Netlify, Render and Neon's own APIs — no simulated numbers. Each provider is independent: one failing (e.g. a missing API key) does not fail the other two. Render's API exposes no billing/cost endpoint at all, so its section only reports real service inventory, not a dollar figure.
+
+ */
+export const GetProviderCostsResponse = zod.object({
+  "netlify": zod.object({
+  "ok": zod.boolean(),
+  "error": zod.string().nullish(),
+  "planName": zod.string().nullish(),
+  "monthlyDollarPrice": zod.number().nullish(),
+  "creditsIncluded": zod.number().nullish(),
+  "creditsUsed": zod.number().nullish()
+}),
+  "render": zod.object({
+  "ok": zod.boolean(),
+  "error": zod.string().nullish(),
+  "services": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "plan": zod.string(),
+  "type": zod.string(),
+  "suspended": zod.string()
+})).nullish()
+}),
+  "neon": zod.object({
+  "ok": zod.boolean(),
+  "error": zod.string().nullish(),
+  "consumption": zod.array(zod.object({
+  "projectId": zod.string(),
+  "periodStart": zod.string(),
+  "periodEnd": zod.string(),
+  "computeUnitSeconds": zod.number(),
+  "storageBytesHour": zod.number(),
+  "dataTransferBytes": zod.number()
+})).nullish()
+})
+})
+
+
 export const ListAuditLogsQueryParams = zod.object({
   "module": zod.coerce.string().optional(),
   "status": zod.coerce.string().optional(),
