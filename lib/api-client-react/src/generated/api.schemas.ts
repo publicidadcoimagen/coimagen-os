@@ -1809,6 +1809,59 @@ export interface CostSummary {
   breakdown: CostBreakdownItem[];
 }
 
+export interface RenderServiceInfo {
+  id: string;
+  name: string;
+  plan: string;
+  type: string;
+  suspended: string;
+}
+
+export interface NeonProjectConsumption {
+  projectId: string;
+  periodStart: string;
+  periodEnd: string;
+  computeUnitSeconds: number;
+  storageBytesHour: number;
+  dataTransferBytes: number;
+}
+
+export interface NetlifyPlanCost {
+  ok: boolean;
+  /** @nullable */
+  error?: string | null;
+  /** @nullable */
+  planName?: string | null;
+  /** @nullable */
+  monthlyDollarPrice?: number | null;
+  /** @nullable */
+  creditsIncluded?: number | null;
+  /** @nullable */
+  creditsUsed?: number | null;
+}
+
+export interface RenderCostInfo {
+  ok: boolean;
+  /** @nullable */
+  error?: string | null;
+  /** @nullable */
+  services?: RenderServiceInfo[] | null;
+}
+
+export interface NeonCostInfo {
+  ok: boolean;
+  /** @nullable */
+  error?: string | null;
+  /** @nullable */
+  consumption?: NeonProjectConsumption[] | null;
+}
+
+export interface ProviderCostsResponse {
+  netlify: NetlifyPlanCost;
+  render: RenderCostInfo;
+  neon: NeonCostInfo;
+}
+
 export type AuditLogStatus = typeof AuditLogStatus[keyof typeof AuditLogStatus];
 
 

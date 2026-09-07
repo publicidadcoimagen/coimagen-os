@@ -10,8 +10,13 @@ import {
   ListCostsQueryParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { fetchProviderCosts } from "../lib/provider-costs";
 
 const router: IRouter = Router();
+
+router.get("/costs/live", async (_req, res): Promise<void> => {
+  res.json(await fetchProviderCosts());
+});
 
 const fmt = (c: typeof costsTable.$inferSelect) => ({
   ...c,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListCosts,
@@ -6,9 +6,12 @@ import {
   useUpdateCost,
   useDeleteCost,
   useGetCostSummary,
+  useGetProviderCosts,
   getListCostsQueryKey,
   getGetCostSummaryQueryKey,
+  getGetProviderCostsQueryKey,
 } from "@workspace/api-client-react";
+import type { ProviderCostsResponse } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, BarChart3, Pencil, Trash2 } from "lucide-react";
+import { Plus, BarChart3, Pencil, Trash2, Cloud, Server, Database, AlertTriangle } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -45,6 +48,9 @@ export function Costs() {
   const [month, setMonth] = useState(CURRENT_MONTH);
   const { data: costs, isLoading } = useListCosts({ month }, { query: { queryKey: getListCostsQueryKey({ month }) } });
   const { data: summary } = useGetCostSummary(month, { query: { queryKey: getGetCostSummaryQueryKey(month) } });
+  const { data: providerCosts, isLoading: providerCostsLoading } = useGetProviderCosts({
+    query: { queryKey: getGetProviderCostsQueryKey() },
+  });
   const createCost = useCreateCost();
   const updateCost = useUpdateCost();
   const deleteCost = useDeleteCost();
@@ -97,6 +103,8 @@ export function Costs() {
         <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Ingresos del Mes</div><div className="text-2xl font-bold text-emerald-400">{formatCurrency(summary?.totalRevenue ?? 0)}</div></CardContent></Card>
         <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Margen Estimado</div><div className={`text-2xl font-bold ${marginColor}`}>{summary?.estimatedMargin ?? 0}%</div></CardContent></Card>
       </div>
+
+      <ProviderCostsPanel data={providerCosts} isLoading={providerCostsLoading} />
 
       {chartData.length > 0 && (
         <Card>
@@ -170,6 +178,81 @@ export function Costs() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+// Netlify and Render expose no billing/invoice API at all (confirmed against
+// their own docs) — only Netlify's flat monthly plan price is a real dollar
+// figure. Render only offers real service/plan inventory, no cost. Neon's
+// consumption API gives real usage units, not $, and needs a NEON_API_KEY
+// that isn't provisioned yet. Every number below is either real or clearly
+// marked as unavailable — nothing here is simulated.
+function ProviderCostsPanel({ data, isLoading }: { data?: ProviderCostsResponse; isLoading: boolean }) {
+  if (isLoading) {
+    return <Card><CardContent className="p-4 text-sm text-muted-foreground">Consultando Netlify, Render y Neon...</CardContent></Card>;
+  }
+  if (!data) return null;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">Gasto real de proveedores (en vivo)</CardTitle>
+        <p className="text-xs text-muted-foreground">Datos leídos directamente de las APIs de Netlify, Render y Neon — no manuales.</p>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-0">
+        <ProviderCard icon={<Cloud className="h-4 w-4" />} name="Netlify">
+          {data.netlify.ok ? (
+            <>
+              <p className="text-xl font-bold">{formatCurrency(data.netlify.monthlyDollarPrice ?? 0)}<span className="text-xs font-normal text-muted-foreground">/mes</span></p>
+              <p className="text-xs text-muted-foreground">Plan {data.netlify.planName}</p>
+              <p className="text-xs text-muted-foreground">Créditos: {data.netlify.creditsUsed} / {data.netlify.creditsIncluded}</p>
+            </>
+          ) : <ProviderError message={data.netlify.error} />}
+        </ProviderCard>
+
+        <ProviderCard icon={<Server className="h-4 w-4" />} name="Render">
+          {data.render.ok ? (
+            <>
+              <p className="text-xs text-muted-foreground mb-1">Render no expone costo vía API — inventario real de servicios:</p>
+              {(data.render.services ?? []).map((s) => (
+                <p key={s.id} className="text-xs"><span className="font-medium">{s.name}</span> — plan {s.plan}{s.suspended !== "not_suspended" ? " (suspendido)" : ""}</p>
+              ))}
+              {(data.render.services ?? []).length === 0 && <p className="text-xs text-muted-foreground">Sin servicios.</p>}
+            </>
+          ) : <ProviderError message={data.render.error} />}
+        </ProviderCard>
+
+        <ProviderCard icon={<Database className="h-4 w-4" />} name="Neon">
+          {data.neon.ok ? (
+            (data.neon.consumption ?? []).map((c) => (
+              <div key={c.projectId} className="text-xs space-y-0.5">
+                <p className="font-medium">{c.projectId}</p>
+                <p className="text-muted-foreground">Cómputo: {c.computeUnitSeconds.toLocaleString()} CU-s</p>
+                <p className="text-muted-foreground">Transferencia: {(c.dataTransferBytes / 1e9).toFixed(2)} GB</p>
+              </div>
+            ))
+          ) : <ProviderError message={data.neon.error} />}
+        </ProviderCard>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProviderCard({ icon, name, children }: { icon: ReactNode; name: string; children: ReactNode }) {
+  return (
+    <div className="rounded-lg border border-border/40 p-3 space-y-1">
+      <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground mb-1">{icon}{name}</div>
+      {children}
+    </div>
+  );
+}
+
+function ProviderError({ message }: { message: string | null }) {
+  return (
+    <div className="flex items-start gap-1.5 text-xs text-amber-400">
+      <AlertTriangle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+      <span>{message}</span>
     </div>
   );
 }

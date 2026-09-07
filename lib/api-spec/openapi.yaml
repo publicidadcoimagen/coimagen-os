@@ -2012,6 +2012,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/CostSummary"
 
+  /costs/live:
+    get:
+      operationId: getProviderCosts
+      tags: [costs]
+      description: >
+        Read-only real usage/cost data pulled live from Netlify, Render and
+        Neon's own APIs — no simulated numbers. Each provider is independent:
+        one failing (e.g. a missing API key) does not fail the other two.
+        Render's API exposes no billing/cost endpoint at all, so its section
+        only reports real service inventory, not a dollar figure.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderCostsResponse"
+
   # ─── AUDIT LOG ─────────────────────────────────────────────────────────────
   /audit-logs:
     get:
@@ -5348,6 +5366,60 @@ components:
         category: { type: string }
         amount: { type: number }
         percentage: { type: number }
+    RenderServiceInfo:
+      type: object
+      required: [id, name, plan, type, suspended]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        plan: { type: string }
+        type: { type: string }
+        suspended: { type: string }
+    NeonProjectConsumption:
+      type: object
+      required: [projectId, periodStart, periodEnd, computeUnitSeconds, storageBytesHour, dataTransferBytes]
+      properties:
+        projectId: { type: string }
+        periodStart: { type: string }
+        periodEnd: { type: string }
+        computeUnitSeconds: { type: number }
+        storageBytesHour: { type: number }
+        dataTransferBytes: { type: number }
+    NetlifyPlanCost:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+        error: { type: ["string", "null"] }
+        planName: { type: ["string", "null"] }
+        monthlyDollarPrice: { type: ["number", "null"] }
+        creditsIncluded: { type: ["number", "null"] }
+        creditsUsed: { type: ["number", "null"] }
+    RenderCostInfo:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+        error: { type: ["string", "null"] }
+        services:
+          type: ["array", "null"]
+          items: { $ref: "#/components/schemas/RenderServiceInfo" }
+    NeonCostInfo:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+        error: { type: ["string", "null"] }
+        consumption:
+          type: ["array", "null"]
+          items: { $ref: "#/components/schemas/NeonProjectConsumption" }
+    ProviderCostsResponse:
+      type: object
+      required: [netlify, render, neon]
+      properties:
+        netlify: { $ref: "#/components/schemas/NetlifyPlanCost" }
+        render: { $ref: "#/components/schemas/RenderCostInfo" }
+        neon: { $ref: "#/components/schemas/NeonCostInfo" }
 
     # ── AUDIT LOG ─────────────────────────────────────────────────────────────
     AuditLog:
