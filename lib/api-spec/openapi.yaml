@@ -4342,9 +4342,13 @@ components:
           type: string
     HealthStatus:
       type: object
-      required: [status, providers]
+      required: [status, environment, providers]
       properties:
         status: { type: string }
+        environment:
+          type: string
+          enum: [production, development]
+          description: Derived from Render's own RENDER env var (always "true" on Render infra) falling back to NODE_ENV — real infra signal, not a hardcoded label.
         providers:
           type: object
           description: Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance.

@@ -5,10 +5,13 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { HealthStatusEnvironment } from './healthStatusEnvironment';
 import type { HealthStatusProviders } from './healthStatusProviders';
 
 export interface HealthStatus {
   status: string;
+  /** Derived from Render's own RENDER env var (always "true" on Render infra) falling back to NODE_ENV — real infra signal, not a hardcoded label. */
+  environment: HealthStatusEnvironment;
   /** Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance. */
   providers: HealthStatusProviders;
 }

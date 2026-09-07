@@ -147,6 +147,7 @@ export * from './fiscalDataBody';
 export * from './fiscalDocumentUploadBody';
 export * from './fiscalDocumentUploadResponse';
 export * from './healthStatus';
+export * from './healthStatusEnvironment';
 export * from './healthStatusProviders';
 export * from './idea';
 export * from './ideaCreate';
