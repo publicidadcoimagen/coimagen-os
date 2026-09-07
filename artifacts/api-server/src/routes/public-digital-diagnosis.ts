@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db, prospectsTable, aiExecutionsTable, diagnosesTable, incidentsTable } from "@workspace/db";
 import { SubmitDigitalDiagnosisBody, GetPublicDigitalDiagnosisParams } from "@workspace/api-zod";
 import { scrapeUrl, DigitalDiagnosisScrapeError } from "../lib/digital-diagnosis/scrape";
-import { generateDigitalDiagnosis } from "../lib/digital-diagnosis/analyze";
+import { generateDigitalDiagnosis, classifyDigitalDiagnosisError } from "../lib/digital-diagnosis/analyze";
 import { sendDigitalDiagnosisEmail } from "../lib/digital-diagnosis/email";
 
 const router: IRouter = Router();
@@ -134,19 +134,27 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
 
     res.json({ diagnosisId: diagnosis.id, status: "completed", publicToken: diagnosis.publicToken });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    // Kept alongside the friendly message for staff-facing logs (incidents,
-    // ai_executions.errors) — e.g. the raw "getaddrinfo ENOTFOUND ..." behind
-    // a DigitalDiagnosisScrapeError's user-facing "verifica el dominio".
+    // Kept for staff-facing logs only — e.g. the raw "getaddrinfo ENOTFOUND
+    // ..." behind a DigitalDiagnosisScrapeError's user-facing "verifica el
+    // dominio". Never persisted to a DB row any endpoint returns.
     const causeDetail = err instanceof Error && err.cause instanceof Error ? err.cause.message : undefined;
     // A DigitalDiagnosisScrapeError's message is already the full, vetted
     // story (see scrape.ts) — everything else is unclassified (AI provider
     // errors, DB errors, etc.) and is exactly where the raw shape matters
-    // for debugging later.
+    // for debugging later. This — and everything derived from it — must
+    // stay server-log-only: a real APICallError's own properties include
+    // requestBodyValues (the full internal prompt + tool schema sent to
+    // Anthropic) and responseHeaders (including Anthropic's organization
+    // id), both of which a naive "log everything" once leaked verbatim into
+    // ai_executions.errors and a Quality Center incident (execs #28/#29,
+    // 2026-07-27) — visible to anyone with access to those screens.
     const rawDetails = err instanceof DigitalDiagnosisScrapeError ? undefined : extractErrorDetails(err);
-    const logMessage = [message, causeDetail && `(${causeDetail})`, rawDetails && `[details: ${rawDetails}]`]
-      .filter(Boolean)
-      .join(" ");
+    req.log.error({ err, causeDetail, rawDetails }, "Fallo del Agente de Diagnóstico Digital");
+
+    // The ONLY string allowed into a stored/returned field — see
+    // classifyDigitalDiagnosisError's own comment for why.
+    const safeError = classifyDigitalDiagnosisError(err);
+
     // A DigitalDiagnosisScrapeError is a known, expected failure mode (bad
     // domain, slow site, HTTP error) — the prospect already got an
     // actionable message for it, so it doesn't need "high" severity
@@ -157,7 +165,7 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     await db.insert(incidentsTable).values({
       type: "ai_error",
       title: `Fallo del Agente de Diagnóstico Digital: ${url}`,
-      description: `Prospecto: ${name} <${email}>\nURL analizada: ${url}\n\nError: ${logMessage}`,
+      description: `Prospecto: ${name} <${email}>\nURL analizada: ${url}\n\nError: ${safeError}`,
       severity,
       priority: "high",
       status: "open",
@@ -167,7 +175,7 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
     await db.update(aiExecutionsTable).set({
       status: "failed",
       result: "error",
-      errors: logMessage,
+      errors: safeError,
       durationMs: Date.now() - startedAt,
       updatedAt: new Date(),
     }).where(eq(aiExecutionsTable.id, execution.id));

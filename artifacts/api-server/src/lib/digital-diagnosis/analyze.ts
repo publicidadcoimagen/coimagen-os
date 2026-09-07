@@ -1,7 +1,7 @@
 import { generateObject, APICallError } from "ai";
 import { getAnthropicModel, getGeminiModel } from "./provider";
 import { digitalDiagnosisAnalysisSchema, type DigitalDiagnosisAnalysis } from "./analysis-schema";
-import type { ScrapedSignals } from "./scrape";
+import { DigitalDiagnosisScrapeError, type ScrapedSignals } from "./scrape";
 import { logger } from "../logger";
 
 export type DigitalDiagnosisProvider = "anthropic" | "google";
@@ -35,6 +35,32 @@ export function isInsufficientCreditError(err: unknown): boolean {
   const data = err.data as { error?: { type?: string } } | undefined;
   if (data?.error?.type === "billing_error") return true;
   return /credit balance is too low/i.test(err.message);
+}
+
+// Turns an internal failure into the ONLY string allowed to reach a
+// database row (ai_executions.errors, incidents.description/logs) that a
+// staff-facing screen renders — a real production incident (exec #28/#29,
+// 2026-07-27) showed a naive `String(err)`/`JSON.stringify(err)` of an
+// APICallError includes `requestBodyValues` (the full internal system
+// prompt AND the generated-object tool schema sent to Anthropic) and
+// `responseHeaders` (including Anthropic's organization id) — anyone with
+// access to the AI Execution Engine's failed-execution detail view could
+// read those verbatim. This function is the single choke point: every raw
+// detail (the caught error, requestBodyValues, responseHeaders, etc.) must
+// go to req.log.error() at the call site instead, never into a stored
+// string. Only a short, safe classification is returned here.
+export function classifyDigitalDiagnosisError(err: unknown): string {
+  if (err instanceof DigitalDiagnosisScrapeError) {
+    // Already a vetted, user-safe message (see scrape.ts) — e.g. "URL inválida".
+    return err.message;
+  }
+  if (isInsufficientCreditError(err)) {
+    return "Crédito insuficiente en el proveedor de IA.";
+  }
+  if (APICallError.isInstance(err)) {
+    return `Error del proveedor de IA (HTTP ${err.statusCode ?? "desconocido"}).`;
+  }
+  return "Error interno inesperado. Ver logs del servidor para más detalle.";
 }
 
 // Below this word count, the page's real content is more likely hidden
