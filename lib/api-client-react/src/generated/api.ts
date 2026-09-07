@@ -71,6 +71,7 @@ import type {
   ClientNoteUpdate,
   ClientOnboarding,
   ClientOnboardingInput,
+  ClientOnboardingPatch,
   ClientSocialCredentialCreate,
   ClientSocialCredentialMeta,
   ClientTimeline,
@@ -2418,6 +2419,78 @@ export const useUpsertClientOnboarding = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpsertClientOnboardingMutationOptions(options));
+    }
+
+export const getPatchClientOnboardingUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/onboarding`
+}
+
+/**
+ * @summary Client self-service update of their own onboarding wizard/checklist
+ */
+export const patchClientOnboarding = async (clientId: number,
+    clientOnboardingPatch: ClientOnboardingPatch, options?: RequestInit): Promise<ClientOnboarding> => {
+
+  return customFetch<ClientOnboarding>(getPatchClientOnboardingUrl(clientId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientOnboardingPatch,)
+  }
+);}
+
+
+
+
+export const getPatchClientOnboardingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchClientOnboarding>>, TError,{clientId: number;data: BodyType<ClientOnboardingPatch>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchClientOnboarding>>, TError,{clientId: number;data: BodyType<ClientOnboardingPatch>}, TContext> => {
+
+const mutationKey = ['patchClientOnboarding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchClientOnboarding>>, {clientId: number;data: BodyType<ClientOnboardingPatch>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  patchClientOnboarding(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchClientOnboardingMutationResult = NonNullable<Awaited<ReturnType<typeof patchClientOnboarding>>>
+    export type PatchClientOnboardingMutationBody = BodyType<ClientOnboardingPatch>
+    export type PatchClientOnboardingMutationError = ErrorType<void>
+
+    /**
+ * @summary Client self-service update of their own onboarding wizard/checklist
+ */
+export const usePatchClientOnboarding = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchClientOnboarding>>, TError,{clientId: number;data: BodyType<ClientOnboardingPatch>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof patchClientOnboarding>>,
+        TError,
+        {clientId: number;data: BodyType<ClientOnboardingPatch>},
+        TContext
+      > => {
+      return useMutation(getPatchClientOnboardingMutationOptions(options));
     }
 
 export const getListClientTimelineUrl = (clientId: number,) => {

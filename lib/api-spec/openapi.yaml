@@ -619,6 +619,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ClientOnboarding"
+    patch:
+      operationId: patchClientOnboarding
+      tags: [client-onboarding]
+      summary: Client self-service update of their own onboarding wizard/checklist
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientOnboardingPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientOnboarding"
+        "403":
+          description: Not this account's client
 
   /clients/{clientId}/timeline:
     get:
@@ -5587,9 +5608,21 @@ components:
         hasWhatsappAccess: { type: boolean }
         hasBrandColors: { type: boolean }
         hasBusinessInfo: { type: boolean }
+        moduleContacts:
+          type: array
+          items: { $ref: "#/components/schemas/ClientOnboardingModuleContact" }
         notes: { type: ["string", "null"] }
+        submittedAt: { type: ["string", "null"] }
         createdAt: { type: string }
         updatedAt: { type: ["string", "null"] }
+    ClientOnboardingModuleContact:
+      type: object
+      required: [module, contactName]
+      properties:
+        module: { type: string }
+        contactName: { type: string }
+        contactEmail: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
     ClientOnboardingInput:
       type: object
       properties:
@@ -5603,7 +5636,30 @@ components:
         hasWhatsappAccess: { type: boolean }
         hasBrandColors: { type: boolean }
         hasBusinessInfo: { type: boolean }
+        moduleContacts:
+          type: array
+          items: { $ref: "#/components/schemas/ClientOnboardingModuleContact" }
         notes: { type: string }
+    ClientOnboardingPatch:
+      type: object
+      properties:
+        hasLogo: { type: boolean }
+        hasWebsiteAccess: { type: boolean }
+        hasDomainAccess: { type: boolean }
+        hasHostingAccess: { type: boolean }
+        hasFacebookAccess: { type: boolean }
+        hasInstagramAccess: { type: boolean }
+        hasGoogleBusinessAccess: { type: boolean }
+        hasWhatsappAccess: { type: boolean }
+        hasBrandColors: { type: boolean }
+        hasBusinessInfo: { type: boolean }
+        moduleContacts:
+          type: array
+          items: { $ref: "#/components/schemas/ClientOnboardingModuleContact" }
+        notes: { type: string }
+        submit:
+          type: boolean
+          description: When true, stamps submittedAt — the client's explicit "I'm done" moment, separate from incremental autosaves.
 
     # ─── ADMIN / USERS ────────────────────────────────────────────────────────
     SystemUser:

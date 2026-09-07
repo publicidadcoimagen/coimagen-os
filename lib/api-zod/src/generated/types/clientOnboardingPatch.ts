@@ -7,7 +7,7 @@
  */
 import type { ClientOnboardingModuleContact } from './clientOnboardingModuleContact';
 
-export interface ClientOnboardingInput {
+export interface ClientOnboardingPatch {
   hasLogo?: boolean;
   hasWebsiteAccess?: boolean;
   hasDomainAccess?: boolean;
@@ -20,4 +20,6 @@ export interface ClientOnboardingInput {
   hasBusinessInfo?: boolean;
   moduleContacts?: ClientOnboardingModuleContact[];
   notes?: string;
+  /** When true, stamps submittedAt — the client's explicit "I'm done" moment, separate from incremental autosaves. */
+  submit?: boolean;
 }

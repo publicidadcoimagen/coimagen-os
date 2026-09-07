@@ -82,6 +82,8 @@ export * from './clientNoteInput';
 export * from './clientNoteUpdate';
 export * from './clientOnboarding';
 export * from './clientOnboardingInput';
+export * from './clientOnboardingModuleContact';
+export * from './clientOnboardingPatch';
 export * from './clientSocialCredentialCreate';
 export * from './clientSocialCredentialMeta';
 export * from './clientStatus';
