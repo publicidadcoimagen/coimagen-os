@@ -646,7 +646,14 @@ export const GetClientOnboardingResponse = zod.object({
   "hasWhatsappAccess": zod.boolean(),
   "hasBrandColors": zod.boolean(),
   "hasBusinessInfo": zod.boolean(),
+  "moduleContacts": zod.array(zod.object({
+  "module": zod.string(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string().nullish(),
+  "notes": zod.string().nullish()
+})).optional(),
   "notes": zod.string().nullish(),
+  "submittedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })
@@ -670,6 +677,12 @@ export const UpsertClientOnboardingBody = zod.object({
   "hasWhatsappAccess": zod.boolean().optional(),
   "hasBrandColors": zod.boolean().optional(),
   "hasBusinessInfo": zod.boolean().optional(),
+  "moduleContacts": zod.array(zod.object({
+  "module": zod.string(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string().nullish(),
+  "notes": zod.string().nullish()
+})).optional(),
   "notes": zod.string().optional()
 })
 
@@ -686,7 +699,68 @@ export const UpsertClientOnboardingResponse = zod.object({
   "hasWhatsappAccess": zod.boolean(),
   "hasBrandColors": zod.boolean(),
   "hasBusinessInfo": zod.boolean(),
+  "moduleContacts": zod.array(zod.object({
+  "module": zod.string(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string().nullish(),
+  "notes": zod.string().nullish()
+})).optional(),
   "notes": zod.string().nullish(),
+  "submittedAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Client self-service update of their own onboarding wizard/checklist
+ */
+export const PatchClientOnboardingParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const PatchClientOnboardingBody = zod.object({
+  "hasLogo": zod.boolean().optional(),
+  "hasWebsiteAccess": zod.boolean().optional(),
+  "hasDomainAccess": zod.boolean().optional(),
+  "hasHostingAccess": zod.boolean().optional(),
+  "hasFacebookAccess": zod.boolean().optional(),
+  "hasInstagramAccess": zod.boolean().optional(),
+  "hasGoogleBusinessAccess": zod.boolean().optional(),
+  "hasWhatsappAccess": zod.boolean().optional(),
+  "hasBrandColors": zod.boolean().optional(),
+  "hasBusinessInfo": zod.boolean().optional(),
+  "moduleContacts": zod.array(zod.object({
+  "module": zod.string(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string().nullish(),
+  "notes": zod.string().nullish()
+})).optional(),
+  "notes": zod.string().optional(),
+  "submit": zod.boolean().optional().describe('When true, stamps submittedAt — the client\'s explicit \"I\'m done\" moment, separate from incremental autosaves.')
+})
+
+export const PatchClientOnboardingResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "hasLogo": zod.boolean(),
+  "hasWebsiteAccess": zod.boolean(),
+  "hasDomainAccess": zod.boolean(),
+  "hasHostingAccess": zod.boolean(),
+  "hasFacebookAccess": zod.boolean(),
+  "hasInstagramAccess": zod.boolean(),
+  "hasGoogleBusinessAccess": zod.boolean(),
+  "hasWhatsappAccess": zod.boolean(),
+  "hasBrandColors": zod.boolean(),
+  "hasBusinessInfo": zod.boolean(),
+  "moduleContacts": zod.array(zod.object({
+  "module": zod.string(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string().nullish(),
+  "notes": zod.string().nullish()
+})).optional(),
+  "notes": zod.string().nullish(),
+  "submittedAt": zod.string().nullish(),
   "createdAt": zod.string(),
   "updatedAt": zod.string().nullish()
 })

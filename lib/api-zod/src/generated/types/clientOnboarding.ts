@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ClientOnboardingModuleContact } from './clientOnboardingModuleContact';
 
 export interface ClientOnboarding {
   id: number;
@@ -19,8 +20,11 @@ export interface ClientOnboarding {
   hasWhatsappAccess: boolean;
   hasBrandColors: boolean;
   hasBusinessInfo: boolean;
+  moduleContacts?: ClientOnboardingModuleContact[];
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  submittedAt?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;

@@ -1989,6 +1989,15 @@ export interface ClientBrandInput {
   youtubeUrl?: string;
 }
 
+export interface ClientOnboardingModuleContact {
+  module: string;
+  contactName: string;
+  /** @nullable */
+  contactEmail?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
 export interface ClientOnboarding {
   id: number;
   clientId: number;
@@ -2002,8 +2011,11 @@ export interface ClientOnboarding {
   hasWhatsappAccess: boolean;
   hasBrandColors: boolean;
   hasBusinessInfo: boolean;
+  moduleContacts?: ClientOnboardingModuleContact[];
   /** @nullable */
   notes?: string | null;
+  /** @nullable */
+  submittedAt?: string | null;
   createdAt: string;
   /** @nullable */
   updatedAt?: string | null;
@@ -2020,7 +2032,25 @@ export interface ClientOnboardingInput {
   hasWhatsappAccess?: boolean;
   hasBrandColors?: boolean;
   hasBusinessInfo?: boolean;
+  moduleContacts?: ClientOnboardingModuleContact[];
   notes?: string;
+}
+
+export interface ClientOnboardingPatch {
+  hasLogo?: boolean;
+  hasWebsiteAccess?: boolean;
+  hasDomainAccess?: boolean;
+  hasHostingAccess?: boolean;
+  hasFacebookAccess?: boolean;
+  hasInstagramAccess?: boolean;
+  hasGoogleBusinessAccess?: boolean;
+  hasWhatsappAccess?: boolean;
+  hasBrandColors?: boolean;
+  hasBusinessInfo?: boolean;
+  moduleContacts?: ClientOnboardingModuleContact[];
+  notes?: string;
+  /** When true, stamps submittedAt — the client's explicit "I'm done" moment, separate from incremental autosaves. */
+  submit?: boolean;
 }
 
 export type SystemUserRole = typeof SystemUserRole[keyof typeof SystemUserRole];
