@@ -1787,12 +1787,14 @@ export const GetProjectsByStatusResponse = zod.array(GetProjectsByStatusResponse
 
 
 export const ListProspectsQueryParams = zod.object({
-  "status": zod.coerce.string().optional()
+  "status": zod.coerce.string().optional(),
+  "includeTest": zod.coerce.boolean().optional().describe('Include is_test=true rows (excluded by default).')
 })
 
 export const ListProspectsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real prospect. Excluded by default from GET \/prospects and \/sequences\/commercial-followups.'),
   "email": zod.string().nullish(),
   "phone": zod.string().nullish(),
   "company": zod.string().nullish(),
@@ -1831,6 +1833,7 @@ export const GetProspectParams = zod.object({
 export const GetProspectResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real prospect. Excluded by default from GET \/prospects and \/sequences\/commercial-followups.'),
   "email": zod.string().nullish(),
   "phone": zod.string().nullish(),
   "company": zod.string().nullish(),
@@ -1867,6 +1870,7 @@ export const UpdateProspectBody = zod.object({
 export const UpdateProspectResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real prospect. Excluded by default from GET \/prospects and \/sequences\/commercial-followups.'),
   "email": zod.string().nullish(),
   "phone": zod.string().nullish(),
   "company": zod.string().nullish(),
@@ -2012,7 +2016,8 @@ export const DeleteDiagnosisParams = zod.object({
 export const ListProposalsQueryParams = zod.object({
   "status": zod.coerce.string().optional(),
   "prospectId": zod.coerce.number().optional(),
-  "clientId": zod.coerce.number().optional()
+  "clientId": zod.coerce.number().optional(),
+  "includeTest": zod.coerce.boolean().optional().describe('Include is_test=true rows (excluded by default).')
 })
 
 export const ListProposalsResponseItem = zod.object({
@@ -2022,6 +2027,7 @@ export const ListProposalsResponseItem = zod.object({
   "clientId": zod.number().nullish(),
   "amount": zod.number().nullish(),
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real proposal. Excluded by default from GET \/proposals and pipeline value KPIs.'),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
   "publicToken": zod.string().uuid().optional(),
@@ -2056,6 +2062,7 @@ export const GetProposalResponse = zod.object({
   "clientId": zod.number().nullish(),
   "amount": zod.number().nullish(),
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real proposal. Excluded by default from GET \/proposals and pipeline value KPIs.'),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
   "publicToken": zod.string().uuid().optional(),
@@ -2088,6 +2095,7 @@ export const UpdateProposalResponse = zod.object({
   "clientId": zod.number().nullish(),
   "amount": zod.number().nullish(),
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real proposal. Excluded by default from GET \/proposals and pipeline value KPIs.'),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
   "publicToken": zod.string().uuid().optional(),
@@ -4222,7 +4230,8 @@ export const ListContractsQueryParams = zod.object({
   "status": zod.coerce.string().optional(),
   "type": zod.coerce.string().optional(),
   "clientId": zod.coerce.number().optional(),
-  "projectId": zod.coerce.number().optional()
+  "projectId": zod.coerce.number().optional(),
+  "includeTest": zod.coerce.boolean().optional().describe('Include is_test=true rows (excluded by default).')
 })
 
 export const ListContractsResponseItem = zod.object({
@@ -4230,6 +4239,7 @@ export const ListContractsResponseItem = zod.object({
   "type": zod.string(),
   "status": zod.string(),
   "title": zod.string(),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real client contract. Excluded by default from GET \/contracts and the Firmados\/Activos KPI.'),
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
@@ -4299,6 +4309,7 @@ export const GetContractResponse = zod.object({
   "type": zod.string(),
   "status": zod.string(),
   "title": zod.string(),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real client contract. Excluded by default from GET \/contracts and the Firmados\/Activos KPI.'),
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
@@ -4364,6 +4375,7 @@ export const UpdateContractResponse = zod.object({
   "type": zod.string(),
   "status": zod.string(),
   "title": zod.string(),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real client contract. Excluded by default from GET \/contracts and the Firmados\/Activos KPI.'),
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
@@ -4413,6 +4425,7 @@ export const SendContractResponse = zod.object({
   "type": zod.string(),
   "status": zod.string(),
   "title": zod.string(),
+  "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real client contract. Excluded by default from GET \/contracts and the Firmados\/Activos KPI.'),
   "description": zod.string().nullish(),
   "service": zod.string().nullish(),
   "clientId": zod.number().nullish(),
@@ -5630,6 +5643,10 @@ export const CapturePublicCatalogOrderResponse = zod.object({
   "status": zod.string()
 })
 
+
+export const ListCommercialFollowupStatusesQueryParams = zod.object({
+  "includeTest": zod.coerce.boolean().optional().describe('Include is_test=true prospects (excluded by default).')
+})
 
 export const ListCommercialFollowupStatusesResponseItem = zod.object({
   "prospectId": zod.number(),

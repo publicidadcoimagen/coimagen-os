@@ -174,6 +174,7 @@ export * from './invoiceUpdateStatus';
 export * from './listApprovalsParams';
 export * from './listAuditLogsParams';
 export * from './listClientApprovalsParams';
+export * from './listCommercialFollowupStatusesParams';
 export * from './listContractsParams';
 export * from './listCostsParams';
 export * from './listDiagnosesParams';

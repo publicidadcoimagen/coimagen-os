@@ -10,6 +10,8 @@ import type { ProspectStatus } from './prospectStatus';
 export interface Prospect {
   id: number;
   name: string;
+  /** Real production row created for verification/testing, not a real prospect. Excluded by default from GET /prospects and /sequences/commercial-followups. */
+  isTest: boolean;
   /** @nullable */
   email?: string | null;
   /** @nullable */

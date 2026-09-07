@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { clientsTable } from "./clients";
@@ -6,6 +6,12 @@ import { clientsTable } from "./clients";
 export const prospectsTable = pgTable("prospects", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  // Marks a real production row created for verification/testing (e.g. a
+  // deploy-verification or i18n-verification lead), not a real prospect.
+  // Excluded by default from the Pipeline/Secuencias Automatizadas views
+  // (see routes/prospects.ts, routes/sequences.ts) — never deleted, since
+  // these are real evidence of real end-to-end testing.
+  isTest: boolean("is_test").notNull().default(false),
   // Nullable since P-81: WhatsApp/Facebook leads captured by the Jotform
   // assistant often only have a phone number, no email. Callers that need
   // an email (e.g. sendDigitalDiagnosisEmail) must check for it explicitly.

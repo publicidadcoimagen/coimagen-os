@@ -26,13 +26,19 @@ const router: IRouter = Router();
 // its next stage isn't due for a few more days; one already converted
 // keeps showing only if it has follow-up history (so the record doesn't
 // vanish the moment it converts).
-router.get("/sequences/commercial-followups", async (_req, res): Promise<void> => {
+router.get("/sequences/commercial-followups", async (req, res): Promise<void> => {
+  const includeTest = req.query.includeTest === "true";
   const clientIds = await eligibleClientIds();
   const scopeConditions = [and(isNull(prospectsTable.clientId), inArray(prospectsTable.source, PROSPECTING_FUNNEL_SOURCES))];
   if (clientIds.length > 0) scopeConditions.push(inArray(prospectsTable.clientId, clientIds));
 
-  const prospects = await db.select().from(prospectsTable)
-    .where(and(isNotNull(prospectsTable.email), or(...scopeConditions)));
+  // Excludes real is_test rows (deploy/i18n verification leads, e.g. "Claude
+  // Deploy Verify", "Prueba Idioma ES") from this operational worklist by
+  // default — pass ?includeTest=true to see them.
+  const baseConditions = [isNotNull(prospectsTable.email), or(...scopeConditions)];
+  if (!includeTest) baseConditions.push(eq(prospectsTable.isTest, false));
+
+  const prospects = await db.select().from(prospectsTable).where(and(...baseConditions));
 
   const followupRows = await db.select().from(commercialFollowupsTable);
   const followupsByProspect = new Map<number, typeof followupRows>();

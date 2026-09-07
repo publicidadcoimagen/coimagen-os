@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, boolean } from "drizzle-orm/pg-core";
 import { proposalsTable } from "./proposals";
 
 export const contractsTable = pgTable("contracts", {
@@ -6,6 +6,11 @@ export const contractsTable = pgTable("contracts", {
   type: text("type").notNull(),
   status: text("status").notNull().default("draft"),
   title: text("title").notNull(),
+  // Marks a real production row created for verification/testing rather
+  // than an actual client contract. Excluded by default from business
+  // KPIs and list views (see routes/contracts.ts) — never deleted, since
+  // these are real evidence of real end-to-end testing.
+  isTest: boolean("is_test").notNull().default(false),
   description: text("description"),
   service: text("service"),
   clientId: integer("client_id"),

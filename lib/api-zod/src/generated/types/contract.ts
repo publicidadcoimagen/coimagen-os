@@ -11,6 +11,8 @@ export interface Contract {
   type: string;
   status: string;
   title: string;
+  /** Real production row created for verification/testing, not a real client contract. Excluded by default from GET /contracts and the Firmados/Activos KPI. */
+  isTest: boolean;
   /** @nullable */
   description?: string | null;
   /** @nullable */

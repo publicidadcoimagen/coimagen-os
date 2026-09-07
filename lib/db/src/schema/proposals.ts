@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, numeric, uuid } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, integer, numeric, uuid, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { clientsTable } from "./clients";
@@ -11,6 +11,11 @@ export const proposalsTable = pgTable("proposals", {
   clientId: integer("client_id").references(() => clientsTable.id, { onDelete: "cascade" }),
   amount: numeric("amount"),
   status: text("status").notNull().default("draft"),
+  // Marks a real production row created for verification/testing rather
+  // than a real prospective client's proposal. Excluded by default from
+  // pipeline value/business KPIs (see routes/proposals.ts) — never
+  // deleted, since these are real evidence of real end-to-end testing.
+  isTest: boolean("is_test").notNull().default(false),
   notes: text("notes"),
   validUntil: text("valid_until"),
   // "standard" = 50% deposit / 50% final. "large" = 50% deposit / 25%
