@@ -111,6 +111,7 @@ import type {
   DirectorAssignClient,
   DirectorAssignProject,
   DirectorUpdate,
+  EndImpersonationInput,
   ErrorEnvelope,
   FiscalDataBody,
   FiscalDocumentUploadBody,
@@ -119,6 +120,7 @@ import type {
   Idea,
   IdeaCreate,
   IdeaUpdate,
+  ImpersonateClientResult,
   Incident,
   IncidentCreate,
   IncidentUpdate,
@@ -1827,6 +1829,147 @@ export const useMarkClientFounder = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getMarkClientFounderMutationOptions(options));
+    }
+
+export const getImpersonateClientUrl = (id: number,) => {
+
+
+
+
+  return `/api/clients/${id}/impersonate`
+}
+
+/**
+ * @summary Start a staff "Ver como cliente" read-only impersonation session for this client
+ */
+export const impersonateClient = async (id: number, options?: RequestInit): Promise<ImpersonateClientResult> => {
+
+  return customFetch<ImpersonateClientResult>(getImpersonateClientUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getImpersonateClientMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof impersonateClient>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof impersonateClient>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['impersonateClient'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof impersonateClient>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  impersonateClient(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ImpersonateClientMutationResult = NonNullable<Awaited<ReturnType<typeof impersonateClient>>>
+
+    export type ImpersonateClientMutationError = ErrorType<void>
+
+    /**
+ * @summary Start a staff "Ver como cliente" read-only impersonation session for this client
+ */
+export const useImpersonateClient = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof impersonateClient>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof impersonateClient>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getImpersonateClientMutationOptions(options));
+    }
+
+export const getEndImpersonationUrl = () => {
+
+
+
+
+  return `/api/impersonation/end`
+}
+
+/**
+ * @summary End an active "Ver como cliente" impersonation session
+ */
+export const endImpersonation = async (endImpersonationInput: EndImpersonationInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getEndImpersonationUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      endImpersonationInput,)
+  }
+);}
+
+
+
+
+export const getEndImpersonationMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof endImpersonation>>, TError,{data: BodyType<EndImpersonationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof endImpersonation>>, TError,{data: BodyType<EndImpersonationInput>}, TContext> => {
+
+const mutationKey = ['endImpersonation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof endImpersonation>>, {data: BodyType<EndImpersonationInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  endImpersonation(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EndImpersonationMutationResult = NonNullable<Awaited<ReturnType<typeof endImpersonation>>>
+    export type EndImpersonationMutationBody = BodyType<EndImpersonationInput>
+    export type EndImpersonationMutationError = ErrorType<void>
+
+    /**
+ * @summary End an active "Ver como cliente" impersonation session
+ */
+export const useEndImpersonation = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof endImpersonation>>, TError,{data: BodyType<EndImpersonationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof endImpersonation>>,
+        TError,
+        {data: BodyType<EndImpersonationInput>},
+        TContext
+      > => {
+      return useMutation(getEndImpersonationMutationOptions(options));
     }
 
 export const getListClientAccessUrl = (clientId: number,) => {

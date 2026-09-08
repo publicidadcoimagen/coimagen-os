@@ -224,6 +224,18 @@ export interface MarkClientFounderResult {
   emailError?: string | null;
 }
 
+export interface ImpersonateClientResult {
+  token: string;
+  expiresAt: string;
+  clientId: number;
+  clientSlug: string;
+  clientName: string;
+}
+
+export interface EndImpersonationInput {
+  token: string;
+}
+
 export type ProjectStatus = typeof ProjectStatus[keyof typeof ProjectStatus];
 
 

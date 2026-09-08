@@ -50,6 +50,8 @@ import {
 import { formatDate } from "@/lib/format";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@workspace/better-auth-web";
+import { useImpersonation } from "@/hooks/use-impersonation";
 
 const CLIENT_MODULES = ["ecommerce", "autopublicador", "seo"] as const;
 const CLIENT_MODULE_LABELS: Record<string, string> = {
@@ -141,6 +143,9 @@ export function ClientDetail() {
   const id = parseInt(params?.id || "0");
   const qc = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const canImpersonate = user?.role === "ceo" || user?.role === "admin";
+  const { startImpersonation, isStarting: isStartingImpersonation } = useImpersonation();
 
   /* ── Data hooks ── */
   const { data: client, isLoading: isLoadingClient } = useGetClient(id, {
@@ -330,6 +335,16 @@ export function ClientDetail() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {canImpersonate && (
+            <Button
+              variant="outline" size="sm"
+              disabled={isStartingImpersonation}
+              onClick={() => startImpersonation(id)}
+            >
+              <Eye className="h-3.5 w-3.5 mr-1.5" />
+              {isStartingImpersonation ? "Entrando..." : "Ver como cliente"}
+            </Button>
+          )}
           {client.isFounder ? (
             <Badge className="gap-1 bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/15">
               <Crown className="h-3.5 w-3.5" />Fundador #{client.founderNumber}

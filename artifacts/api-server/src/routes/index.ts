@@ -7,6 +7,7 @@ import publicProposalsRouter from "./public-proposals";
 import publicInvoicesRouter from "./public-invoices";
 import publicCatalogRouter from "./public-catalog";
 import clientsRouter from "./clients";
+import impersonationRouter from "./impersonation";
 import clientAccessRouter from "./client-access";
 import clientBrandRouter from "./client-brand";
 import clientOnboardingRouter from "./client-onboarding";
@@ -59,6 +60,7 @@ import beckyBeckLegacyRouter from "./becky-beck-legacy";
 import { requireAuth } from "../middlewares/requireAuth";
 import { auditMiddleware } from "../middlewares/auditMiddleware";
 import { clientRoleGate } from "../middlewares/clientRoleGate";
+import { impersonationMiddleware } from "../middlewares/impersonation";
 
 const router: IRouter = Router();
 
@@ -73,9 +75,11 @@ router.use(publicInvoicesRouter);
 router.use(publicCatalogRouter);
 
 router.use(requireAuth);
+router.use(impersonationMiddleware);
 router.use(clientRoleGate);
 
 router.use(clientsRouter);
+router.use(impersonationRouter);
 router.use(clientAccessRouter);
 router.use(clientBrandRouter);
 router.use(clientOnboardingRouter);

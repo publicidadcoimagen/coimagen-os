@@ -455,6 +455,30 @@ export const MarkClientFounderResponse = zod.object({
 
 
 /**
+ * @summary Start a staff "Ver como cliente" read-only impersonation session for this client
+ */
+export const ImpersonateClientParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ImpersonateClientResponse = zod.object({
+  "token": zod.string(),
+  "expiresAt": zod.string(),
+  "clientId": zod.number(),
+  "clientSlug": zod.string(),
+  "clientName": zod.string()
+})
+
+
+/**
+ * @summary End an active "Ver como cliente" impersonation session
+ */
+export const EndImpersonationBody = zod.object({
+  "token": zod.string()
+})
+
+
+/**
  * @summary List access records for a client
  */
 export const ListClientAccessParams = zod.object({
