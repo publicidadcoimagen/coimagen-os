@@ -14,7 +14,10 @@ import {
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 import { getPublisherForClient } from "../lib/social-autopublisher/publisher";
-import { generateCaptionAndCreateDraft } from "../lib/social-autopublisher/caption";
+import { generateCaptionAndCreateDraft, isClaimBlockedError } from "../lib/social-autopublisher/caption";
+import { reportAgentFailure } from "../lib/agent-escalation/report";
+
+const AGENT_NAME = "Autopublicador Social";
 
 // Mounted at /clients/:clientId/content-calendar — mergeParams so :clientId
 // from the parent mount is visible on req.params here.
@@ -101,7 +104,17 @@ router.post("/items/generate", async (req, res): Promise<void> => {
     });
     res.status(201).json(serializeItem(item, targets));
   } catch (err) {
-    res.status(502).json({ error: err instanceof Error ? err.message : String(err) });
+    const message = err instanceof Error ? err.message : String(err);
+    const claimBlocked = isClaimBlockedError(message);
+    await reportAgentFailure({
+      agentName: AGENT_NAME,
+      category: claimBlocked ? "claim_blocked" : "generation_error",
+      severity: "low",
+      title: claimBlocked ? `Caption bloqueado — cliente ${clientId}` : `Fallo de generación DeepSeek — cliente ${clientId}`,
+      description: message,
+      notify: !claimBlocked, // Motor de Escalación §Decisiones #3
+    });
+    res.status(502).json({ error: message });
   }
 });
 
@@ -197,11 +210,19 @@ router.post("/items/:id/publish", async (req, res): Promise<void> => {
         updatedAt: new Date(),
       }).where(eq(contentCalendarTargetsTable.id, target.id));
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       await db.update(contentCalendarTargetsTable).set({
         status: "failed",
-        failureReason: err instanceof Error ? err.message : String(err),
+        failureReason: message,
         updatedAt: new Date(),
       }).where(eq(contentCalendarTargetsTable.id, target.id));
+      await reportAgentFailure({
+        agentName: AGENT_NAME,
+        category: "publish_failed",
+        severity: "high",
+        title: `Fallo al publicar en "${target.network}" — item #${id}`,
+        description: message,
+      });
     }
   }
 

@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { registerAnthropicBalanceAlertCron } from "./lib/anthropic-balance-alert/scheduler";
+import { registerAgentEscalationCron } from "./lib/agent-escalation/scheduler";
 // Paused 2026-08-14 — see the matching note above app.listen() below for why.
 // import { registerCommercialFollowupCron } from "./lib/commercial-followup/scheduler";
 // import { registerInvoiceRemindersCron } from "./lib/invoice-reminders/scheduler";
@@ -41,6 +42,13 @@ app.listen(port, (err) => {
   // live and unauthenticated-public; Anthropic running out of credit is a
   // real, present risk regardless of the CRM's client count.
   registerAnthropicBalanceAlertCron();
+
+  // Motor de Escalación, Fase 1 — Autopublicador Social only for now
+  // (Digital Diagnosis stays on the module above until Fase 2). Active
+  // from day one, unlike the crons paused below: it reacts to real failure
+  // paths in content-calendar.ts, not to client/invoice/subscription
+  // volume, so it doesn't need real clients to have something to check.
+  registerAgentEscalationCron();
 
   // Paused 2026-08-14 per Camila: no real clients yet, so these crons only
   // burn Neon compute for empty-result runs — not worth keeping an
