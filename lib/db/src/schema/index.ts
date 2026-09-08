@@ -61,3 +61,4 @@ export * from "./invoice-fiscal-documents";
 export * from "./social-monthly-reports";
 export * from "./products";
 export * from "./orders";
+export * from "./client-impersonation";

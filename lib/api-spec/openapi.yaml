@@ -476,6 +476,42 @@ paths:
         "404":
           description: Not found
 
+  /clients/{id}/impersonate:
+    post:
+      operationId: impersonateClient
+      tags: [clients]
+      summary: Start a staff "Ver como cliente" read-only impersonation session for this client
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImpersonateClientResult"
+        "404":
+          description: Client not found
+        "409":
+          description: Client has no Client Room organization yet
+
+  /impersonation/end:
+    post:
+      operationId: endImpersonation
+      tags: [clients]
+      summary: End an active "Ver como cliente" impersonation session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EndImpersonationInput"
+      responses:
+        "204":
+          description: Ended
+        "404":
+          description: Session not found or already ended
+
   # ─── CLIENT ACCESS VAULT ───────────────────────────────────────────────────
   /clients/{clientId}/access:
     get:
@@ -4418,6 +4454,20 @@ components:
         client: { $ref: "#/components/schemas/Client" }
         emailSent: { type: boolean }
         emailError: { type: ["string", "null"] }
+    ImpersonateClientResult:
+      type: object
+      required: [token, expiresAt, clientId, clientSlug, clientName]
+      properties:
+        token: { type: string }
+        expiresAt: { type: string }
+        clientId: { type: integer }
+        clientSlug: { type: string }
+        clientName: { type: string }
+    EndImpersonationInput:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
 
     # ── PROJECT ───────────────────────────────────────────────────────────────
     Project:

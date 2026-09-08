@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ChangePasswordDialog } from "@/components/change-password-dialog";
 import { LanguageProvider, useLang } from "@/context/LanguageContext";
+import { ImpersonationBanner } from "./impersonation-banner";
 import {
   LayoutDashboard, FolderKanban, GitBranch, CheckSquare,
   FileSignature, Receipt, FileText, Calendar, MessageSquare,
@@ -104,7 +105,9 @@ function ClientRoomLayoutInner({ slug, children }: { slug: string; children: Rea
     : [...BASE_NAV_ITEMS, ...STAFF_EXTRA_ITEMS, PROFILE_ITEM];
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
+      <ImpersonationBanner />
+      <div className="flex flex-1 overflow-hidden">
       {/* Sidebar */}
       <aside className="w-56 flex-shrink-0 border-r border-border/60 bg-card flex flex-col">
         {/* Header */}
@@ -212,6 +215,7 @@ function ClientRoomLayoutInner({ slug, children }: { slug: string; children: Rea
       {isCliente && (
         <ChangePasswordDialog open={changePasswordOpen} onClose={() => setChangePasswordOpen(false)} />
       )}
+      </div>
     </div>
   );
 }

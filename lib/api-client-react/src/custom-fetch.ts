@@ -17,6 +17,7 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _impersonationToken: string | null = null;
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -42,6 +43,17 @@ export function setBaseUrl(url: string | null): void {
  */
 export function setAuthTokenGetter(getter: AuthTokenGetter | null): void {
   _authTokenGetter = getter;
+}
+
+/**
+ * Set (or clear, with `null`) the "Ver como cliente" impersonation token.
+ * While set, every request carries it as `x-impersonate-token`; the backend
+ * only honors it for a staff (ceo/admin) session with an active, unexpired
+ * session row, and always as a read-only, narrower view — see
+ * impersonationMiddleware in api-server.
+ */
+export function setImpersonationToken(token: string | null): void {
+  _impersonationToken = token;
 }
 
 function isRequest(input: RequestInfo | URL): input is Request {
@@ -356,6 +368,10 @@ export async function customFetch<T = unknown>(
     if (token) {
       headers.set("authorization", `Bearer ${token}`);
     }
+  }
+
+  if (_impersonationToken && !headers.has("x-impersonate-token")) {
+    headers.set("x-impersonate-token", _impersonationToken);
   }
 
   const requestInfo = { method, url: resolveUrl(input) };
