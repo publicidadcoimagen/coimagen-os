@@ -18,14 +18,30 @@ interface NeonProject {
   org_id?: string;
 }
 
-interface NeonConsumptionPeriod {
-  project_id: string;
+interface NeonMetric {
+  metric_name: string;
+  value: number;
+}
+
+interface NeonConsumptionEntry {
+  timeframe_start: string;
+  timeframe_end: string;
+  metrics: NeonMetric[];
+}
+
+interface NeonPeriod {
   period_start: string;
   period_end: string;
-  compute_unit_seconds?: number;
-  root_branch_bytes_month?: number;
-  public_network_transfer_bytes?: number;
-  private_network_transfer_bytes?: number;
+  consumption: NeonConsumptionEntry[];
+}
+
+interface NeonProjectHistory {
+  project_id: string;
+  periods: NeonPeriod[];
+}
+
+function metricValue(metrics: NeonMetric[], name: string): number {
+  return metrics.find((m) => m.metric_name === name)?.value ?? 0;
 }
 
 const NEON_API_BASE = "https://console.neon.tech/api/v2";
@@ -37,12 +53,15 @@ export function currentMonthRange(): { from: string; to: string } {
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
-// Neon's consumption API (verified against neon.com/docs/guides/consumption-
-// metrics) returns real usage units — compute-seconds, storage byte-hours,
-// transfer bytes — not a dollar amount; Neon leaves cost conversion to the
-// caller. Requires NEON_API_KEY (console.neon.tech > Account Settings > API
-// Keys) on a Launch/Scale/Agent/Enterprise plan, and an org_id: NEON_ORG_ID
-// if set, otherwise the org_id of the caller's first project.
+// Neon's consumption API (verified against the live OpenAPI schema for
+// getConsumptionHistoryPerProjectV2 — the response nests
+// projects[].periods[].consumption[].metrics[], not a flat top-level
+// "periods" array) returns real usage units — compute-seconds, storage
+// byte-hours, transfer bytes — not a dollar amount; Neon leaves cost
+// conversion to the caller. Requires NEON_API_KEY (console.neon.tech >
+// Account Settings > API Keys) on a Launch/Scale/Agent/Enterprise plan, and
+// an org_id: NEON_ORG_ID if set, otherwise the org_id of the caller's first
+// project.
 export async function fetchNeonConsumption(): Promise<NeonCostInfo> {
   const key = process.env.NEON_API_KEY;
   if (!key) {
@@ -71,18 +90,24 @@ export async function fetchNeonConsumption(): Promise<NeonCostInfo> {
     if (!res.ok) {
       return { ok: false, error: `Neon API error (consumption): ${res.status}`, consumption: null };
     }
-    const { periods } = (await res.json()) as { periods: NeonConsumptionPeriod[] };
+    const { projects: history } = (await res.json()) as { projects: NeonProjectHistory[] };
     return {
       ok: true,
       error: null,
-      consumption: periods.map((p) => ({
-        projectId: p.project_id,
-        periodStart: p.period_start,
-        periodEnd: p.period_end,
-        computeUnitSeconds: p.compute_unit_seconds ?? 0,
-        storageBytesHour: p.root_branch_bytes_month ?? 0,
-        dataTransferBytes: (p.public_network_transfer_bytes ?? 0) + (p.private_network_transfer_bytes ?? 0),
-      })),
+      consumption: history.flatMap((project) =>
+        project.periods.flatMap((period) =>
+          period.consumption.map((entry) => ({
+            projectId: project.project_id,
+            periodStart: entry.timeframe_start,
+            periodEnd: entry.timeframe_end,
+            computeUnitSeconds: metricValue(entry.metrics, "compute_unit_seconds"),
+            storageBytesHour: metricValue(entry.metrics, "root_branch_bytes_month"),
+            dataTransferBytes:
+              metricValue(entry.metrics, "public_network_transfer_bytes") +
+              metricValue(entry.metrics, "private_network_transfer_bytes"),
+          })),
+        ),
+      ),
     };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : String(err), consumption: null };
