@@ -14,7 +14,7 @@ import {
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 import { getPublisherForClient } from "../lib/social-autopublisher/publisher";
-import { generateCaptionAndCreateDraft, isClaimBlockedError } from "../lib/social-autopublisher/caption";
+import { generateCaptionAndCreateDraft, isClaimBlockedError, assertNoProhibitedClaim } from "../lib/social-autopublisher/caption";
 import { reportAgentFailure } from "../lib/agent-escalation/report";
 
 const AGENT_NAME = "Autopublicador Social";
@@ -72,6 +72,12 @@ router.post("/items", async (req, res): Promise<void> => {
   const body = CreateContentCalendarItemBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const d = body.data;
+  try {
+    assertNoProhibitedClaim(d.caption);
+  } catch (err) {
+    res.status(400).json({ error: err instanceof Error ? err.message : String(err) });
+    return;
+  }
   const [item] = await db.insert(contentCalendarItemsTable).values({
     clientId,
     caption: d.caption,
@@ -171,6 +177,18 @@ router.post("/items/:id/approve", requireRole("ceo", "admin"), async (req, res):
   if (!found) { res.status(404).json({ error: "Not found" }); return; }
   if (found.item.status !== "pending_approval") {
     res.status(409).json({ error: `Solo se puede aprobar un item en estado "pending_approval" (actual: "${found.item.status}") — primero hay que enviarlo a aprobación con /submit` });
+    return;
+  }
+  // Final gate: this is the last point before a caption becomes immutable
+  // (PATCH only allows edits while draft/pending_approval) and eligible for
+  // /publish, so it must catch a prohibited claim regardless of whether the
+  // caption came from /generate (already checked there), manual creation
+  // (already checked in POST /items), or a manual edit made after either of
+  // those checks ran (PATCH has no check of its own).
+  try {
+    assertNoProhibitedClaim(found.item.caption);
+  } catch (err) {
+    res.status(409).json({ error: err instanceof Error ? err.message : String(err) });
     return;
   }
   await db.update(contentCalendarItemsTable).set({
