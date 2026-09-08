@@ -75,6 +75,7 @@ export const ChangeOwnPasswordResponse = zod.object({
  */
 export const HealthCheckResponse = zod.object({
   "status": zod.string(),
+  "environment": zod.enum(['production', 'development']).describe('Derived from Render\'s own RENDER env var (always \"true\" on Render infra) falling back to NODE_ENV — real infra signal, not a hardcoded label.'),
   "providers": zod.object({
   "anthropic": zod.boolean(),
   "gemini": zod.boolean(),

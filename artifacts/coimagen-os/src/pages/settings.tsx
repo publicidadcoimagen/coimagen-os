@@ -320,7 +320,7 @@ export function Settings() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="text-muted-foreground">Versión</div><div className="font-mono">v1.0.0</div>
-                <div className="text-muted-foreground">Entorno</div><div><Badge variant="outline" className="text-xs">Desarrollo</Badge></div>
+                <div className="text-muted-foreground">Entorno</div><div><Badge variant="outline" className="text-xs">{health?.environment === "production" ? "Producción" : "Desarrollo"}</Badge></div>
                 <div className="text-muted-foreground">Base de datos</div><div className="font-mono text-xs">PostgreSQL 16</div>
                 <div className="text-muted-foreground">Runtime</div><div className="font-mono text-xs">Node.js 24</div>
                 <div className="text-muted-foreground">Stack</div><div className="font-mono text-xs">Express · Drizzle · React</div>

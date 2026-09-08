@@ -66,6 +66,17 @@ export interface ErrorEnvelope {
 }
 
 /**
+ * Derived from Render's own RENDER env var (always "true" on Render infra) falling back to NODE_ENV — real infra signal, not a hardcoded label.
+ */
+export type HealthStatusEnvironment = typeof HealthStatusEnvironment[keyof typeof HealthStatusEnvironment];
+
+
+export const HealthStatusEnvironment = {
+  production: 'production',
+  development: 'development',
+} as const;
+
+/**
  * Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance.
  */
 export type HealthStatusProviders = {
@@ -77,6 +88,8 @@ export type HealthStatusProviders = {
 
 export interface HealthStatus {
   status: string;
+  /** Derived from Render's own RENDER env var (always "true" on Render infra) falling back to NODE_ENV — real infra signal, not a hardcoded label. */
+  environment: HealthStatusEnvironment;
   /** Whether each external provider's API key env var is set and non-empty. Presence only — does not verify the key is valid or has balance. */
   providers: HealthStatusProviders;
 }
