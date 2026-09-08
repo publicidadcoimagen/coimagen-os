@@ -50,6 +50,17 @@ export function findProhibitedClaim(caption: string): string | null {
   return null;
 }
 
+// Distinguishes a blocked-claim error from any other /items/generate
+// failure (a DeepSeek error, a DB error) by the "Caption bloqueado" prefix
+// generateCaptionAndCreateDraft() always throws below — used by the
+// content-calendar route to pick reportAgentFailure()'s category
+// ("claim_blocked" vs "generation_error") and whether to notify a human
+// (Motor de Escalación §Decisiones #3: a blocked claim is the system
+// working as designed, not an urgent failure, so it stays silent).
+export function isClaimBlockedError(message: string): boolean {
+  return message.startsWith("Caption bloqueado");
+}
+
 // https://api-docs.deepseek.com/quick_start/pricing — cache-miss input rate
 // (no prompt caching in play for one-off caption generation), checked 2026-08-01.
 // DeepSeek has announced upcoming peak/off-peak 2x pricing with no effective

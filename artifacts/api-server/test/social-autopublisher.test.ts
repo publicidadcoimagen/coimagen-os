@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { buildCaptionPrompt, findProhibitedClaim } from "../src/lib/social-autopublisher/caption";
+import { buildCaptionPrompt, findProhibitedClaim, isClaimBlockedError } from "../src/lib/social-autopublisher/caption";
 import { buildMetricoolPublishRequest } from "../src/lib/social-autopublisher/publisher";
 
 // These only exercise pure logic (prompt/request building) — no DB
@@ -64,6 +64,26 @@ describe("findProhibitedClaim", () => {
       findProhibitedClaim("Abrimos este sábado con promociones especiales. ¡Te esperamos! #Promo #FinDeSemana"),
       null,
     );
+  });
+});
+
+describe("isClaimBlockedError", () => {
+  // The content-calendar route's /items/generate catch uses this to pick
+  // reportAgentFailure()'s category (claim_blocked vs generation_error)
+  // and whether to notify a human — getting the classification wrong would
+  // either silently drop a real DeepSeek outage or page someone for a
+  // filter working as designed (Motor de Escalación §Decisiones #3).
+
+  test("recognizes the exact prefix generateCaptionAndCreateDraft throws for a blocked claim", () => {
+    assert.equal(
+      isClaimBlockedError('Caption bloqueado: contiene una frase no permitida ("garantizados"). No se creó el borrador — ajusta el brief o vuelve a generar.'),
+      true,
+    );
+  });
+
+  test("does not misclassify an unrelated DeepSeek/network error", () => {
+    assert.equal(isClaimBlockedError("fetch failed"), false);
+    assert.equal(isClaimBlockedError("DEEPSEEK_API_KEY no está configurada"), false);
   });
 });
 
