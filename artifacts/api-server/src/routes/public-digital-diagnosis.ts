@@ -3,7 +3,7 @@ import rateLimit from "express-rate-limit";
 import { eq } from "drizzle-orm";
 import { db, prospectsTable, aiExecutionsTable, diagnosesTable, incidentsTable } from "@workspace/db";
 import { SubmitDigitalDiagnosisBody, GetPublicDigitalDiagnosisParams } from "@workspace/api-zod";
-import { scrapeUrl, DigitalDiagnosisScrapeError } from "../lib/digital-diagnosis/scrape";
+import { scrapeUrl, assertDomainResolves, DigitalDiagnosisScrapeError } from "../lib/digital-diagnosis/scrape";
 import { generateDigitalDiagnosis, classifyDigitalDiagnosisError } from "../lib/digital-diagnosis/analyze";
 import { sendDigitalDiagnosisEmail } from "../lib/digital-diagnosis/email";
 
@@ -55,6 +55,21 @@ router.post("/public/digital-diagnosis", digitalDiagnosisLimiter, async (req, re
   }
   const { url, name, email, lang } = parsed.data;
   const language = lang ?? "es";
+
+  // 0. Reject a domain that can't resolve before creating any record — 6 of
+  // the 15 historical Quality Center incidents for this agent were the same
+  // 4 typo'd domains reaching a real fetch attempt and failing minutes
+  // later instead of being caught here at the entry point (see
+  // assertDomainResolves' own comment for the audit).
+  try {
+    await assertDomainResolves(url);
+  } catch (err) {
+    const message = err instanceof DigitalDiagnosisScrapeError
+      ? err.message
+      : "No pudimos verificar esa URL. Verifica que esté bien escrita.";
+    res.status(400).json({ error: message });
+    return;
+  }
 
   // 1. Create or update the prospect by email
   const [existingProspect] = await db.select().from(prospectsTable).where(eq(prospectsTable.email, email)).limit(1);

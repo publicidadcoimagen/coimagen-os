@@ -1,7 +1,9 @@
 import * as cheerio from "cheerio";
+import dns from "node:dns/promises";
 
 const MAX_TEXT_SAMPLE = 12000;
 const FETCH_TIMEOUT_MS = 10000;
+const DNS_TIMEOUT_MS = 4000;
 
 // Thrown for scrape failures whose cause is known well enough to tell the
 // prospect something actionable (bad domain, slow site, site-side error) —
@@ -27,6 +29,44 @@ export interface ScrapedSignals {
   internalLinksCount: number;
   externalLinksCount: number;
   textSample: string;
+}
+
+export type DnsLookupFn = (hostname: string) => Promise<unknown>;
+
+// Audited all 15 historical Quality Center incidents for this agent
+// (2026-09-08): only 4 distinct malformed domains — a missing letter, a
+// missing letter elsewhere, a doubled letter, and a ".con" typo of ".com" —
+// account for 6 of them. The other 9 are correctly-spelled, real domains
+// (including coimagenmedia.com itself) that failed for unrelated reasons at
+// fetch time; a DNS check does not and should not touch those. Verified
+// live: all 4 malformed variants fail DNS resolution with ENOTFOUND, while
+// every correctly-spelled domain among the other 9 resolves fine — so a
+// DNS-only pre-check catches both typo classes (misspelled hostname,
+// invalid TLD) with no bundled TLD list, and no attempt to guess the
+// intended correct spelling (a wrong guess would silently scrape and
+// diagnose an unrelated real site).
+export async function assertDomainResolves(url: string, lookup: DnsLookupFn = dns.lookup): Promise<void> {
+  const hostname = new URL(url).hostname;
+  let timeoutHandle: NodeJS.Timeout | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(() => reject(new Error("dns_timeout")), DNS_TIMEOUT_MS);
+  });
+  try {
+    await Promise.race([lookup(hostname), timeout]);
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException)?.code;
+    if (code === "ENOTFOUND" || code === "ENODATA") {
+      throw new DigitalDiagnosisScrapeError(
+        "No encontramos ese dominio. Verifica que la URL esté bien escrita (revisa mayúsculas, letras y la terminación .com/.mx/etc.).",
+        { cause: err },
+      );
+    }
+    // Any other failure (timeout, resolver hiccup) is treated as transient —
+    // let the real fetch attempt in scrapeUrl() decide instead of rejecting
+    // a possibly-valid domain because of a flaky DNS lookup.
+  } finally {
+    clearTimeout(timeoutHandle);
+  }
 }
 
 export async function scrapeUrl(url: string): Promise<ScrapedSignals> {

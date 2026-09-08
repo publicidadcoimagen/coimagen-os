@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { scrapeUrl, DigitalDiagnosisScrapeError } from "../src/lib/digital-diagnosis/scrape";
+import { scrapeUrl, assertDomainResolves, DigitalDiagnosisScrapeError } from "../src/lib/digital-diagnosis/scrape";
 
 // scrapeUrl's fetch()-failure classification is what decides whether the
 // prospect sees an actionable message ("verifica el dominio") or a generic
@@ -81,5 +81,58 @@ describe("scrapeUrl error classification", () => {
         return true;
       },
     );
+  });
+});
+
+// Audited all 15 real Quality Center incidents for this agent: exactly 4
+// distinct malformed domains (a missing letter, a different missing letter,
+// a doubled letter, and a ".con" TLD typo) account for 6 of them, and all
+// 4 were independently confirmed live to fail DNS resolution with
+// ENOTFOUND — while the correctly-spelled domains behind the other 9
+// incidents (including coimagenmedia.com itself) resolve fine, confirming
+// their failures are unrelated to the domain and must NOT be rejected here.
+describe("assertDomainResolves", () => {
+  test("rejects with a clear message on ENOTFOUND (the real shape of all 4 cited typo'd domains)", async () => {
+    const lookup = async () => {
+      const err = new Error("not found") as NodeJS.ErrnoException;
+      err.code = "ENOTFOUND";
+      throw err;
+    };
+
+    await assert.rejects(
+      assertDomainResolves("https://neurocirjuanosentijuana.com", lookup),
+      (err: unknown) => {
+        assert.ok(err instanceof DigitalDiagnosisScrapeError);
+        assert.match(err.message, /No encontramos ese dominio/);
+        return true;
+      },
+    );
+  });
+
+  test("rejects on ENODATA the same way", async () => {
+    const lookup = async () => {
+      const err = new Error("no data") as NodeJS.ErrnoException;
+      err.code = "ENODATA";
+      throw err;
+    };
+
+    await assert.rejects(
+      assertDomainResolves("https://no-data.example.com", lookup),
+      (err: unknown) => err instanceof DigitalDiagnosisScrapeError,
+    );
+  });
+
+  test("resolves without throwing for a domain that resolves (real domains behind the other 9 incidents)", async () => {
+    const lookup = async () => ({ address: "185.199.109.153", family: 4 });
+    await assert.doesNotReject(assertDomainResolves("https://www.coimagenmedia.com", lookup));
+  });
+
+  test("does not reject on a transient/unrelated DNS error — only ENOTFOUND/ENODATA are treated as a bad domain", async () => {
+    const lookup = async () => {
+      const err = new Error("server failure") as NodeJS.ErrnoException;
+      err.code = "ESERVFAIL";
+      throw err;
+    };
+    await assert.doesNotReject(assertDomainResolves("https://flaky-resolver.example.com", lookup));
   });
 });
