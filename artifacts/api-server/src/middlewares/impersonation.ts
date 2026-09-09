@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { eq } from "drizzle-orm";
-import { db, clientImpersonationSessionsTable } from "@workspace/db";
+import { db, clientImpersonationSessionsTable, clientsTable } from "@workspace/db";
 import { isSessionUsable, isMutatingMethod, swapToClientRole } from "../lib/impersonation/session";
 
 // Wired in routes/index.ts after requireAuth, before clientRoleGate — swaps
@@ -30,6 +30,12 @@ export async function impersonationMiddleware(req: Request, res: Response, next:
     return;
   }
 
-  req.user = swapToClientRole(staffUser, session.clientId);
+  // Same lookup authMiddleware does for a real cliente-role login — without
+  // it, the swapped user keeps the staff's own enabledModules (always [],
+  // since a staff AuthUser is never given any), and every module-gated nav
+  // item (e.g. Catálogo) silently disappears under impersonation even
+  // though the real client's own login shows it correctly.
+  const [client] = await db.select({ enabledModules: clientsTable.enabledModules }).from(clientsTable).where(eq(clientsTable.id, session.clientId));
+  req.user = swapToClientRole(staffUser, session.clientId, client?.enabledModules ?? []);
   next();
 }

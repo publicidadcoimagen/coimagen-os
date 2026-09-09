@@ -25,9 +25,19 @@ export function isMutatingMethod(method: string): boolean {
 
 // Narrows a real staff AuthUser down to the read-only "cliente" view of one
 // specific client, for the duration of a single request.
-export function swapToClientRole<T extends { role: string; clientId?: number | null }>(
+//
+// enabledModules defaults to [] rather than being left as whatever the
+// staff user's own value was — a staff AuthUser's enabledModules is always
+// [] (authMiddleware only populates it for a real cliente-role session), so
+// carrying it over unchanged would silently show none of the impersonated
+// client's real modules. The caller (impersonationMiddleware) is
+// responsible for fetching the target client's real enabledModules from
+// clientsTable and passing it in, the same lookup authMiddleware itself
+// does for a real client login.
+export function swapToClientRole<T extends { role: string; clientId?: number | null; enabledModules?: string[] }>(
   user: T,
   clientId: number,
+  enabledModules: string[] = [],
 ): T {
-  return { ...user, role: "cliente" as const, clientId } as T;
+  return { ...user, role: "cliente" as const, clientId, enabledModules } as T;
 }
