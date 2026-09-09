@@ -9,6 +9,7 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { auth } from "./lib/auth";
 import { authMiddleware } from "./middlewares/authMiddleware";
+import { impersonationMiddleware } from "./middlewares/impersonation";
 import { verifyTurnstile } from "./middlewares/turnstile";
 import { getCurrentAuthUser } from "./routes/auth";
 import { resendWebhookHandler } from "./routes/webhooks-resend";
@@ -59,7 +60,15 @@ app.use(authMiddleware);
 // Our own current-user endpoint, registered ahead of Better Auth's catch-all
 // so it isn't shadowed by it. Better Auth's handler must run before
 // express.json() — see https://better-auth.com/docs/integrations/express.
-app.get("/api/auth/user", getCurrentAuthUser);
+// This position must not move for that reason — but it also sits entirely
+// outside routes/index.ts's router, where impersonationMiddleware normally
+// runs, so a staff "Ver como cliente" session never got the role/clientId/
+// enabledModules swap here even though the frontend correctly sends
+// x-impersonate-token on every request (see custom-fetch.ts). Root-caused
+// 2026-09-09 via Becky Beck's Catálogo module disappearing under
+// impersonation. Fixed by running the same impersonationMiddleware inline,
+// right here, instead of relocating the route.
+app.get("/api/auth/user", impersonationMiddleware, getCurrentAuthUser);
 
 // Better Auth's own routes are a single wildcard handler below, not
 // individual Express routes, so a route-scoped limiter (like the one on
