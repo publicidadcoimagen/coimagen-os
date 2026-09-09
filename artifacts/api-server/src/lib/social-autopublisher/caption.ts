@@ -61,6 +61,26 @@ export function isClaimBlockedError(message: string): boolean {
   return message.startsWith("Caption bloqueado");
 }
 
+// Shared enforcement point — every path that can put a caption in front of
+// findProhibitedClaim (AI generation, manual creation, and the approve gate,
+// the last point before a caption becomes immutable and publishable) must
+// call this, not findProhibitedClaim directly, so the error text and the
+// gate itself stay in exactly one place. See analysis note: manual creation
+// (POST /items) and editing (PATCH, allowed while draft/pending_approval)
+// both bypass /items/generate entirely, so a check only there leaves a
+// manually-written or manually-edited caption with a prohibited claim free
+// to reach publish — approve is the point after which the caption can no
+// longer change (PATCH refuses any status past pending_approval), making it
+// the one enforcement call that closes the gap on its own.
+export function assertNoProhibitedClaim(caption: string): void {
+  const prohibited = findProhibitedClaim(caption);
+  if (prohibited) {
+    throw new Error(
+      `Caption bloqueado: contiene una frase no permitida ("${prohibited}"). Ajusta el texto y vuelve a intentar.`,
+    );
+  }
+}
+
 // https://api-docs.deepseek.com/quick_start/pricing — cache-miss input rate
 // (no prompt caching in play for one-off caption generation), checked 2026-08-01.
 // DeepSeek has announced upcoming peak/off-peak 2x pricing with no effective
@@ -119,13 +139,7 @@ export interface GenerateDraftRequest extends CaptionRequest {
 export async function generateCaptionAndCreateDraft(request: GenerateDraftRequest) {
   const { clientId, createdBy, ...captionRequest } = request;
   const { caption, usage } = await generateCaption(captionRequest);
-
-  const prohibited = findProhibitedClaim(caption);
-  if (prohibited) {
-    throw new Error(
-      `Caption bloqueado: contiene una frase no permitida ("${prohibited}"). No se creó el borrador — ajusta el brief o vuelve a generar.`,
-    );
-  }
+  assertNoProhibitedClaim(caption);
 
   const [item] = await db.insert(contentCalendarItemsTable).values({
     clientId,
