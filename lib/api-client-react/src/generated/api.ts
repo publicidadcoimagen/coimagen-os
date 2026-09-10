@@ -47,6 +47,8 @@ import type {
   BacklogItemCreate,
   BacklogItemUpdate,
   BeckyBeckLegacyProduct,
+  BeckyBeckLegacyProductInput,
+  BeckyBeckLegacyProductUpdate,
   Bug,
   BugCreate,
   BugUpdate,
@@ -17796,6 +17798,201 @@ export function useListBeckyBeckLegacyProducts<TData = Awaited<ReturnType<typeof
 
 
 
+
+export const getCreateBeckyBeckLegacyProductUrl = () => {
+
+
+
+
+  return `/api/becky-beck-legacy/products`
+}
+
+export const createBeckyBeckLegacyProduct = async (beckyBeckLegacyProductInput: BeckyBeckLegacyProductInput, options?: RequestInit): Promise<BeckyBeckLegacyProduct> => {
+
+  return customFetch<BeckyBeckLegacyProduct>(getCreateBeckyBeckLegacyProductUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      beckyBeckLegacyProductInput,)
+  }
+);}
+
+
+
+
+export const getCreateBeckyBeckLegacyProductMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBeckyBeckLegacyProduct>>, TError,{data: BodyType<BeckyBeckLegacyProductInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBeckyBeckLegacyProduct>>, TError,{data: BodyType<BeckyBeckLegacyProductInput>}, TContext> => {
+
+const mutationKey = ['createBeckyBeckLegacyProduct'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBeckyBeckLegacyProduct>>, {data: BodyType<BeckyBeckLegacyProductInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createBeckyBeckLegacyProduct(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBeckyBeckLegacyProductMutationResult = NonNullable<Awaited<ReturnType<typeof createBeckyBeckLegacyProduct>>>
+    export type CreateBeckyBeckLegacyProductMutationBody = BodyType<BeckyBeckLegacyProductInput>
+    export type CreateBeckyBeckLegacyProductMutationError = ErrorType<unknown>
+
+    export const useCreateBeckyBeckLegacyProduct = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBeckyBeckLegacyProduct>>, TError,{data: BodyType<BeckyBeckLegacyProductInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBeckyBeckLegacyProduct>>,
+        TError,
+        {data: BodyType<BeckyBeckLegacyProductInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBeckyBeckLegacyProductMutationOptions(options));
+    }
+
+export const getUpdateBeckyBeckLegacyProductUrl = (id: string,) => {
+
+
+
+
+  return `/api/becky-beck-legacy/products/${id}`
+}
+
+export const updateBeckyBeckLegacyProduct = async (id: string,
+    beckyBeckLegacyProductUpdate: BeckyBeckLegacyProductUpdate, options?: RequestInit): Promise<BeckyBeckLegacyProduct> => {
+
+  return customFetch<BeckyBeckLegacyProduct>(getUpdateBeckyBeckLegacyProductUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      beckyBeckLegacyProductUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateBeckyBeckLegacyProductMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeckyBeckLegacyProduct>>, TError,{id: string;data: BodyType<BeckyBeckLegacyProductUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBeckyBeckLegacyProduct>>, TError,{id: string;data: BodyType<BeckyBeckLegacyProductUpdate>}, TContext> => {
+
+const mutationKey = ['updateBeckyBeckLegacyProduct'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBeckyBeckLegacyProduct>>, {id: string;data: BodyType<BeckyBeckLegacyProductUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateBeckyBeckLegacyProduct(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBeckyBeckLegacyProductMutationResult = NonNullable<Awaited<ReturnType<typeof updateBeckyBeckLegacyProduct>>>
+    export type UpdateBeckyBeckLegacyProductMutationBody = BodyType<BeckyBeckLegacyProductUpdate>
+    export type UpdateBeckyBeckLegacyProductMutationError = ErrorType<void>
+
+    export const useUpdateBeckyBeckLegacyProduct = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeckyBeckLegacyProduct>>, TError,{id: string;data: BodyType<BeckyBeckLegacyProductUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateBeckyBeckLegacyProduct>>,
+        TError,
+        {id: string;data: BodyType<BeckyBeckLegacyProductUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateBeckyBeckLegacyProductMutationOptions(options));
+    }
+
+export const getDeleteBeckyBeckLegacyProductUrl = (id: string,) => {
+
+
+
+
+  return `/api/becky-beck-legacy/products/${id}`
+}
+
+export const deleteBeckyBeckLegacyProduct = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteBeckyBeckLegacyProductUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteBeckyBeckLegacyProductMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeckyBeckLegacyProduct>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBeckyBeckLegacyProduct>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteBeckyBeckLegacyProduct'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBeckyBeckLegacyProduct>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteBeckyBeckLegacyProduct(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBeckyBeckLegacyProductMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBeckyBeckLegacyProduct>>>
+
+    export type DeleteBeckyBeckLegacyProductMutationError = ErrorType<void>
+
+    export const useDeleteBeckyBeckLegacyProduct = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeckyBeckLegacyProduct>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBeckyBeckLegacyProduct>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteBeckyBeckLegacyProductMutationOptions(options));
+    }
 
 export const getListOrdersUrl = (params?: ListOrdersParams,) => {
   const normalizedParams = new URLSearchParams();

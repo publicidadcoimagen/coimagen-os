@@ -5515,6 +5515,58 @@ export const ListBeckyBeckLegacyProductsResponseItem = zod.object({
 export const ListBeckyBeckLegacyProductsResponse = zod.array(ListBeckyBeckLegacyProductsResponseItem)
 
 
+
+
+export const createBeckyBeckLegacyProductBodyPriceUsdMin = 0;
+
+export const createBeckyBeckLegacyProductBodyAvailableDefault = true;
+
+export const CreateBeckyBeckLegacyProductBody = zod.object({
+  "nameEs": zod.string().min(1),
+  "nameEn": zod.string().min(1),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']),
+  "priceUsd": zod.number().min(createBeckyBeckLegacyProductBodyPriceUsdMin),
+  "available": zod.boolean().default(createBeckyBeckLegacyProductBodyAvailableDefault),
+  "imageBase64": zod.string().optional().describe('data: URI, image\/jpeg only (the public site always serves it as image\/jpeg regardless of stored mime) — uploaded to the same Netlify Blobs store the public site reads from')
+})
+
+
+export const UpdateBeckyBeckLegacyProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
+
+export const updateBeckyBeckLegacyProductBodyPriceUsdMin = 0;
+
+
+
+export const UpdateBeckyBeckLegacyProductBody = zod.object({
+  "nameEs": zod.string().min(1).optional(),
+  "nameEn": zod.string().min(1).optional(),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']).optional(),
+  "priceUsd": zod.number().min(updateBeckyBeckLegacyProductBodyPriceUsdMin).optional(),
+  "available": zod.boolean().optional(),
+  "imageBase64": zod.string().optional().describe('data: URI, image\/jpeg only — replaces the existing image if provided'),
+  "imageUrl": zod.string().nullish()
+})
+
+export const UpdateBeckyBeckLegacyProductResponse = zod.object({
+  "id": zod.string(),
+  "nameEs": zod.string(),
+  "nameEn": zod.string(),
+  "category": zod.enum(['bolso', 'mochila', 'llavero']),
+  "priceUsd": zod.number(),
+  "available": zod.boolean(),
+  "imageUrl": zod.string().nullish()
+})
+
+
+export const DeleteBeckyBeckLegacyProductParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+
 export const ListOrdersQueryParams = zod.object({
   "clientId": zod.coerce.number().optional()
 })
