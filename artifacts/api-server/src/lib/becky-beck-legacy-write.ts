@@ -19,14 +19,20 @@ import { getStore } from "@netlify/blobs";
 // becky-beck-site. Only the token needs to be a real secret (Render env).
 const DEFAULT_SITE_ID = "b70d0fc1-b98a-4a42-b764-8eed8eea1a7e";
 
-function getBlobsStore() {
-  const token = process.env.NETLIFY_API_TOKEN;
-  if (!token) {
-    throw new Error("NETLIFY_API_TOKEN no está configurada — hace falta un Personal Access Token de Netlify para escribir el catálogo de Becky Beck.");
-  }
-  const siteID = process.env.BECKY_BECK_SITE_ID ?? DEFAULT_SITE_ID;
-  return getStore({ name: "becky-beck", siteID, token });
-}
+// Exposed as a mockable object (rather than a plain function) so tests can
+// swap in an in-memory fake store the same way test/impersonation.test.ts
+// swaps db.select — a real ESM named import's binding can't be monkey-patched
+// directly, but a method on an exported object can.
+export const blobsClient = {
+  getStore(): ReturnType<typeof getStore> {
+    const token = process.env.NETLIFY_API_TOKEN;
+    if (!token) {
+      throw new Error("NETLIFY_API_TOKEN no está configurada — hace falta un Personal Access Token de Netlify para escribir el catálogo de Becky Beck.");
+    }
+    const siteID = process.env.BECKY_BECK_SITE_ID ?? DEFAULT_SITE_ID;
+    return getStore({ name: "becky-beck", siteID, token });
+  },
+};
 
 export interface BeckyBeckLegacyProductRecord {
   id: string;
@@ -43,13 +49,13 @@ export interface BeckyBeckLegacyProductRecord {
 const PRODUCTS_KEY = "products";
 
 export async function listLegacyProductRecords(): Promise<BeckyBeckLegacyProductRecord[]> {
-  const store = getBlobsStore();
+  const store = blobsClient.getStore();
   const products = await store.get(PRODUCTS_KEY, { type: "json" });
   return (products as BeckyBeckLegacyProductRecord[] | null) ?? [];
 }
 
 async function saveLegacyProductRecords(products: BeckyBeckLegacyProductRecord[]): Promise<void> {
-  const store = getBlobsStore();
+  const store = blobsClient.getStore();
   await store.setJSON(PRODUCTS_KEY, products);
 }
 
@@ -69,12 +75,12 @@ export function decodeLegacyProductImage(dataUri: string): Buffer {
 
 async function saveLegacyProductImage(imageKey: string, buffer: Buffer): Promise<void> {
   const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
-  const store = getBlobsStore();
+  const store = blobsClient.getStore();
   await store.set(imageKey, arrayBuffer);
 }
 
 async function deleteLegacyProductImage(imageKey: string): Promise<void> {
-  const store = getBlobsStore();
+  const store = blobsClient.getStore();
   await store.delete(imageKey);
 }
 

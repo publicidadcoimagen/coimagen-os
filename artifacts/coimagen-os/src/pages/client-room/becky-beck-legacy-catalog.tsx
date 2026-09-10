@@ -69,6 +69,11 @@ export function BeckyBeckLegacyCatalog() {
     setOpen(true);
   };
 
+  const handleDelete = (p: BeckyBeckLegacyProduct) => {
+    if (!confirm(`¿Eliminar "${lang === "es" ? p.nameEs : p.nameEn}"? Esto lo borra del catálogo real, no se puede deshacer.`)) return;
+    del.mutate({ id: p.id });
+  };
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -138,7 +143,7 @@ export function BeckyBeckLegacyCatalog() {
                   <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => openEdit(p)}>
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => del.mutate({ id: p.id })}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive/60 hover:text-destructive" onClick={() => handleDelete(p)}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
