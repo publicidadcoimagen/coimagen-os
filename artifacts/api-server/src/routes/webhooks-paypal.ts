@@ -148,7 +148,7 @@ async function handleSubscriptionCancelled(event: PaypalEvent): Promise<void> {
 // invoice_payments.paypalOrderId unique constraint as one-time cuotas
 // (here it holds PayPal's sale/transaction id instead of an Orders API
 // order id — same role, a globally-unique PayPal-issued charge id).
-async function handleRecurringPaymentCompleted(event: PaypalEvent): Promise<void> {
+export async function handleRecurringPaymentCompleted(event: PaypalEvent): Promise<void> {
   const saleId = event.resource?.id;
   const subId = event.resource?.billing_agreement_id;
   if (!saleId || !subId) return;
@@ -195,6 +195,18 @@ async function handleRecurringPaymentCompleted(event: PaypalEvent): Promise<void
     capturedAt: new Date(),
   });
 
+  // A recurring charge just succeeded, so any earlier "past_due" from a
+  // previous failed attempt (see handleRecurringPaymentFailed) no longer
+  // reflects reality — clear it so an access gate reading this field
+  // doesn't keep blocking a client who has, in fact, paid. Never touches
+  // "cancelled" or "pending_authorization": a completed charge on a
+  // cancelled subscription would be a PayPal-side anomaly to investigate,
+  // not something to silently paper over by reactivating it here.
+  if (subscription.status === "past_due") {
+    await db.update(subscriptionsTable).set({ status: "active", updatedAt: new Date() })
+      .where(eq(subscriptionsTable.id, subscription.id));
+  }
+
   if (!subscription.requiresFiscalInvoice) return;
 
   const [fiscalData, client] = await Promise.all([
@@ -224,11 +236,27 @@ async function handleRecurringPaymentCompleted(event: PaypalEvent): Promise<void
 // alert): a duplicate webhook delivery here means staff gets the same
 // warning twice, an acceptable imperfection given this only fires on
 // genuine payment failures, not routine traffic.
-async function handleRecurringPaymentFailed(event: PaypalEvent): Promise<void> {
+//
+// Marking the subscription "past_due" is the actual fix, not the email:
+// before this, a failed recurring charge left status untouched (still
+// "active"), so nothing in the database ever distinguished a client who
+// missed a payment from one current on their account — any future access
+// gate keyed off subscriptions.status would have had no real signal to
+// read. The status write happens unconditionally, before the best-effort
+// alert email, so a Resend outage never suppresses the one part of this
+// that other systems will actually depend on. Never overwrites
+// "cancelled" — a stale failed-payment webhook arriving after the client
+// already cancelled shouldn't resurrect it into a different bad state.
+export async function handleRecurringPaymentFailed(event: PaypalEvent): Promise<void> {
   const subId = event.resource?.billing_agreement_id ?? event.resource?.id;
   if (!subId) return;
   const [subscription] = await db.select().from(subscriptionsTable).where(eq(subscriptionsTable.paypalSubscriptionId, subId));
   if (!subscription?.clientId) return;
+
+  if (subscription.status !== "cancelled" && subscription.status !== "past_due") {
+    await db.update(subscriptionsTable).set({ status: "past_due", updatedAt: new Date() })
+      .where(eq(subscriptionsTable.id, subscription.id));
+  }
 
   const [client] = await db.select({ name: clientsTable.name }).from(clientsTable).where(eq(clientsTable.id, subscription.clientId));
   const clientName = client?.name ?? `cliente #${subscription.clientId}`;
