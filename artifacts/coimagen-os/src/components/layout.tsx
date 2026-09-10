@@ -7,7 +7,7 @@ import {
   Lock, Bot, Bell, Bug, Mail,
   Zap, UserCog, Network, Globe2, ClipboardList, GitBranch,
   FileSignature,
-  Brain, Plug, PlayCircle, LogOut, Share2, ShoppingBag,
+  Brain, Plug, PlayCircle, LogOut, Share2,
 } from "lucide-react";
 import {
   useGetDashboardSummary,
@@ -77,7 +77,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Client Room",
     items: [
       { href: "/client", label: "Portales de Clientes", icon: Users },
-      { href: "/catalog", label: "Catálogo (E-commerce)", icon: ShoppingBag },
     ],
   },
   {
