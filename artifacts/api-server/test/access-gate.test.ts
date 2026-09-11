@@ -62,7 +62,11 @@ function mockDb(t: import("node:test").TestContext, opts: {
 
 const ACTIVE_CLIENT = { accessGateExempt: false };
 const EXEMPT_CLIENT = { accessGateExempt: true };
-const PAST_DUE_SUB = { status: "past_due", updatedAt: new Date("2026-09-05T00:00:00Z"), createdAt: new Date("2026-01-01T00:00:00Z") };
+// getAccessGateState evaluates against the real wall clock (new Date()
+// internally), so this must be safely past the 5-day threshold relative to
+// whenever the suite actually runs — a fixed calendar date would eventually
+// (or immediately, depending on the day) stop being "past enough".
+const PAST_DUE_SUB = { status: "past_due", updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) };
 
 describe("getAccessGateState", () => {
   test("no such client — null", async (t) => {
