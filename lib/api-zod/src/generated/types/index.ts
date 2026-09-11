@@ -41,6 +41,7 @@ export * from './auditLogInputStatus';
 export * from './auditLogStatus';
 export * from './authorizationSessionHeaderParameter';
 export * from './authUser';
+export * from './authUserAccessGate';
 export * from './authUserEnvelope';
 export * from './authUserRole';
 export * from './automation';

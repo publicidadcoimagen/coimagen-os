@@ -27,7 +27,12 @@ export const GetCurrentAuthUserResponse = zod.object({
   "forcePasswordReset": zod.boolean(),
   "lastLogin": zod.string().nullable(),
   "clientId": zod.number().nullable(),
-  "enabledModules": zod.array(zod.string()).optional()
+  "enabledModules": zod.array(zod.string()).optional(),
+  "accessGate": zod.object({
+  "access": zod.enum(['full', 'restricted']).optional(),
+  "causeCode": zod.union([zod.literal('subscription_past_due'),zod.literal(null)]).nullish(),
+  "since": zod.string().nullish()
+}).nullish()
 }),zod.null()])
 })
 
