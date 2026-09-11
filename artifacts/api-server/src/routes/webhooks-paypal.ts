@@ -4,7 +4,8 @@ import { db, invoicePaymentsTable, invoicesTable, subscriptionsTable, clientsTab
 import { verifyPaypalWebhookSignature } from "../lib/paypal/webhook-verify";
 import { handleInstallmentPaid } from "../lib/payment-schedule/on-installment-paid";
 import { applyFiscalInvoice } from "../lib/payment-schedule/generate";
-import { sendStaleSubscriptionAlertEmail } from "../lib/subscription-alerts/email";
+import { sendStaleSubscriptionAlertEmail, sendPaymentFailedClientEmail } from "../lib/subscription-alerts/email";
+import { hasSentPaymentFailedAlert, recordPaymentFailedAlertSent, clearPaymentFailedAlert } from "../lib/subscription-alerts/payment-failed-repository";
 import { getInvoiceFiscalData, getClientFiscalData } from "../lib/fiscal-data/repository";
 import { sendFiscalInvoiceAlertEmail } from "../lib/fiscal-data/email";
 import { getFiscalDocument } from "../lib/fiscal-blobs";
@@ -205,6 +206,11 @@ export async function handleRecurringPaymentCompleted(event: PaypalEvent): Promi
   if (subscription.status === "past_due") {
     await db.update(subscriptionsTable).set({ status: "active", updatedAt: new Date() })
       .where(eq(subscriptionsTable.id, subscription.id));
+    // Clears the Día 0 dedup record too — a client who fails, recovers,
+    // and fails again months later on the SAME subscription row must get
+    // a fresh reminder next time, not silently nothing because one was
+    // ever sent once in this subscription's lifetime.
+    await clearPaymentFailedAlert(subscription.id);
   }
 
   if (!subscription.requiresFiscalInvoice) return;
@@ -232,10 +238,14 @@ export async function handleRecurringPaymentCompleted(event: PaypalEvent): Promi
 }
 
 // A recurring charge failed — real money going wrong needs a human, sent
-// best-effort with no dedup table (unlike the 3-day pending_authorization
-// alert): a duplicate webhook delivery here means staff gets the same
-// warning twice, an acceptable imperfection given this only fires on
-// genuine payment failures, not routine traffic.
+// best-effort with no dedup table for the STAFF alert specifically (unlike
+// the 3-day pending_authorization alert): a duplicate webhook delivery
+// means staff gets the same warning twice, an acceptable imperfection
+// given this only fires on genuine payment failures, not routine traffic.
+// The client-facing side below (overdue invoice + email, Día 0 of
+// Cláusula 9) DOES dedup — a client seeing the same "your payment failed"
+// email twice from one PayPal retry reads as broken, not a minor
+// annoyance.
 //
 // Marking the subscription "past_due" is the actual fix, not the email:
 // before this, a failed recurring charge left status untouched (still
@@ -258,12 +268,43 @@ export async function handleRecurringPaymentFailed(event: PaypalEvent): Promise<
       .where(eq(subscriptionsTable.id, subscription.id));
   }
 
-  const [client] = await db.select({ name: clientsTable.name }).from(clientsTable).where(eq(clientsTable.id, subscription.clientId));
+  const [client] = await db.select({ name: clientsTable.name, email: clientsTable.email }).from(clientsTable).where(eq(clientsTable.id, subscription.clientId));
   const clientName = client?.name ?? `cliente #${subscription.clientId}`;
   try {
     await sendStaleSubscriptionAlertEmail(`${clientName} (cobro recurrente FALLIDO, no pendiente de autorización)`, subscription.id);
   } catch (err) {
     logger.error({ err, subscriptionId: subscription.id }, "No se pudo enviar la alerta de cobro recurrente fallido");
+  }
+
+  // Día 0 (Cláusula 9): the client's own notice, plus the overdue invoice
+  // their existing Facturas page will show once they log in — nothing
+  // today creates any client-visible record for a failed recurring
+  // charge, only the staff alert above. Guarded by
+  // hasSentPaymentFailedAlert, not by the status-transition check above:
+  // PayPal redelivers webhooks "at least once", and a redelivery arriving
+  // after the subscription is already past_due must still not mint a
+  // second overdue invoice or a second email for the same failure episode.
+  if (!(await hasSentPaymentFailedAlert(subscription.id))) {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      await db.insert(invoicesTable).values({
+        number: `SUB${subscription.id}-VENCIDA-${today}`,
+        clientId: subscription.clientId,
+        proposalId: subscription.proposalId,
+        amount: subscription.amount,
+        status: "overdue",
+        issuedDate: today,
+        dueDate: today,
+        description: `Mensualidad — ${subscription.plan} (pago fallido)`,
+      });
+      await recordPaymentFailedAlertSent(subscription.id);
+
+      if (client?.email) {
+        await sendPaymentFailedClientEmail(client.email, clientName, subscription.plan, subscription.amount);
+      }
+    } catch (err) {
+      logger.error({ err, subscriptionId: subscription.id }, "No se pudo registrar la factura vencida / avisar al cliente del cobro fallido");
+    }
   }
 }
 
