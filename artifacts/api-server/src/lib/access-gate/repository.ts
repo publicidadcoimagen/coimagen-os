@@ -25,7 +25,7 @@ export async function getAccessGateState(clientId: number): Promise<AccessGateSt
     .orderBy(sql`coalesce(${subscriptionsTable.updatedAt}, ${subscriptionsTable.createdAt}) DESC`)
     .limit(1);
 
-  return evaluateAccessGate(client.accessGateExempt, mostRecent ?? null);
+  return evaluateAccessGate(client.accessGateExempt, mostRecent ?? null, new Date());
 }
 
 export interface CreateTicketInput {
