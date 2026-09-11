@@ -42,6 +42,7 @@ const SCHEMA_SQL = `
     founder_number integer,
     enabled_modules jsonb not null default '[]',
     language text not null default 'es',
+    access_gate_exempt boolean not null default false,
     created_at timestamp not null default now(),
     updated_at timestamp
   );

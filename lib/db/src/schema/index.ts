@@ -62,3 +62,4 @@ export * from "./social-monthly-reports";
 export * from "./products";
 export * from "./orders";
 export * from "./client-impersonation";
+export * from "./access-gate-tickets";
