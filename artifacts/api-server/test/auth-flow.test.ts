@@ -146,6 +146,9 @@ describe("authMiddleware", () => {
       user: { id: "u3", email: "betty@beckybeck.com", role: "cliente", clientId: 7 },
     }));
 
+    // Safely past the 5-day threshold regardless of when the suite runs —
+    // getClientSessionExtras evaluates against the real wall clock.
+    const pastDueSince = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const { db } = await import("@workspace/db");
     t.mock.method(db, "select", (() => {
       const chain = {
@@ -156,7 +159,7 @@ describe("authMiddleware", () => {
         limit: () => chain,
         then: (resolve: (v: unknown[]) => void) => resolve([{
           enabledModules: ["ecommerce"], accessGateExempt: false,
-          subStatus: "past_due", subUpdatedAt: new Date("2026-09-05T00:00:00Z"), subCreatedAt: new Date("2026-01-01T00:00:00Z"),
+          subStatus: "past_due", subUpdatedAt: pastDueSince, subCreatedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
         }]),
       };
       return chain;
@@ -167,7 +170,7 @@ describe("authMiddleware", () => {
     await authMiddleware(req, res, () => {});
 
     assert.deepEqual(req.user?.enabledModules, ["ecommerce"]);
-    assert.deepEqual(req.user?.accessGate, { access: "restricted", causeCode: "subscription_past_due", since: "2026-09-05T00:00:00.000Z" });
+    assert.deepEqual(req.user?.accessGate, { access: "restricted", causeCode: "subscription_past_due", since: pastDueSince.toISOString() });
   });
 });
 

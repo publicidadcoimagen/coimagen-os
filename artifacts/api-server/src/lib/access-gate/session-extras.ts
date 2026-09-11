@@ -30,7 +30,8 @@ export async function getClientSessionExtras(clientId: number): Promise<ClientSe
     .orderBy(sql`coalesce(${subscriptionsTable.updatedAt}, ${subscriptionsTable.createdAt}) DESC`)
     .limit(1);
 
-  if (!row) return { enabledModules: [], accessGate: evaluateAccessGate(false, null) };
+  const now = new Date();
+  if (!row) return { enabledModules: [], accessGate: evaluateAccessGate(false, null, now) };
 
   const subscription = row.subStatus
     ? { status: row.subStatus, updatedAt: row.subUpdatedAt, createdAt: row.subCreatedAt! }
@@ -38,6 +39,6 @@ export async function getClientSessionExtras(clientId: number): Promise<ClientSe
 
   return {
     enabledModules: row.enabledModules ?? [],
-    accessGate: evaluateAccessGate(row.accessGateExempt, subscription),
+    accessGate: evaluateAccessGate(row.accessGateExempt, subscription, now),
   };
 }

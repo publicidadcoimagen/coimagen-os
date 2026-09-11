@@ -121,9 +121,11 @@ describe("impersonationMiddleware + GET /auth/user (the composed /api/auth/user 
     // What getClientSessionExtras's combined LEFT JOIN would return for a
     // client whose most recent subscription is past_due — this client is
     // NOT exempt, so the swapped-in accessGate must show "restricted".
+    // Safely past the 5-day threshold regardless of when the suite runs —
+    // getClientSessionExtras evaluates against the real wall clock.
     const extrasRow = {
       enabledModules: ["ecommerce"], accessGateExempt: false,
-      subStatus: "past_due", subUpdatedAt: new Date("2026-09-05T00:00:00Z"), subCreatedAt: new Date("2026-01-01T00:00:00Z"),
+      subStatus: "past_due", subUpdatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), subCreatedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
     };
     let call = 0;
     // impersonationMiddleware makes exactly two sequential db.select() calls

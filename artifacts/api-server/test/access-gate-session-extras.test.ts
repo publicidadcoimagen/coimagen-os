@@ -28,7 +28,9 @@ describe("getClientSessionExtras", () => {
   test("exempt client with a past_due subscription — full access, real enabledModules", async (t) => {
     mockJoinedSelect(t, [{
       enabledModules: ["autopublicador"], accessGateExempt: true,
-      subStatus: "past_due", subUpdatedAt: new Date("2026-09-05T00:00:00Z"), subCreatedAt: new Date("2026-01-01T00:00:00Z"),
+      // Safely past the 5-day threshold regardless of when the suite runs
+      // — getClientSessionExtras evaluates against the real wall clock.
+      subStatus: "past_due", subUpdatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), subCreatedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
     }]);
     const extras = await getClientSessionExtras(2);
     assert.deepEqual(extras.enabledModules, ["autopublicador"]);
@@ -47,7 +49,9 @@ describe("getClientSessionExtras", () => {
   test("non-exempt client, most recent subscription past_due — restricted", async (t) => {
     mockJoinedSelect(t, [{
       enabledModules: ["ecommerce"], accessGateExempt: false,
-      subStatus: "past_due", subUpdatedAt: new Date("2026-09-05T00:00:00Z"), subCreatedAt: new Date("2026-01-01T00:00:00Z"),
+      // Safely past the 5-day threshold regardless of when the suite runs
+      // — getClientSessionExtras evaluates against the real wall clock.
+      subStatus: "past_due", subUpdatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), subCreatedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
     }]);
     const extras = await getClientSessionExtras(7);
     assert.equal(extras.accessGate.access, "restricted");
