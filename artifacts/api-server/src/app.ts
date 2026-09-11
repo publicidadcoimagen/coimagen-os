@@ -16,6 +16,7 @@ import { resendWebhookHandler } from "./routes/webhooks-resend";
 import { jotformWebhookHandler } from "./routes/webhooks-jotform";
 import { paypalWebhookHandler } from "./routes/webhooks-paypal";
 import { docusealWebhookHandler } from "./routes/webhooks-docuseal";
+import { accessGateStatusHandler, accessGateTicketHandler } from "./routes/access-gate";
 
 const app: Express = express();
 
@@ -141,6 +142,23 @@ const paypalWebhookLimiter = rateLimit({
   message: { error: "Demasiadas solicitudes." },
 });
 app.post("/api/webhooks/paypal", paypalWebhookLimiter, paypalWebhookHandler);
+
+// Día 5 access gate (Cláusula 9): Content Intelligence's server-to-server
+// client calls these before allowing generation/publishing, and to log a
+// ticket when it blocks one. Same shared-secret-header pattern as Jotform
+// above — checked inline in the handler, not middleware, since it also has
+// to fail closed with a specific 503 when unconfigured. 60/min is generous
+// for a status check gating individual publish actions, while still
+// bounding a misbehaving or compromised caller.
+const accessGateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Demasiadas solicitudes." },
+});
+app.get("/api/internal/access-gate/status/:clientId", accessGateLimiter, accessGateStatusHandler);
+app.post("/api/internal/access-gate/tickets", accessGateLimiter, accessGateTicketHandler);
 
 app.use("/api", router);
 

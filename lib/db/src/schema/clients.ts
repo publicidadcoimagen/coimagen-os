@@ -23,6 +23,13 @@ export const clientsTable = pgTable("clients", {
   // (e.g. the DocuSeal contract template picked in POST /contracts/:id/send —
   // see routes/contracts.ts). Same "es"/"en" convention as prospects.language.
   language: text("language").notNull().default("es"),
+  // Día 5 access gate (Cláusula 9, Coimagen Master Agreement V2) never
+  // applies to this client, regardless of subscriptions.status — pilots
+  // (Dr. Segovia, Clínica EMT) and Coimagen Media itself, all confirmed
+  // indefinite/no-expiration accounts. Deliberately explicit rather than
+  // inferred from "no subscription row" (which a client mid-onboarding
+  // would also have, and shouldn't read as a permanent exemption).
+  accessGateExempt: boolean("access_gate_exempt").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at"),
 });
