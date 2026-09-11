@@ -15,6 +15,17 @@ export const AuthUserRole = {
   cliente: 'cliente',
 } as const;
 
+/**
+ * @nullable
+ */
+export type AuthUserAccessGate = {
+  access?: 'full' | 'restricted';
+  /** @nullable */
+  causeCode?: 'subscription_past_due' | null;
+  /** @nullable */
+  since?: string | null;
+} | null;
+
 export interface AuthUser {
   id: string;
   /** @nullable */
@@ -33,6 +44,8 @@ export interface AuthUser {
   /** @nullable */
   clientId: number | null;
   enabledModules?: string[];
+  /** @nullable */
+  accessGate?: AuthUserAccessGate;
 }
 
 export interface AuthUserEnvelope {

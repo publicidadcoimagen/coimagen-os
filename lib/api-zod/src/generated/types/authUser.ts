@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AuthUserAccessGate } from './authUserAccessGate';
 import type { AuthUserRole } from './authUserRole';
 
 export interface AuthUser {
@@ -25,4 +26,6 @@ export interface AuthUser {
   /** @nullable */
   clientId: number | null;
   enabledModules?: string[];
+  /** @nullable */
+  accessGate?: AuthUserAccessGate;
 }

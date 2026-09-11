@@ -70,6 +70,19 @@ describe("swapToClientRole", () => {
     const swapped = swapToClientRole(staffUser, 5);
     assert.deepEqual(swapped.enabledModules, []);
   });
+
+  test("defaults accessGate to null when not given — never carries over the staff's own value", () => {
+    const staffUser = { id: "staff-1", role: "ceo", clientId: null, accessGate: { access: "restricted" } };
+    const swapped = swapToClientRole(staffUser, 5);
+    assert.equal(swapped.accessGate, null);
+  });
+
+  test("sets the given accessGate on the swapped user", () => {
+    const staffUser = { id: "staff-1", role: "ceo", clientId: null };
+    const gate = { access: "restricted" as const, causeCode: "subscription_past_due" as const, since: "2026-09-05T00:00:00.000Z" };
+    const swapped = swapToClientRole(staffUser, 5, [], gate);
+    assert.deepEqual(swapped.accessGate, gate);
+  });
 });
 
 function createMockResponse() {
@@ -105,17 +118,39 @@ describe("impersonationMiddleware + GET /auth/user (the composed /api/auth/user 
       lastLogin: null, clientId: null, enabledModules: [] as string[],
     };
     const sessionRow = { clientId: 5, endedAt: null, expiresAt: new Date(Date.now() + 10 * 60 * 1000) };
-    const clientRow = { enabledModules: ["ecommerce"] };
+    // What getClientSessionExtras's combined LEFT JOIN would return for a
+    // client whose most recent subscription is past_due — this client is
+    // NOT exempt, so the swapped-in accessGate must show "restricted".
+    // Safely past the 5-day threshold regardless of when the suite runs —
+    // getClientSessionExtras evaluates against the real wall clock.
+    const extrasRow = {
+      enabledModules: ["ecommerce"], accessGateExempt: false,
+      subStatus: "past_due", subUpdatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), subCreatedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+    };
     let call = 0;
     // impersonationMiddleware makes exactly two sequential db.select() calls
-    // (the session lookup, then the client's enabledModules lookup) —
+    // (the session lookup, then getClientSessionExtras's combined lookup) —
     // mocking by call order matches that real sequence without needing a
     // real Postgres connection, same boundary-mocking approach auth-flow.test.ts
-    // uses for auth.api.getSession.
+    // uses for auth.api.getSession. The second call chains leftJoin/orderBy/
+    // limit (see getClientSessionExtras) on top of from/where, unlike the
+    // first — chain must support all four even though only the second uses
+    // leftJoin/orderBy/limit.
     t.mock.method(
       db,
       "select",
-      (() => ({ from: () => ({ where: async () => (call++ === 0 ? [sessionRow] : [clientRow]) }) })) as unknown as typeof db.select,
+      (() => {
+        const thisCall = call++;
+        const chain = {
+          from: () => chain,
+          leftJoin: () => chain,
+          where: () => chain,
+          orderBy: () => chain,
+          limit: () => chain,
+          then: (resolve: (v: unknown[]) => void) => resolve(thisCall === 0 ? [sessionRow] : [extrasRow]),
+        };
+        return chain;
+      }) as unknown as typeof db.select,
     );
 
     const req = {
@@ -132,11 +167,17 @@ describe("impersonationMiddleware + GET /auth/user (the composed /api/auth/user 
 
     await getCurrentAuthUser(req, res);
 
-    const body = res.body as { user: { role: string; clientId: number; enabledModules: string[] } };
+    const body = res.body as { user: { role: string; clientId: number; enabledModules: string[]; accessGate: { access: string; causeCode: string | null } } };
     assert.equal(body.user.role, "cliente");
     assert.equal(body.user.clientId, 5);
     assert.deepEqual(body.user.enabledModules, ["ecommerce"]);
     assert.notEqual(body.user.role, staffUser.role);
+    // The actual bug this whole wiring exists to prevent: a staff member
+    // using "Ver como cliente" on a real past-due client must see the same
+    // restriction that client's own login would show, not the staff's own
+    // (always-full) access.
+    assert.equal(body.user.accessGate.access, "restricted");
+    assert.equal(body.user.accessGate.causeCode, "subscription_past_due");
   });
 
   test("no impersonation token: staff sees their own unmodified session — no regression for normal staff use", async () => {

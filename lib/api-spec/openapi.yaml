@@ -4372,6 +4372,23 @@ components:
           type: array
           items:
             type: string
+        # Día 5 access gate (Cláusula 9) — only ever populated for role
+        # "cliente" (staff always gets null, nothing to restrict). Same
+        # shape as GET /internal/access-gate/status/:clientId's response,
+        # one mental model in both places. Optional/nullable so this is a
+        # purely additive contract change — every existing consumer of
+        # AuthUser keeps compiling and working unchanged.
+        accessGate:
+          type: [object, 'null']
+          properties:
+            access:
+              type: string
+              enum: [full, restricted]
+            causeCode:
+              type: [string, 'null']
+              enum: [subscription_past_due, null]
+            since:
+              type: [string, 'null']
     AuthUserEnvelope:
       type: object
       required: [user]

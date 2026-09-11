@@ -1,9 +1,9 @@
 import { type Request, type Response, type NextFunction } from "express";
 import { fromNodeHeaders } from "better-auth/node";
-import { eq } from "drizzle-orm";
-import { db, clientsTable } from "@workspace/db";
 import type { AuthUser, AuthUserRole } from "@workspace/api-zod";
 import { auth } from "../lib/auth";
+import { getClientSessionExtras } from "../lib/access-gate/session-extras";
+import { serializeAccessGate } from "../lib/access-gate/serialize";
 
 declare global {
   namespace Express {
@@ -43,6 +43,7 @@ function toAuthUser(user: SessionUser): AuthUser {
     lastLogin: user.lastLogin?.toISOString() ?? null,
     clientId: user.clientId ?? null,
     enabledModules: [],
+    accessGate: null,
   };
 }
 
@@ -61,12 +62,16 @@ export async function authMiddleware(
 
   if (session?.user) {
     const authUser = toAuthUser(session.user);
-    // The Portal module matrix (P-79) lives on clients.enabled_modules —
-    // piggyback it on the session payload so the client-room nav doesn't
-    // need a second round trip through a staff-only /clients endpoint.
+    // The Portal module matrix (P-79) lives on clients.enabled_modules, and
+    // the Día 5 access gate (Cláusula 9) on clients.access_gate_exempt +
+    // subscriptions.status — piggyback both on the session payload so the
+    // client-room nav/gate don't need a second round trip through a
+    // staff-only endpoint. One combined query (see getClientSessionExtras)
+    // for both, not two — this runs on every request, not just login.
     if (authUser.role === "cliente" && authUser.clientId != null) {
-      const [client] = await db.select({ enabledModules: clientsTable.enabledModules }).from(clientsTable).where(eq(clientsTable.id, authUser.clientId));
-      authUser.enabledModules = client?.enabledModules ?? [];
+      const extras = await getClientSessionExtras(authUser.clientId);
+      authUser.enabledModules = extras.enabledModules;
+      authUser.accessGate = serializeAccessGate(extras.accessGate);
     }
     req.user = authUser;
   }
