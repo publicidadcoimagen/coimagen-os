@@ -7,6 +7,7 @@ import {
   useSubmitContentCalendarItem,
   useApproveContentCalendarItem,
   useGenerateContentCalendarItem,
+  usePublishContentCalendarItem,
 } from "@workspace/api-client-react";
 import type { ContentCalendarItem } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Send, Check, Share2, Sparkles } from "lucide-react";
+import { Send, Check, Share2, Sparkles, Rocket } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 
@@ -99,6 +100,24 @@ export function SocialAutopublisher() {
     mutation: {
       onSuccess: (_data, vars) => { invalidate(vars.clientId); toast({ title: "Aprobado" }); },
       onError: (err) => toast({ title: "No se pudo aprobar", description: String(err), variant: "destructive" }),
+    },
+  });
+  // publish/:id always answers 200 — a failed network attempt (missing
+  // credentials, provider error) is recorded per-target on the item itself
+  // (target.failureReason, item.status "failed"), not thrown as an HTTP
+  // error. onSuccess has to read the returned item to tell the two apart.
+  const publish = usePublishContentCalendarItem({
+    mutation: {
+      onSuccess: (data, vars) => {
+        invalidate(vars.clientId);
+        if (data.status === "published") {
+          toast({ title: "Publicado" });
+        } else {
+          const reason = data.targets.find((t) => t.status === "failed")?.failureReason ?? "Error desconocido";
+          toast({ title: "No se pudo publicar en una o más redes", description: reason, variant: "destructive" });
+        }
+      },
+      onError: (err) => toast({ title: "No se pudo publicar", description: String(err), variant: "destructive" }),
     },
   });
   const generate = useGenerateContentCalendarItem({
@@ -185,6 +204,11 @@ export function SocialAutopublisher() {
                       {item.status === "pending_approval" && (
                         <Button size="sm" variant="outline" className="h-7 gap-1 text-xs text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10" disabled={approve.isPending} onClick={() => approve.mutate({ clientId: item.clientId, id: item.id })}>
                           <Check className="h-3 w-3" /> Aprobar
+                        </Button>
+                      )}
+                      {item.status === "approved" && (
+                        <Button size="sm" variant="outline" className="h-7 gap-1 text-xs text-violet-400 border-violet-500/30 hover:bg-violet-500/10" disabled={publish.isPending} onClick={() => publish.mutate({ clientId: item.clientId, id: item.id })}>
+                          <Rocket className="h-3 w-3" /> Publicar
                         </Button>
                       )}
                     </div>
