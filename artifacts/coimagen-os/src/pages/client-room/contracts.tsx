@@ -1,9 +1,7 @@
 import { useRoute } from "wouter";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
   useListContracts, getListContractsQueryKey,
-  useUpdateContract,
 } from "@workspace/api-client-react";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +15,10 @@ type Contract = {
   id: number; type: string; status: string; title: string; service?: string | null;
   amount?: number | null; currency?: string | null; signedAt?: string | null;
   expiresAt?: string | null; clientId?: number | null; createdAt: string;
+  // Real DocuSeal signing link, set by POST /contracts/:id/send — see
+  // routes/contracts.ts. Only present once staff has actually sent the
+  // contract for e-signature; older/manual "sent" contracts may not have one.
+  signingUrl?: string | null;
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -51,17 +53,10 @@ function ClientContractsBody({ slug }: { slug: string }) {
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
   const org = rawOrg as Org | undefined;
 
-  const queryClient = useQueryClient();
   const { data: rawContracts = [], isLoading } = useListContracts(
     {},
     { query: { queryKey: getListContractsQueryKey() } },
   );
-
-  const { mutate: signContract, isPending: isSigning, variables: signingVars } = useUpdateContract({
-    mutation: {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListContractsQueryKey() }),
-    },
-  });
 
   const contracts = (rawContracts as Contract[]).filter((c) => org?.clientId ? c.clientId === org.clientId : false);
 
@@ -107,14 +102,15 @@ function ClientContractsBody({ slug }: { slug: string }) {
                         {c.expiresAt && <span>{t.contracts.expiresLabel} {new Date(c.expiresAt).toLocaleDateString(lang === "en" ? "en-US" : "es-MX")}</span>}
                       </div>
                     </div>
-                    {c.status === "sent" && (
+                    {c.status === "sent" && c.signingUrl && (
                       <Button
                         size="sm"
                         className="h-7 text-xs bg-green-500 hover:bg-green-600 text-white flex-shrink-0"
-                        disabled={isSigning && signingVars?.id === c.id}
-                        onClick={() => signContract({ id: c.id, data: { status: "signed" } })}
+                        asChild
                       >
-                        {isSigning && signingVars?.id === c.id ? t.contracts.signing : t.contracts.sign}
+                        <a href={c.signingUrl} target="_blank" rel="noopener noreferrer">
+                          {t.contracts.sign}
+                        </a>
                       </Button>
                     )}
                   </CardContent>
