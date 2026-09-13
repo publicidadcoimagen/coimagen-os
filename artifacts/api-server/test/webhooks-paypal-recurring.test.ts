@@ -99,6 +99,7 @@ describe("handleRecurringPaymentFailed", () => {
       assert.equal(invoiceInsert!.values.status, "overdue");
       assert.equal(invoiceInsert!.values.amount, "1000");
       assert.equal(invoiceInsert!.values.clientId, 7);
+      assert.equal(typeof invoiceInsert!.values.publicToken, "string", "must set a publicToken — otherwise the client has no /factura page to actually pay this from");
 
       const alertInsert = insertCalls.find((c) => c.table === subscriptionAlertsTable);
       assert.ok(alertInsert, "must record the Día 0 dedup alert");
