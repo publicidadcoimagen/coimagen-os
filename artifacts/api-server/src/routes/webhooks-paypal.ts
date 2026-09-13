@@ -1,4 +1,5 @@
 import { type Request, type Response } from "express";
+import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db, invoicePaymentsTable, invoicesTable, subscriptionsTable, clientsTable, ordersTable } from "@workspace/db";
 import { verifyPaypalWebhookSignature } from "../lib/paypal/webhook-verify";
@@ -296,6 +297,12 @@ export async function handleRecurringPaymentFailed(event: PaypalEvent): Promise<
         issuedDate: today,
         dueDate: today,
         description: `Mensualidad — ${subscription.plan} (pago fallido)`,
+        // Without this, the client's Facturas view could only ever show
+        // this invoice, never let them pay it — /public/invoices/:token +
+        // createOrder() (lib/paypal/orders.ts) both key off publicToken,
+        // and the column has no DB default (confirmed against the live
+        // schema), so it stays null forever unless set here explicitly.
+        publicToken: randomUUID(),
       });
       await recordPaymentFailedAlertSent(subscription.id);
 
