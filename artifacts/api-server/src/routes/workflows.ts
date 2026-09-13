@@ -13,6 +13,7 @@ import {
   GetWorkflowStageLogsParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { ownsClientId } from "../middlewares/clientScope";
 
 const router: IRouter = Router();
 
@@ -182,6 +183,35 @@ router.post("/workflows/:id/advance", requireRole("ceo", "admin"), async (req, r
 
   const [updated] = await db.select().from(workflowsTable).where(eq(workflowsTable.id, params.data.id));
   res.json(serialize(updated));
+});
+
+// Client-scoped, minimal-field read for the Client Room workflow widget —
+// separate from GET /workflows/:id above, which is unrestricted and returns
+// internal-only fields (notes, blockers, responsibleId, agentIds) that were
+// never meant to reach a cliente-role account. Not in clientRoleGate's
+// allowlist otherwise, this route class would 403 for every real client.
+router.get("/clients/:clientId/workflow", async (req, res): Promise<void> => {
+  const clientId = parseInt(req.params.clientId as string);
+  if (isNaN(clientId) || !ownsClientId(req, clientId)) { res.status(403).json({ error: "Not available for this account" }); return; }
+
+  // A client can accumulate more than one workflow row over time (e.g. a
+  // second product/project); the most recently touched one is the one whose
+  // progress the client actually cares about right now — same
+  // coalesce(updatedAt, createdAt) DESC pattern used for subscriptions in
+  // the access-gate repository, so a never-updated row doesn't wrongly sort
+  // ahead of one touched more recently.
+  const [wf] = await db.select({
+    id: workflowsTable.id,
+    currentStage: workflowsTable.currentStage,
+    status: workflowsTable.status,
+    updatedAt: workflowsTable.updatedAt,
+  }).from(workflowsTable)
+    .where(eq(workflowsTable.clientId, clientId))
+    .orderBy(sql`coalesce(${workflowsTable.updatedAt}, ${workflowsTable.createdAt}) DESC`)
+    .limit(1);
+
+  if (!wf) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...wf, updatedAt: wf.updatedAt ? wf.updatedAt.toISOString() : null });
 });
 
 router.get("/workflows/:id/stage-logs", async (req, res): Promise<void> => {

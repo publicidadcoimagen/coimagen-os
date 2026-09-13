@@ -31,6 +31,11 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   { method: "PATCH", pattern: /^\/clients\/\d+\/onboarding$/ },
   { method: "GET", pattern: /^\/account(\/|$)/ },
   { method: "POST", pattern: /^\/account(\/|$)/ },
+  // Client-facing workflow progress widget — scoped to the caller's own
+  // clientId inside the route handler (ownsClientId), returns only
+  // currentStage/status/updatedAt, never the internal-only fields (notes,
+  // blockers, responsibleId, agentIds) that GET /workflows/:id exposes.
+  { method: "GET", pattern: /^\/clients\/\d+\/workflow$/ },
   // Product catalog ("ecommerce" module, P-79/pendiente #5) — catalog.ts
   // itself further gates these behind the caller's client having
   // "ecommerce" enabled, so listing them here doesn't open the catalog to

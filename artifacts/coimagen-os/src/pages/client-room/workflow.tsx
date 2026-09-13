@@ -1,4 +1,8 @@
 import { useRoute } from "wouter";
+import {
+  useGetOrganization, getGetOrganizationQueryKey,
+  useGetClientWorkflowStatus, getGetClientWorkflowStatusQueryKey,
+} from "@workspace/api-client-react";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,13 +15,51 @@ import { useLang } from "@/context/LanguageContext";
 
 const STAGE_ICONS = [UserSearch, Stethoscope, FileText, FileText, DollarSign, Users, Factory, ShieldCheck, Package, Handshake];
 
+type Org = { id: number; slug: string; name: string; clientId?: number | null };
+
+// Mirrors ALL_STAGES in artifacts/api-server/src/routes/workflows.ts — the
+// 20 internal engineering stages, in order, grouped into the 10 client-
+// facing stages of t.workflow.stages (each group's LAST internal stage is
+// what "done" is measured against). Keep both lists in sync by hand; there's
+// no shared package for this constant (same pattern as workflow-engine's own
+// ALL_STAGES/STAGE_LABELS duplication).
+//
+// client_approval (the one point where the client is actually asked to act)
+// is grouped into "QA" rather than broken out into its own 11th client
+// stage: /client-approvals is already its own allowlisted, independently-
+// surfaced feature for that action, and adding an 11th stage here would mean
+// widening t.workflow.stages, STAGE_ICONS, and every consumer that assumes
+// 10 entries for one internal label most clients won't need to distinguish
+// from general QA. Reconsider if clients start asking "what stage am I in"
+// specifically during an open approval.
+const STAGE_GROUPS: string[][] = [
+  ["lead_received"],
+  ["diagnosis_started", "diagnosis_completed"],
+  ["proposal_sent", "proposal_approved"],
+  ["contract_sent", "contract_signed"],
+  ["payment_received"],
+  ["onboarding_started", "onboarding_completed"],
+  ["production_started", "design_review", "development_review"],
+  ["qa_internal", "changes_requested", "client_approval"],
+  ["final_delivery"],
+  ["monthly_active", "support_active", "customer_success"],
+];
+
+// 1-based client-facing stage index for an internal stage — matches the
+// existing 1-based `currentStage` math this component already renders with.
+// Unknown/legacy stage values fall back to stage 1 rather than crashing.
+function toClientStageNumber(internalStage: string): number {
+  const idx = STAGE_GROUPS.findIndex((group) => group.includes(internalStage));
+  return idx === -1 ? 1 : idx + 1;
+}
+
 export function ClientWorkflow() {
   const [, params] = useRoute("/client/:slug/workflow");
   const slug = params?.slug ?? "";
 
   return (
     <ClientRoomLayout slug={slug}>
-      <ClientWorkflowBody />
+      <ClientWorkflowBody slug={slug} />
     </ClientRoomLayout>
   );
 }
@@ -25,10 +67,47 @@ export function ClientWorkflow() {
 // useLang() must run inside LanguageProvider's subtree, which ClientRoomLayout
 // mounts as a child — calling it in the exported route component (an ancestor
 // of ClientRoomLayout) throws on every render (fixed 2026-08-26).
-function ClientWorkflowBody() {
+function ClientWorkflowBody({ slug }: { slug: string }) {
   const { t } = useLang();
-  const currentStage = 6;
+
+  const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
+  const org = rawOrg as Org | undefined;
+  const clientId = org?.clientId ?? 0;
+
+  const { data: workflow, isLoading, error } = useGetClientWorkflowStatus(clientId, {
+    query: { queryKey: getGetClientWorkflowStatusQueryKey(clientId), enabled: !!clientId, retry: false },
+  });
+
   const stages = t.workflow.stages.map((s, i) => ({ ...s, icon: STAGE_ICONS[i]! }));
+
+  if (!clientId || isLoading) {
+    return (
+      <div className="space-y-5">
+        <Card><CardContent className="p-6 animate-pulse text-sm text-muted-foreground">{t.common.loading}</CardContent></Card>
+      </div>
+    );
+  }
+
+  // 404 (no workflow row yet, e.g. a client whose contract hasn't produced
+  // one) — show the static stage list with nothing marked done/current
+  // rather than a hard error or a misleading fake progress point.
+  if (error || !workflow) {
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-3">
+          <GitBranch className="h-5 w-5 text-primary" />
+          <div>
+            <h1 className="text-xl font-bold">{t.workflow.title}</h1>
+            <p className="text-sm text-muted-foreground">{t.workflow.subtitle}</p>
+          </div>
+        </div>
+        <Card><CardContent className="p-6 text-sm text-muted-foreground">{t.workflow.noWorkflow}</CardContent></Card>
+      </div>
+    );
+  }
+
+  const currentStage = toClientStageNumber(workflow.currentStage);
+  const CurrentStageIcon = stages[currentStage - 1]?.icon ?? Factory;
 
   return (
     <div className="space-y-5">
@@ -45,13 +124,15 @@ function ClientWorkflowBody() {
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Factory className="h-5 w-5 text-primary" />
+                <CurrentStageIcon className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-bold">{t.workflow.currentStageLabel}</p>
+                <p className="text-sm font-bold">{t.workflow.currentStageLabel(stages[currentStage - 1]?.name ?? "")}</p>
                 <p className="text-xs text-muted-foreground">{t.workflow.stageOfTotal(currentStage, stages.length)}</p>
               </div>
-              <Badge variant="outline" className="ml-auto bg-blue-400/10 text-blue-400 border-blue-400/30">{t.workflow.inProgress}</Badge>
+              <Badge variant="outline" className="ml-auto bg-blue-400/10 text-blue-400 border-blue-400/30">
+                {workflow.status === "completed" ? t.workflow.completed : t.workflow.inProgress}
+              </Badge>
             </div>
           </CardContent>
         </Card>

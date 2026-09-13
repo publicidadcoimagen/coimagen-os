@@ -138,10 +138,11 @@ const translations = {
     workflow: {
       title: "Workflow",
       subtitle: "Estado actual de tu proyecto",
-      currentStageLabel: "Etapa actual: Producción",
+      currentStageLabel: (stageName: string) => `Etapa actual: ${stageName}`,
       stageOfTotal: (current: number, total: number) => `Etapa ${current} de ${total} — En proceso`,
       completed: "Completado",
       inProgress: "En progreso",
+      noWorkflow: "Tu proyecto todavía no tiene un workflow asignado.",
       stages: [
         { name: "Lead", desc: "Contacto inicial y calificación del prospecto" },
         { name: "Diagnóstico", desc: "Análisis de necesidades y situación actual del cliente" },
@@ -444,10 +445,11 @@ const translations = {
     workflow: {
       title: "Workflow",
       subtitle: "Your project's current status",
-      currentStageLabel: "Current stage: Production",
+      currentStageLabel: (stageName: string) => `Current stage: ${stageName}`,
       stageOfTotal: (current: number, total: number) => `Stage ${current} of ${total} — In progress`,
       completed: "Completed",
       inProgress: "In progress",
+      noWorkflow: "Your project doesn't have a workflow assigned yet.",
       stages: [
         { name: "Lead", desc: "Initial contact and prospect qualification" },
         { name: "Diagnosis", desc: "Analysis of the client's needs and current situation" },

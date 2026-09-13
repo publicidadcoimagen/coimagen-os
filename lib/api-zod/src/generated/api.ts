@@ -1597,6 +1597,21 @@ export const GetWorkflowStageLogsResponse = zod.array(GetWorkflowStageLogsRespon
 
 
 /**
+ * @summary Get the caller's own client-facing workflow progress (scoped, minimal fields)
+ */
+export const GetClientWorkflowStatusParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const GetClientWorkflowStatusResponse = zod.object({
+  "id": zod.number(),
+  "currentStage": zod.string(),
+  "status": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
  * @summary List all workflow templates
  */
 export const ListWorkflowTemplatesResponseItem = zod.object({

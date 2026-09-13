@@ -2342,6 +2342,13 @@ export interface Workflow {
   updatedAt?: string | null;
 }
 
+export interface ClientWorkflowStatus {
+  id: number;
+  currentStage: string;
+  status: string;
+  updatedAt?: string | null;
+}
+
 export interface WorkflowCreate {
   name: string;
   description?: string;

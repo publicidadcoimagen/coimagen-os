@@ -1230,6 +1230,24 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/WorkflowStageLog"
+  /clients/{clientId}/workflow:
+    get:
+      operationId: getClientWorkflowStatus
+      tags: [workflows]
+      summary: Get the caller's own client-facing workflow progress (scoped, minimal fields)
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientWorkflowStatus"
+        "403":
+          description: Not this account's client
+        "404":
+          description: Not found
   /workflow-templates:
     get:
       operationId: listWorkflowTemplates
@@ -5934,6 +5952,14 @@ components:
         blockers: { type: string, nullable: true }
         templateId: { type: integer, nullable: true }
         createdAt: { type: string }
+        updatedAt: { type: string, nullable: true }
+    ClientWorkflowStatus:
+      type: object
+      required: [id, currentStage, status]
+      properties:
+        id: { type: integer }
+        currentStage: { type: string }
+        status: { type: string }
         updatedAt: { type: string, nullable: true }
     WorkflowCreate:
       type: object
