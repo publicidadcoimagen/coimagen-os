@@ -7,6 +7,7 @@ import { handleInstallmentPaid } from "../lib/payment-schedule/on-installment-pa
 import { applyFiscalInvoice } from "../lib/payment-schedule/generate";
 import { sendStaleSubscriptionAlertEmail, sendPaymentFailedClientEmail } from "../lib/subscription-alerts/email";
 import { hasSentPaymentFailedAlert, recordPaymentFailedAlertSent, clearPaymentFailedAlert } from "../lib/subscription-alerts/payment-failed-repository";
+import { clearLatePaymentSurchargeAlert } from "../lib/subscription-alerts/late-payment-surcharge-repository";
 import { getInvoiceFiscalData, getClientFiscalData } from "../lib/fiscal-data/repository";
 import { sendFiscalInvoiceAlertEmail } from "../lib/fiscal-data/email";
 import { getFiscalDocument } from "../lib/fiscal-blobs";
@@ -207,11 +208,15 @@ export async function handleRecurringPaymentCompleted(event: PaypalEvent): Promi
   if (subscription.status === "past_due") {
     await db.update(subscriptionsTable).set({ status: "active", updatedAt: new Date() })
       .where(eq(subscriptionsTable.id, subscription.id));
-    // Clears the Día 0 dedup record too — a client who fails, recovers,
-    // and fails again months later on the SAME subscription row must get
-    // a fresh reminder next time, not silently nothing because one was
-    // ever sent once in this subscription's lifetime.
+    // Clears the Día 0 AND Día 3 dedup records too — a client who fails,
+    // recovers, and fails again months later on the SAME subscription row
+    // must get a fresh reminder/surcharge next time, not silently nothing
+    // because one was ever sent once in this subscription's lifetime. Does
+    // NOT touch any surcharge invoice already created for this episode —
+    // that charge stays owed regardless of the mensualidad recovering
+    // (Camila's call, Día 3 design).
     await clearPaymentFailedAlert(subscription.id);
+    await clearLatePaymentSurchargeAlert(subscription.id);
   }
 
   if (!subscription.requiresFiscalInvoice) return;

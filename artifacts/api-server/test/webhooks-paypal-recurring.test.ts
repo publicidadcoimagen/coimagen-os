@@ -140,14 +140,15 @@ describe("handleRecurringPaymentCompleted", () => {
     assert.ok(insertCalls.some((c) => c.table === invoicesTable), "the recurring charge must still be recorded as an invoice");
   });
 
-  test("reactivating past_due clears the Día 0 dedup record, so the NEXT failure episode notifies again", async (t) => {
+  test("reactivating past_due clears BOTH the Día 0 and Día 3 dedup records, so the NEXT failure episode notifies/surcharges again", async (t) => {
     const { deleteCalls } = mockDb(t, { subscription: { ...BASE_SUBSCRIPTION, status: "past_due" } });
 
     await handleRecurringPaymentCompleted({
       resource: { id: "SALE-1b", billing_agreement_id: "SUB-123", amount: { total: "1000", currency: "MXN" } },
     });
 
-    assert.ok(deleteCalls.some((c) => c.table === subscriptionAlertsTable), "must clear the Día 0 alert record on reactivation");
+    const alertDeletes = deleteCalls.filter((c) => c.table === subscriptionAlertsTable);
+    assert.equal(alertDeletes.length, 2, "must clear both the Día 0 alert record and the Día 3 surcharge alert record on reactivation");
   });
 
   test("leaves an already-active subscription untouched (no redundant update, no dedup clear)", async (t) => {

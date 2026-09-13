@@ -10,6 +10,10 @@ import { registerAgentEscalationCron } from "./lib/agent-escalation/scheduler";
 // webhook are configured (see PR #28). Reactivate alongside the two above.
 // import { registerSubscriptionAlertsCron } from "./lib/subscription-alerts/scheduler";
 // import { registerPaymentRecoveryCron } from "./lib/payment-recovery/scheduler";
+// Día 3 (Cláusula 9) surcharge job — same reasoning as the two above, even
+// more directly: it only ever acts on a subscription already status=
+// "past_due", and zero real subscriptions of any status exist yet.
+// import { registerLatePaymentSurchargeCron } from "./lib/subscription-alerts/late-payment-surcharge-scheduler";
 // Pendiente #6b, same reasoning as the block above — no client currently
 // has real Autopublicador activity to report on. Reactivate once at least
 // one client has real published posts for a full month.
@@ -63,5 +67,6 @@ app.listen(port, (err) => {
   // at the top of this file (PR #28).
   // registerSubscriptionAlertsCron();
   // registerPaymentRecoveryCron();
+  // registerLatePaymentSurchargeCron();
   // registerSocialMonthlyReportCron();
 });
