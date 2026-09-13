@@ -100,9 +100,20 @@ function ClientRoomLayoutInner({ slug, children }: { slug: string; children: Rea
   // their own profile. Staff previewing a client room still see everything,
   // including the not-yet-in-the-matrix scaffolded pages (P-79).
   const moduleItems = (user?.enabledModules ?? []).flatMap((m) => MODULE_NAV_ITEMS[m] ?? []);
+  // Staff browsing a client room via the plain, non-impersonated "Abrir
+  // Client Room" link (admin.tsx) never gets moduleItems above: that list
+  // is derived from the STAFF user's own session enabledModules, which is
+  // always [] for a staff role (authMiddleware only populates it for a real
+  // cliente-role session) — it has nothing to do with which client's slug
+  // is being viewed. That silently hid Becky Beck's real, working legacy
+  // catalog (only reachable by typing /client/beckybeck/catalog by hand)
+  // even though her client record has "ecommerce" enabled. Keying off the
+  // slug directly, same as catalog.tsx's own beckybeck branch, fixes that
+  // without touching the already-correct cliente/impersonated path above.
+  const staffModuleItems = !isCliente && slug === "beckybeck" ? MODULE_NAV_ITEMS.ecommerce : [];
   const navItems = isCliente
     ? [...BASE_NAV_ITEMS, ...moduleItems, PROFILE_ITEM]
-    : [...BASE_NAV_ITEMS, ...STAFF_EXTRA_ITEMS, PROFILE_ITEM];
+    : [...BASE_NAV_ITEMS, ...staffModuleItems, ...STAFF_EXTRA_ITEMS, PROFILE_ITEM];
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
