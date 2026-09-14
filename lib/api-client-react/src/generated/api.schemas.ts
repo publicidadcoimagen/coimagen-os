@@ -2097,6 +2097,10 @@ export interface ClientBrand {
   /** @nullable */
   brandNotes?: string | null;
   /** @nullable */
+  businessDescription?: string | null;
+  /** @nullable */
+  whatsappNumber?: string | null;
+  /** @nullable */
   websiteUrl?: string | null;
   /** @nullable */
   facebookUrl?: string | null;
@@ -2121,6 +2125,8 @@ export interface ClientBrandInput {
   fonts?: string;
   brandManualUrl?: string;
   brandNotes?: string;
+  businessDescription?: string;
+  whatsappNumber?: string;
   websiteUrl?: string;
   facebookUrl?: string;
   instagramUrl?: string;
@@ -2128,6 +2134,24 @@ export interface ClientBrandInput {
   linkedinUrl?: string;
   googleBusinessUrl?: string;
   youtubeUrl?: string;
+}
+
+export interface ClientBrandPatch {
+  brandColors?: string;
+  businessDescription?: string;
+  whatsappNumber?: string;
+  websiteUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  tiktokUrl?: string;
+  linkedinUrl?: string;
+  googleBusinessUrl?: string;
+  youtubeUrl?: string;
+}
+
+export interface ClientBrandLogoInput {
+  /** data:<mime>;base64,<data> */
+  imageBase64: string;
 }
 
 export interface ClientOnboardingModuleContact {

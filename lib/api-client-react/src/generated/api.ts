@@ -67,6 +67,8 @@ import type {
   ClientApprovalUpdate,
   ClientBrand,
   ClientBrandInput,
+  ClientBrandLogoInput,
+  ClientBrandPatch,
   ClientInput,
   ClientNote,
   ClientNoteInput,
@@ -2417,6 +2419,227 @@ export const useUpsertClientBrand = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpsertClientBrandMutationOptions(options));
+    }
+
+export const getPatchClientBrandUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/brand`
+}
+
+/**
+ * @summary Client self-service partial update of their own brand content (Fase C)
+ */
+export const patchClientBrand = async (clientId: number,
+    clientBrandPatch: ClientBrandPatch, options?: RequestInit): Promise<ClientBrand> => {
+
+  return customFetch<ClientBrand>(getPatchClientBrandUrl(clientId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientBrandPatch,)
+  }
+);}
+
+
+
+
+export const getPatchClientBrandMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchClientBrand>>, TError,{clientId: number;data: BodyType<ClientBrandPatch>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchClientBrand>>, TError,{clientId: number;data: BodyType<ClientBrandPatch>}, TContext> => {
+
+const mutationKey = ['patchClientBrand'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchClientBrand>>, {clientId: number;data: BodyType<ClientBrandPatch>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  patchClientBrand(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchClientBrandMutationResult = NonNullable<Awaited<ReturnType<typeof patchClientBrand>>>
+    export type PatchClientBrandMutationBody = BodyType<ClientBrandPatch>
+    export type PatchClientBrandMutationError = ErrorType<void>
+
+    /**
+ * @summary Client self-service partial update of their own brand content (Fase C)
+ */
+export const usePatchClientBrand = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchClientBrand>>, TError,{clientId: number;data: BodyType<ClientBrandPatch>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof patchClientBrand>>,
+        TError,
+        {clientId: number;data: BodyType<ClientBrandPatch>},
+        TContext
+      > => {
+      return useMutation(getPatchClientBrandMutationOptions(options));
+    }
+
+export const getGetClientBrandLogoUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/brand/logo`
+}
+
+/**
+ * @summary Get the raw logo image bytes for a client
+ */
+export const getClientBrandLogo = async (clientId: number, options?: RequestInit): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetClientBrandLogoUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetClientBrandLogoQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/brand/logo`
+    ] as const;
+    }
+
+
+export const getGetClientBrandLogoQueryOptions = <TData = Awaited<ReturnType<typeof getClientBrandLogo>>, TError = ErrorType<void>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientBrandLogo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetClientBrandLogoQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getClientBrandLogo>>> = ({ signal }) => getClientBrandLogo(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getClientBrandLogo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetClientBrandLogoQueryResult = NonNullable<Awaited<ReturnType<typeof getClientBrandLogo>>>
+export type GetClientBrandLogoQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the raw logo image bytes for a client
+ */
+
+export function useGetClientBrandLogo<TData = Awaited<ReturnType<typeof getClientBrandLogo>>, TError = ErrorType<void>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientBrandLogo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetClientBrandLogoQueryOptions(clientId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getPatchClientBrandLogoUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/brand/logo`
+}
+
+/**
+ * @summary Client self-service logo upload (Fase C) — scoped to the caller's own clientId
+ */
+export const patchClientBrandLogo = async (clientId: number,
+    clientBrandLogoInput: ClientBrandLogoInput, options?: RequestInit): Promise<ClientBrand> => {
+
+  return customFetch<ClientBrand>(getPatchClientBrandLogoUrl(clientId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      clientBrandLogoInput,)
+  }
+);}
+
+
+
+
+export const getPatchClientBrandLogoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchClientBrandLogo>>, TError,{clientId: number;data: BodyType<ClientBrandLogoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof patchClientBrandLogo>>, TError,{clientId: number;data: BodyType<ClientBrandLogoInput>}, TContext> => {
+
+const mutationKey = ['patchClientBrandLogo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof patchClientBrandLogo>>, {clientId: number;data: BodyType<ClientBrandLogoInput>}> = (props) => {
+          const {clientId,data} = props ?? {};
+
+          return  patchClientBrandLogo(clientId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PatchClientBrandLogoMutationResult = NonNullable<Awaited<ReturnType<typeof patchClientBrandLogo>>>
+    export type PatchClientBrandLogoMutationBody = BodyType<ClientBrandLogoInput>
+    export type PatchClientBrandLogoMutationError = ErrorType<void>
+
+    /**
+ * @summary Client self-service logo upload (Fase C) — scoped to the caller's own clientId
+ */
+export const usePatchClientBrandLogo = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof patchClientBrandLogo>>, TError,{clientId: number;data: BodyType<ClientBrandLogoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof patchClientBrandLogo>>,
+        TError,
+        {clientId: number;data: BodyType<ClientBrandLogoInput>},
+        TContext
+      > => {
+      return useMutation(getPatchClientBrandLogoMutationOptions(options));
     }
 
 export const getGetClientOnboardingUrl = (clientId: number,) => {

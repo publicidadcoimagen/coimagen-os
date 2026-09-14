@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRoute } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
   useGetClientOnboarding, getGetClientOnboardingQueryKey,
   usePatchClientOnboarding,
+  useGetClientBrand, getGetClientBrandQueryKey,
+  usePatchClientBrand, usePatchClientBrandLogo,
 } from "@workspace/api-client-react";
-import type { ClientOnboarding, ClientOnboardingModuleContact } from "@workspace/api-client-react";
+import type { ClientOnboarding, ClientOnboardingModuleContact, ClientBrand } from "@workspace/api-client-react";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ClipboardCheck, ChevronRight, ArrowLeft, CheckCircle2, Trash2, Plus } from "lucide-react";
+import { ClipboardCheck, ChevronRight, ArrowLeft, CheckCircle2, Trash2, Plus, Upload } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
 
 type Org = { id: number; slug: string; name: string; clientId?: number | null };
@@ -61,6 +63,42 @@ function fromServer(ob: ClientOnboarding): FormState {
   };
 }
 
+// The checklist items that have a real content field to capture — i.e.
+// "yes I have this" unlocks an inline input for the actual value, written to
+// client_brand. hasDomainAccess/hasHostingAccess are deliberately absent:
+// those are about granting staff login access to a registrar/hosting panel,
+// which stays out of this client-facing wizard's scope, same boundary PR #50
+// already drew for credentials in general (that's SmartOnboarding's job,
+// staff-mediated) — there's no safe "real value" to collect here for them.
+const BRAND_TEXT_FIELDS = [
+  "brandColors", "businessDescription", "whatsappNumber",
+  "websiteUrl", "facebookUrl", "instagramUrl", "googleBusinessUrl",
+  "tiktokUrl", "linkedinUrl", "youtubeUrl",
+] as const;
+type BrandTextField = (typeof BRAND_TEXT_FIELDS)[number];
+
+const BRAND_FIELD_FOR: Partial<Record<BoolKey, BrandTextField>> = {
+  hasBrandColors: "brandColors",
+  hasBusinessInfo: "businessDescription",
+  hasWebsiteAccess: "websiteUrl",
+  hasFacebookAccess: "facebookUrl",
+  hasInstagramAccess: "instagramUrl",
+  hasGoogleBusinessAccess: "googleBusinessUrl",
+  hasWhatsappAccess: "whatsappNumber",
+};
+
+type BrandForm = Record<BrandTextField, string>;
+
+const emptyBrandForm: BrandForm = {
+  brandColors: "", businessDescription: "", whatsappNumber: "",
+  websiteUrl: "", facebookUrl: "", instagramUrl: "", googleBusinessUrl: "",
+  tiktokUrl: "", linkedinUrl: "", youtubeUrl: "",
+};
+
+function brandFromServer(b: ClientBrand): BrandForm {
+  return Object.fromEntries(BRAND_TEXT_FIELDS.map((k) => [k, b[k] ?? ""])) as BrandForm;
+}
+
 export function ClientOnboarding() {
   const [, params] = useRoute("/client/:slug/onboarding");
   const slug = params?.slug ?? "";
@@ -86,19 +124,47 @@ function ClientOnboardingBody({ slug }: { slug: string }) {
   const { data: onboarding, isLoading } = useGetClientOnboarding(clientId, {
     query: { queryKey: getGetClientOnboardingQueryKey(clientId), enabled: !!clientId },
   });
+  const { data: brand, isFetched: brandFetched } = useGetClientBrand(clientId, {
+    query: { queryKey: getGetClientBrandQueryKey(clientId), enabled: !!clientId, retry: false },
+  });
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [brandForm, setBrandForm] = useState<BrandForm>(emptyBrandForm);
+  const [logoError, setLogoError] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (onboarding) setForm(fromServer(onboarding));
   }, [onboarding?.id]);
+
+  useEffect(() => {
+    if (brand) setBrandForm(brandFromServer(brand));
+  }, [brand?.id]);
 
   const { mutate: patch, isPending: saving } = usePatchClientOnboarding({
     mutation: {
       onSuccess: (result) => {
         queryClient.setQueryData(getGetClientOnboardingQueryKey(clientId), result);
       },
+    },
+  });
+
+  const { mutate: patchBrand } = usePatchClientBrand({
+    mutation: {
+      onSuccess: (result) => {
+        queryClient.setQueryData(getGetClientBrandQueryKey(clientId), result);
+      },
+    },
+  });
+
+  const { mutate: patchLogo, isPending: uploadingLogo } = usePatchClientBrandLogo({
+    mutation: {
+      onSuccess: (result) => {
+        queryClient.setQueryData(getGetClientBrandQueryKey(clientId), result);
+        setLogoError(false);
+      },
+      onError: () => setLogoError(true),
     },
   });
 
@@ -114,7 +180,31 @@ function ClientOnboardingBody({ slug }: { slug: string }) {
       },
     });
     setForm(next);
-  }, [form, clientId, patch]);
+    // brandForm already reflects every keystroke (see updateBrandField), so
+    // it's sent as-is here — same "whole object, server merges" contract
+    // client-onboarding's PATCH already uses. Only real content values are
+    // ever collected; unchecking a box later just hides the field, it never
+    // clears what was already saved (avoids destructive surprises). Guarded
+    // on brandFetched so a Save clicked before the initial GET settles can
+    // never blank out real content with brandForm's still-empty defaults.
+    if (brandFetched) patchBrand({ clientId, data: brandForm });
+  }, [form, brandForm, brandFetched, clientId, patch, patchBrand]);
+
+  const updateBrandField = (key: BrandTextField, value: string) => {
+    setBrandForm((f) => ({ ...f, [key]: value }));
+  };
+
+  const onLogoSelected = (file: File | null) => {
+    if (!file) return;
+    setLogoError(false);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUri = reader.result as string;
+      patchLogo({ clientId, data: { imageBase64: dataUri } });
+    };
+    reader.onerror = () => setLogoError(true);
+    reader.readAsDataURL(file);
+  };
 
   const toggleBool = (key: BoolKey) => {
     setForm((f) => ({ ...f, bools: { ...f.bools, [key]: !f.bools[key] } }));
@@ -198,17 +288,95 @@ function ClientOnboardingBody({ slug }: { slug: string }) {
       <Card className="border-border/50">
         <CardContent className="p-5 space-y-3">
           {step < 3 && STEP_KEYS[step]!.map((key) => (
-            <label key={key} className="flex items-center gap-3 p-3 rounded-lg border border-border/40 cursor-pointer hover:border-border transition-colors">
-              <input
-                type="checkbox"
-                checked={form.bools[key]}
-                onChange={() => toggleBool(key)}
-                className="h-4 w-4 accent-primary"
-              />
-              <span className="text-sm">{t.onboarding.checklist[key]}</span>
-              {form.bools[key] && <CheckCircle2 className="h-4 w-4 text-green-400 ml-auto" />}
-            </label>
+            <div key={key} className="space-y-2">
+              <label className="flex items-center gap-3 p-3 rounded-lg border border-border/40 cursor-pointer hover:border-border transition-colors">
+                <input
+                  type="checkbox"
+                  checked={form.bools[key]}
+                  onChange={() => toggleBool(key)}
+                  className="h-4 w-4 accent-primary"
+                />
+                <span className="text-sm">{t.onboarding.checklist[key]}</span>
+                {form.bools[key] && <CheckCircle2 className="h-4 w-4 text-green-400 ml-auto" />}
+              </label>
+
+              {form.bools[key] && key === "hasLogo" && (
+                <div className="ml-4 pl-3 border-l-2 border-border/40 space-y-2">
+                  <Label className="text-xs">{t.onboarding.wizard.content.logoLabel}</Label>
+                  <div className="flex items-center gap-3">
+                    {brand?.logoUrl && (
+                      <img src={brand.logoUrl} alt="Logo" className="h-10 w-10 object-contain rounded border border-border/50 p-1" />
+                    )}
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="hidden"
+                      onChange={(e) => onLogoSelected(e.target.files?.[0] ?? null)}
+                    />
+                    <Button type="button" variant="outline" size="sm" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}>
+                      <Upload className="h-3.5 w-3.5 mr-1.5" />
+                      {uploadingLogo ? t.onboarding.wizard.content.logoUploading : t.onboarding.wizard.content.logoLabel}
+                    </Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">{t.onboarding.wizard.content.logoHint}</p>
+                  {logoError && <p className="text-[10px] text-red-400">{t.onboarding.wizard.content.logoUploadError}</p>}
+                </div>
+              )}
+
+              {form.bools[key] && key !== "hasLogo" && BRAND_FIELD_FOR[key] && (
+                <div className="ml-4 pl-3 border-l-2 border-border/40 space-y-1.5">
+                  <Label className="text-xs">
+                    {key === "hasBrandColors" && t.onboarding.wizard.content.colorsLabel}
+                    {key === "hasBusinessInfo" && t.onboarding.wizard.content.businessInfoLabel}
+                    {key === "hasWebsiteAccess" && t.onboarding.wizard.content.websiteLabel}
+                    {key === "hasFacebookAccess" && t.onboarding.wizard.content.facebookLabel}
+                    {key === "hasInstagramAccess" && t.onboarding.wizard.content.instagramLabel}
+                    {key === "hasGoogleBusinessAccess" && t.onboarding.wizard.content.googleBusinessLabel}
+                    {key === "hasWhatsappAccess" && t.onboarding.wizard.content.whatsappLabel}
+                  </Label>
+                  {key === "hasBusinessInfo" ? (
+                    <Textarea
+                      rows={3}
+                      value={brandForm.businessDescription}
+                      onChange={(e) => updateBrandField("businessDescription", e.target.value)}
+                      placeholder={t.onboarding.wizard.content.businessInfoPlaceholder}
+                    />
+                  ) : (
+                    <Input
+                      type={key === "hasWhatsappAccess" ? "tel" : key === "hasBrandColors" ? "text" : "url"}
+                      value={brandForm[BRAND_FIELD_FOR[key]!]}
+                      onChange={(e) => updateBrandField(BRAND_FIELD_FOR[key]!, e.target.value)}
+                      placeholder={key === "hasBrandColors" ? t.onboarding.wizard.content.colorsPlaceholder : t.onboarding.wizard.content.urlPlaceholder}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
           ))}
+
+          {step === 2 && (
+            <div className="pt-2 space-y-3 border-t border-border/40 mt-3">
+              <div>
+                <h2 className="text-sm font-semibold">{t.onboarding.wizard.content.otherSocialsTitle}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.onboarding.wizard.content.otherSocialsHint}</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{t.onboarding.wizard.content.tiktokLabel}</Label>
+                  <Input type="url" value={brandForm.tiktokUrl} onChange={(e) => updateBrandField("tiktokUrl", e.target.value)} placeholder={t.onboarding.wizard.content.urlPlaceholder} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{t.onboarding.wizard.content.linkedinLabel}</Label>
+                  <Input type="url" value={brandForm.linkedinUrl} onChange={(e) => updateBrandField("linkedinUrl", e.target.value)} placeholder={t.onboarding.wizard.content.urlPlaceholder} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs">{t.onboarding.wizard.content.youtubeLabel}</Label>
+                  <Input type="url" value={brandForm.youtubeUrl} onChange={(e) => updateBrandField("youtubeUrl", e.target.value)} placeholder={t.onboarding.wizard.content.urlPlaceholder} />
+                </div>
+              </div>
+            </div>
+          )}
 
           {step === 3 && (
             <div className="space-y-3">

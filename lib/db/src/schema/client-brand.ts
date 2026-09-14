@@ -11,6 +11,11 @@ export const clientBrandTable = pgTable("client_brand", {
   fonts: text("fonts"),
   brandManualUrl: text("brand_manual_url"),
   brandNotes: text("brand_notes"),
+  // Client-submitted business description (what the business does, hours,
+  // address, etc.) — distinct from brandNotes above, which is staff's own
+  // internal notation, not client-facing content.
+  businessDescription: text("business_description"),
+  whatsappNumber: text("whatsapp_number"),
   websiteUrl: text("website_url"),
   facebookUrl: text("facebook_url"),
   instagramUrl: text("instagram_url"),

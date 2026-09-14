@@ -214,6 +214,7 @@ export function ClientDetail() {
   /* ── Brand state ── */
   const [brandForm, setBrandForm] = useState({
     logoUrl: "", brandColors: "", fonts: "", brandManualUrl: "", brandNotes: "",
+    businessDescription: "", whatsappNumber: "",
     websiteUrl: "", facebookUrl: "", instagramUrl: "", tiktokUrl: "", linkedinUrl: "", googleBusinessUrl: "", youtubeUrl: "",
   });
   const [brandEditing, setBrandEditing] = useState(false);
@@ -275,7 +276,7 @@ export function ClientDetail() {
   };
 
   /* ── Brand handlers ── */
-  const startEditBrand = () => { setBrandForm({ logoUrl: brand?.logoUrl ?? "", brandColors: brand?.brandColors ?? "", fonts: brand?.fonts ?? "", brandManualUrl: brand?.brandManualUrl ?? "", brandNotes: brand?.brandNotes ?? "", websiteUrl: brand?.websiteUrl ?? "", facebookUrl: brand?.facebookUrl ?? "", instagramUrl: brand?.instagramUrl ?? "", tiktokUrl: brand?.tiktokUrl ?? "", linkedinUrl: brand?.linkedinUrl ?? "", googleBusinessUrl: brand?.googleBusinessUrl ?? "", youtubeUrl: brand?.youtubeUrl ?? "" }); setBrandEditing(true); };
+  const startEditBrand = () => { setBrandForm({ logoUrl: brand?.logoUrl ?? "", brandColors: brand?.brandColors ?? "", fonts: brand?.fonts ?? "", brandManualUrl: brand?.brandManualUrl ?? "", brandNotes: brand?.brandNotes ?? "", businessDescription: brand?.businessDescription ?? "", whatsappNumber: brand?.whatsappNumber ?? "", websiteUrl: brand?.websiteUrl ?? "", facebookUrl: brand?.facebookUrl ?? "", instagramUrl: brand?.instagramUrl ?? "", tiktokUrl: brand?.tiktokUrl ?? "", linkedinUrl: brand?.linkedinUrl ?? "", googleBusinessUrl: brand?.googleBusinessUrl ?? "", youtubeUrl: brand?.youtubeUrl ?? "" }); setBrandEditing(true); };
   const saveBrand = () => { upsertBrand.mutate({ clientId: id, data: brandForm } as Parameters<typeof upsertBrand.mutate>[0], { onSuccess: () => { invalidateBrand(); setBrandEditing(false); } }); };
 
   /* ── Founder handlers ── */
@@ -646,6 +647,7 @@ export function ClientDetail() {
                     <div className="space-y-1.5"><Label>Colores (HEX, separados por coma)</Label><Input placeholder="#7c3aed, #0891b2" value={brandForm.brandColors} onChange={(e) => setBrandForm((f) => ({ ...f, brandColors: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Tipografías</Label><Input placeholder="Inter, Playfair Display" value={brandForm.fonts} onChange={(e) => setBrandForm((f) => ({ ...f, fonts: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Manual de marca (URL)</Label><Input placeholder="https://..." value={brandForm.brandManualUrl} onChange={(e) => setBrandForm((f) => ({ ...f, brandManualUrl: e.target.value }))} /></div>
+                    <div className="space-y-1.5"><Label>WhatsApp</Label><Input placeholder="+52 55 1234 5678" value={brandForm.whatsappNumber} onChange={(e) => setBrandForm((f) => ({ ...f, whatsappNumber: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Sitio Web</Label><Input placeholder="https://cliente.com" value={brandForm.websiteUrl} onChange={(e) => setBrandForm((f) => ({ ...f, websiteUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Facebook</Label><Input placeholder="https://facebook.com/..." value={brandForm.facebookUrl} onChange={(e) => setBrandForm((f) => ({ ...f, facebookUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>Instagram</Label><Input placeholder="https://instagram.com/..." value={brandForm.instagramUrl} onChange={(e) => setBrandForm((f) => ({ ...f, instagramUrl: e.target.value }))} /></div>
@@ -654,6 +656,7 @@ export function ClientDetail() {
                     <div className="space-y-1.5"><Label>Google Business</Label><Input placeholder="https://business.google.com/..." value={brandForm.googleBusinessUrl} onChange={(e) => setBrandForm((f) => ({ ...f, googleBusinessUrl: e.target.value }))} /></div>
                     <div className="space-y-1.5"><Label>YouTube</Label><Input placeholder="https://youtube.com/..." value={brandForm.youtubeUrl} onChange={(e) => setBrandForm((f) => ({ ...f, youtubeUrl: e.target.value }))} /></div>
                   </div>
+                  <div className="space-y-1.5"><Label>Información del negocio</Label><Textarea placeholder="Descripción, horarios, dirección..." rows={3} value={brandForm.businessDescription} onChange={(e) => setBrandForm((f) => ({ ...f, businessDescription: e.target.value }))} /></div>
                   <div className="space-y-1.5"><Label>Notas de marca</Label><Textarea placeholder="Guía de estilo, tono de voz..." rows={3} value={brandForm.brandNotes} onChange={(e) => setBrandForm((f) => ({ ...f, brandNotes: e.target.value }))} /></div>
                   <div className="flex gap-2">
                     <Button onClick={saveBrand} disabled={upsertBrand.isPending}>Guardar</Button>
@@ -688,6 +691,7 @@ export function ClientDetail() {
                     </div>
                   )}
                   {brand.fonts && <div className="space-y-1"><p className="text-xs text-muted-foreground uppercase tracking-wide">Tipografías</p><p className="text-sm">{brand.fonts}</p></div>}
+                  {brand.whatsappNumber && <div className="space-y-1"><p className="text-xs text-muted-foreground uppercase tracking-wide">WhatsApp</p><p className="text-sm">{brand.whatsappNumber}</p></div>}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {[
                       { label: "Sitio Web", value: brand.websiteUrl, icon: Globe },
@@ -704,6 +708,7 @@ export function ClientDetail() {
                       </a>
                     ) : null)}
                   </div>
+                  {brand.businessDescription && <div className="space-y-1"><p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1"><AlignLeft className="h-3 w-3" />Información del negocio</p><p className="text-sm whitespace-pre-wrap">{brand.businessDescription}</p></div>}
                   {brand.brandNotes && <div className="space-y-1"><p className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1"><AlignLeft className="h-3 w-3" />Notas</p><p className="text-sm whitespace-pre-wrap text-muted-foreground">{brand.brandNotes}</p></div>}
                 </div>
               )}
