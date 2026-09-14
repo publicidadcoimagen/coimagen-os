@@ -79,6 +79,7 @@ import type {
   ClientTimeline,
   ClientTimelineInput,
   ClientUpdate,
+  ClientWorkflowStatus,
   CommercialFollowupStatus,
   ConfigEntry,
   ConfigEntryInput,
@@ -5220,6 +5221,83 @@ export function useGetWorkflowStageLogs<TData = Awaited<ReturnType<typeof getWor
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetWorkflowStageLogsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetClientWorkflowStatusUrl = (clientId: number,) => {
+
+
+
+
+  return `/api/clients/${clientId}/workflow`
+}
+
+/**
+ * @summary Get the caller's own client-facing workflow progress (scoped, minimal fields)
+ */
+export const getClientWorkflowStatus = async (clientId: number, options?: RequestInit): Promise<ClientWorkflowStatus> => {
+
+  return customFetch<ClientWorkflowStatus>(getGetClientWorkflowStatusUrl(clientId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetClientWorkflowStatusQueryKey = (clientId: number,) => {
+    return [
+    `/api/clients/${clientId}/workflow`
+    ] as const;
+    }
+
+
+export const getGetClientWorkflowStatusQueryOptions = <TData = Awaited<ReturnType<typeof getClientWorkflowStatus>>, TError = ErrorType<void>>(clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientWorkflowStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetClientWorkflowStatusQueryKey(clientId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getClientWorkflowStatus>>> = ({ signal }) => getClientWorkflowStatus(clientId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(clientId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getClientWorkflowStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetClientWorkflowStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getClientWorkflowStatus>>>
+export type GetClientWorkflowStatusQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the caller's own client-facing workflow progress (scoped, minimal fields)
+ */
+
+export function useGetClientWorkflowStatus<TData = Awaited<ReturnType<typeof getClientWorkflowStatus>>, TError = ErrorType<void>>(
+ clientId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getClientWorkflowStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetClientWorkflowStatusQueryOptions(clientId,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

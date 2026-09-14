@@ -98,6 +98,7 @@ export * from './clientUpdate';
 export * from './clientUpdateEnabledModulesItem';
 export * from './clientUpdateLanguage';
 export * from './clientUpdateStatus';
+export * from './clientWorkflowStatus';
 export * from './commercialFollowupStatus';
 export * from './configEntry';
 export * from './configEntryInput';
