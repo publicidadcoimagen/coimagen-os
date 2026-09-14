@@ -13,6 +13,8 @@ import {
   useUpsertClientBrand,
   useGetClientOnboarding,
   useUpsertClientOnboarding,
+  useListClientSocialCredentials,
+  useCreateClientSocialCredential,
   useListClientTimeline,
   useCreateClientTimeline,
   useDeleteClientTimeline,
@@ -25,6 +27,7 @@ import {
   getListClientAccessQueryKey,
   getGetClientBrandQueryKey,
   getGetClientOnboardingQueryKey,
+  getListClientSocialCredentialsQueryKey,
   getListClientTimelineQueryKey,
   getListClientNotesQueryKey,
 } from "@workspace/api-client-react";
@@ -45,7 +48,7 @@ import { StatusBadge, PriorityBadge } from "@/components/status-badge";
 import {
   Building2, Mail, Phone, Calendar, Briefcase, Plus, Key, Eye, EyeOff,
   Pencil, Trash2, Globe, Shield, CheckCircle2, XCircle, Lock, ExternalLink,
-  Palette, Image, Link2, AlignLeft, Layers, Clock, StickyNote, Pin, Crown,
+  Palette, Image, Link2, AlignLeft, Layers, Clock, StickyNote, Pin, Crown, Share2,
 } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { Link } from "wouter";
@@ -104,6 +107,14 @@ const ONBOARDING_ITEMS = [
   { key: "hasBusinessInfo", label: "Información del negocio" },
 ] as const;
 type OnboardingKey = (typeof ONBOARDING_ITEMS)[number]["key"];
+
+const SOCIAL_PLATFORMS: Record<string, string> = {
+  meta: "Meta (Facebook/Instagram)", linkedin: "LinkedIn", google_business: "Google Business", tiktok: "TikTok",
+};
+const SOCIAL_CREDENTIAL_TYPES: Record<string, string> = {
+  access_token: "Access token", refresh_token: "Refresh token", api_key: "API key",
+};
+const emptySocialCredential = { platform: "meta", credentialType: "access_token", value: "", scopes: "", expiresAt: "" };
 
 const TIMELINE_EVENT_TYPES: Record<string, string> = {
   note: "Nota", proposal_sent: "Propuesta enviada", payment_received: "Pago recibido",
@@ -164,6 +175,9 @@ export function ClientDetail() {
   const { data: onboarding } = useGetClientOnboarding(id, {
     query: { queryKey: getGetClientOnboardingQueryKey(id), retry: false },
   });
+  const { data: socialCredentials, isLoading: isLoadingSocialCredentials } = useListClientSocialCredentials(id, {
+    query: { queryKey: getListClientSocialCredentialsQueryKey(id), retry: false },
+  });
   const { data: timeline } = useListClientTimeline(id, {
     query: { queryKey: getListClientTimelineQueryKey(id), retry: false },
   });
@@ -177,6 +191,7 @@ export function ClientDetail() {
   const deleteAccess = useDeleteClientAccess();
   const upsertBrand = useUpsertClientBrand();
   const upsertOnboarding = useUpsertClientOnboarding();
+  const createSocialCredential = useCreateClientSocialCredential();
   const createTimeline = useCreateClientTimeline();
   const deleteTimeline = useDeleteClientTimeline();
   const createNote = useCreateClientNote();
@@ -212,6 +227,9 @@ export function ClientDetail() {
   const [onboardingNotes, setOnboardingNotes] = useState("");
   const [onboardingEditing, setOnboardingEditing] = useState(false);
 
+  /* ── Social credentials state ── */
+  const [socialForm, setSocialForm] = useState({ ...emptySocialCredential });
+
   /* ── Timeline state ── */
   const [timelineModal, setTimelineModal] = useState(false);
   const [timelineForm, setTimelineForm] = useState({ title: "", eventType: "note", description: "", occurredAt: "" });
@@ -225,6 +243,7 @@ export function ClientDetail() {
   const invalidateAccess = () => qc.invalidateQueries({ queryKey: getListClientAccessQueryKey(id) });
   const invalidateBrand = () => qc.invalidateQueries({ queryKey: getGetClientBrandQueryKey(id) });
   const invalidateOnboarding = () => qc.invalidateQueries({ queryKey: getGetClientOnboardingQueryKey(id) });
+  const invalidateSocialCredentials = () => qc.invalidateQueries({ queryKey: getListClientSocialCredentialsQueryKey(id) });
   const invalidateTimeline = () => qc.invalidateQueries({ queryKey: getListClientTimelineQueryKey(id) });
   const invalidateNotes = () => qc.invalidateQueries({ queryKey: getListClientNotesQueryKey(id) });
 
@@ -285,6 +304,26 @@ export function ClientDetail() {
   /* ── Onboarding handlers ── */
   const startEditOnboarding = () => { setOnboardingState({ hasLogo: onboarding?.hasLogo ?? false, hasWebsiteAccess: onboarding?.hasWebsiteAccess ?? false, hasDomainAccess: onboarding?.hasDomainAccess ?? false, hasHostingAccess: onboarding?.hasHostingAccess ?? false, hasFacebookAccess: onboarding?.hasFacebookAccess ?? false, hasInstagramAccess: onboarding?.hasInstagramAccess ?? false, hasGoogleBusinessAccess: onboarding?.hasGoogleBusinessAccess ?? false, hasWhatsappAccess: onboarding?.hasWhatsappAccess ?? false, hasBrandColors: onboarding?.hasBrandColors ?? false, hasBusinessInfo: onboarding?.hasBusinessInfo ?? false }); setOnboardingNotes(onboarding?.notes ?? ""); setOnboardingEditing(true); };
   const saveOnboarding = () => { upsertOnboarding.mutate({ clientId: id, data: { ...onboardingState, notes: onboardingNotes } } as Parameters<typeof upsertOnboarding.mutate>[0], { onSuccess: () => { invalidateOnboarding(); setOnboardingEditing(false); } }); };
+
+  /* ── Social credentials handlers ── */
+  const saveSocialCredential = () => {
+    if (!socialForm.value.trim()) return;
+    createSocialCredential.mutate(
+      { clientId: id, data: { platform: socialForm.platform, credentialType: socialForm.credentialType, value: socialForm.value.trim(), scopes: socialForm.scopes || undefined, expiresAt: socialForm.expiresAt || undefined } },
+      {
+        onSuccess: () => {
+          invalidateSocialCredentials();
+          // Keep platform/type selected for the next credential (OAuth
+          // connections issue an access + refresh token back to back); only
+          // the just-submitted secret value is cleared — it's never
+          // returned by the API, so there's nothing left to show anyway.
+          setSocialForm((f) => ({ ...f, value: "", scopes: "", expiresAt: "" }));
+          toast({ title: "Credencial guardada" });
+        },
+        onError: (err) => toast({ title: "No se pudo guardar la credencial", description: err instanceof Error ? err.message : String(err), variant: "destructive" }),
+      },
+    );
+  };
 
   /* ── Timeline handlers ── */
   const handleSaveTimeline = (e: React.FormEvent) => {
@@ -454,6 +493,7 @@ export function ClientDetail() {
           <TabsTrigger value="access" className="gap-1.5"><Key className="h-4 w-4" />Bóveda de Accesos</TabsTrigger>
           <TabsTrigger value="brand" className="gap-1.5"><Palette className="h-4 w-4" />Marca</TabsTrigger>
           <TabsTrigger value="onboarding" className="gap-1.5"><CheckCircle2 className="h-4 w-4" />Onboarding</TabsTrigger>
+          <TabsTrigger value="social" className="gap-1.5"><Share2 className="h-4 w-4" />Redes Sociales</TabsTrigger>
           <TabsTrigger value="timeline" className="gap-1.5"><Clock className="h-4 w-4" />Historial</TabsTrigger>
           <TabsTrigger value="notes" className="gap-1.5"><StickyNote className="h-4 w-4" />Notas</TabsTrigger>
         </TabsList>
@@ -740,6 +780,88 @@ export function ClientDetail() {
                 <p className="text-xs text-muted-foreground">Los clientes podrán completar su onboarding desde un portal dedicado.</p>
               </div>
               <Badge variant="outline" className="ml-auto shrink-0 text-xs">Próximamente</Badge>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── REDES SOCIALES (AUTOPUBLICADOR) ── */}
+        <TabsContent value="social" className="mt-4 space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold">Credenciales de Redes Sociales</h2>
+            <p className="text-sm text-muted-foreground">Tokens de plataforma para el Autopublicador. El valor se encripta al guardar y nunca se vuelve a mostrar.</p>
+          </div>
+          <Card>
+            <CardHeader className="py-4"><CardTitle className="text-base">Nueva credencial</CardTitle></CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Plataforma</Label>
+                <Select value={socialForm.platform} onValueChange={(v) => setSocialForm((f) => ({ ...f, platform: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SOCIAL_PLATFORMS).map(([k, label]) => <SelectItem key={k} value={k}>{label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Tipo de credencial</Label>
+                <Select value={socialForm.credentialType} onValueChange={(v) => setSocialForm((f) => ({ ...f, credentialType: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SOCIAL_CREDENTIAL_TYPES).map(([k, label]) => <SelectItem key={k} value={k}>{label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5 md:col-span-2">
+                <Label>Valor</Label>
+                <Input type="password" autoComplete="off" placeholder="Pega el token o API key" value={socialForm.value} onChange={(e) => setSocialForm((f) => ({ ...f, value: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Scopes (opcional)</Label>
+                <Input placeholder="pages_manage_posts, instagram_basic" value={socialForm.scopes} onChange={(e) => setSocialForm((f) => ({ ...f, scopes: e.target.value }))} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Expira (opcional)</Label>
+                <Input type="datetime-local" value={socialForm.expiresAt} onChange={(e) => setSocialForm((f) => ({ ...f, expiresAt: e.target.value }))} />
+              </div>
+              <div className="md:col-span-2">
+                <Button size="sm" onClick={saveSocialCredential} disabled={!socialForm.value.trim() || createSocialCredential.isPending}>
+                  <Plus className="h-4 w-4 mr-2" />{createSocialCredential.isPending ? "Guardando..." : "Guardar credencial"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Plataforma</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Scopes</TableHead>
+                    <TableHead>Expira</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Último uso</TableHead>
+                    <TableHead>Creado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {isLoadingSocialCredentials ? (
+                    <TableRow><TableCell colSpan={7} className="text-center py-6 text-muted-foreground">Cargando...</TableCell></TableRow>
+                  ) : !socialCredentials || socialCredentials.length === 0 ? (
+                    <TableRow><TableCell colSpan={7} className="text-center py-10 text-muted-foreground">Sin credenciales guardadas.</TableCell></TableRow>
+                  ) : socialCredentials.map((row) => (
+                    <TableRow key={row.id} className="hover:bg-muted/30">
+                      <TableCell className="text-sm font-medium">{SOCIAL_PLATFORMS[row.platform] ?? row.platform}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{SOCIAL_CREDENTIAL_TYPES[row.credentialType] ?? row.credentialType}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{row.scopes || "—"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{row.expiresAt ? formatDate(row.expiresAt) : "—"}</TableCell>
+                      <TableCell><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${row.status === "active" ? "bg-green-500/15 text-green-400" : "bg-zinc-700/50 text-muted-foreground"}`}>{row.status}</span></TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{row.lastUsedAt ? formatDate(row.lastUsedAt) : "Nunca"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{formatDate(row.createdAt)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
