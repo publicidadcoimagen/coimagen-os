@@ -6,12 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface ClientBrandInput {
-  logoUrl?: string;
+export interface ClientBrandPatch {
   brandColors?: string;
-  fonts?: string;
-  brandManualUrl?: string;
-  brandNotes?: string;
   businessDescription?: string;
   whatsappNumber?: string;
   websiteUrl?: string;

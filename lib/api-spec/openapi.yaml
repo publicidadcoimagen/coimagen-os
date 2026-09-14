@@ -618,6 +618,65 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ClientBrand"
+    patch:
+      operationId: patchClientBrand
+      tags: [client-brand]
+      summary: Client self-service partial update of their own brand content (Fase C)
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientBrandPatch"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientBrand"
+        "403":
+          description: Not this account's client
+  /clients/{clientId}/brand/logo:
+    get:
+      operationId: getClientBrandLogo
+      tags: [client-brand]
+      summary: Get the raw logo image bytes for a client
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: OK
+          content:
+            image/*:
+              schema: { type: string, format: binary }
+        "404":
+          description: Not found
+    patch:
+      operationId: patchClientBrandLogo
+      tags: [client-brand]
+      summary: Client self-service logo upload (Fase C) — scoped to the caller's own clientId
+      parameters:
+        - { name: clientId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientBrandLogoInput"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientBrand"
+        "400":
+          description: Invalid image
+        "403":
+          description: Not this account's client
 
   # ─── CLIENT ONBOARDING ──────────────────────────────────────────────────────
   /clients/{clientId}/onboarding:
@@ -5711,6 +5770,8 @@ components:
         fonts: { type: ["string", "null"] }
         brandManualUrl: { type: ["string", "null"] }
         brandNotes: { type: ["string", "null"] }
+        businessDescription: { type: ["string", "null"] }
+        whatsappNumber: { type: ["string", "null"] }
         websiteUrl: { type: ["string", "null"] }
         facebookUrl: { type: ["string", "null"] }
         instagramUrl: { type: ["string", "null"] }
@@ -5728,6 +5789,8 @@ components:
         fonts: { type: string }
         brandManualUrl: { type: string }
         brandNotes: { type: string }
+        businessDescription: { type: string }
+        whatsappNumber: { type: string }
         websiteUrl: { type: string }
         facebookUrl: { type: string }
         instagramUrl: { type: string }
@@ -5735,6 +5798,28 @@ components:
         linkedinUrl: { type: string }
         googleBusinessUrl: { type: string }
         youtubeUrl: { type: string }
+    # Client self-service partial update (Fase C content-capture) — every
+    # field optional since the client only fills in what they checked "yes"
+    # to in the onboarding checklist; distinct from ClientBrandInput's
+    # full-overwrite shape used by the staff PUT.
+    ClientBrandPatch:
+      type: object
+      properties:
+        brandColors: { type: string }
+        businessDescription: { type: string }
+        whatsappNumber: { type: string }
+        websiteUrl: { type: string }
+        facebookUrl: { type: string }
+        instagramUrl: { type: string }
+        tiktokUrl: { type: string }
+        linkedinUrl: { type: string }
+        googleBusinessUrl: { type: string }
+        youtubeUrl: { type: string }
+    ClientBrandLogoInput:
+      type: object
+      required: [imageBase64]
+      properties:
+        imageBase64: { type: string, description: "data:<mime>;base64,<data>" }
 
     # ── CLIENT ONBOARDING ──────────────────────────────────────────────────────
     ClientOnboarding:

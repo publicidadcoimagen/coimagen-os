@@ -29,6 +29,13 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   // caller's own clientId inside the route handler itself (ownsClientId);
   // this allowlist entry only grants route-class reachability.
   { method: "PATCH", pattern: /^\/clients\/\d+\/onboarding$/ },
+  // Client self-service brand content-capture (Fase C, extends the
+  // onboarding wizard) — GET/PATCH both scoped via ownsClientId inside the
+  // handlers; this allowlist entry only grants route-class reachability.
+  { method: "GET", pattern: /^\/clients\/\d+\/brand$/ },
+  { method: "PATCH", pattern: /^\/clients\/\d+\/brand$/ },
+  { method: "GET", pattern: /^\/clients\/\d+\/brand\/logo$/ },
+  { method: "PATCH", pattern: /^\/clients\/\d+\/brand\/logo$/ },
   { method: "GET", pattern: /^\/account(\/|$)/ },
   { method: "POST", pattern: /^\/account(\/|$)/ },
   // Product catalog ("ecommerce" module, P-79/pendiente #5) — catalog.ts

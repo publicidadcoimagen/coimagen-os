@@ -602,6 +602,8 @@ export const GetClientBrandResponse = zod.object({
   "fonts": zod.string().nullish(),
   "brandManualUrl": zod.string().nullish(),
   "brandNotes": zod.string().nullish(),
+  "businessDescription": zod.string().nullish(),
+  "whatsappNumber": zod.string().nullish(),
   "websiteUrl": zod.string().nullish(),
   "facebookUrl": zod.string().nullish(),
   "instagramUrl": zod.string().nullish(),
@@ -627,6 +629,8 @@ export const UpsertClientBrandBody = zod.object({
   "fonts": zod.string().optional(),
   "brandManualUrl": zod.string().optional(),
   "brandNotes": zod.string().optional(),
+  "businessDescription": zod.string().optional(),
+  "whatsappNumber": zod.string().optional(),
   "websiteUrl": zod.string().optional(),
   "facebookUrl": zod.string().optional(),
   "instagramUrl": zod.string().optional(),
@@ -644,6 +648,91 @@ export const UpsertClientBrandResponse = zod.object({
   "fonts": zod.string().nullish(),
   "brandManualUrl": zod.string().nullish(),
   "brandNotes": zod.string().nullish(),
+  "businessDescription": zod.string().nullish(),
+  "whatsappNumber": zod.string().nullish(),
+  "websiteUrl": zod.string().nullish(),
+  "facebookUrl": zod.string().nullish(),
+  "instagramUrl": zod.string().nullish(),
+  "tiktokUrl": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "googleBusinessUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Client self-service partial update of their own brand content (Fase C)
+ */
+export const PatchClientBrandParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const PatchClientBrandBody = zod.object({
+  "brandColors": zod.string().optional(),
+  "businessDescription": zod.string().optional(),
+  "whatsappNumber": zod.string().optional(),
+  "websiteUrl": zod.string().optional(),
+  "facebookUrl": zod.string().optional(),
+  "instagramUrl": zod.string().optional(),
+  "tiktokUrl": zod.string().optional(),
+  "linkedinUrl": zod.string().optional(),
+  "googleBusinessUrl": zod.string().optional(),
+  "youtubeUrl": zod.string().optional()
+})
+
+export const PatchClientBrandResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "logoUrl": zod.string().nullish(),
+  "brandColors": zod.string().nullish(),
+  "fonts": zod.string().nullish(),
+  "brandManualUrl": zod.string().nullish(),
+  "brandNotes": zod.string().nullish(),
+  "businessDescription": zod.string().nullish(),
+  "whatsappNumber": zod.string().nullish(),
+  "websiteUrl": zod.string().nullish(),
+  "facebookUrl": zod.string().nullish(),
+  "instagramUrl": zod.string().nullish(),
+  "tiktokUrl": zod.string().nullish(),
+  "linkedinUrl": zod.string().nullish(),
+  "googleBusinessUrl": zod.string().nullish(),
+  "youtubeUrl": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string().nullish()
+})
+
+
+/**
+ * @summary Get the raw logo image bytes for a client
+ */
+export const GetClientBrandLogoParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+
+/**
+ * @summary Client self-service logo upload (Fase C) — scoped to the caller's own clientId
+ */
+export const PatchClientBrandLogoParams = zod.object({
+  "clientId": zod.coerce.number()
+})
+
+export const PatchClientBrandLogoBody = zod.object({
+  "imageBase64": zod.string().describe('data:<mime>;base64,<data>')
+})
+
+export const PatchClientBrandLogoResponse = zod.object({
+  "id": zod.number(),
+  "clientId": zod.number(),
+  "logoUrl": zod.string().nullish(),
+  "brandColors": zod.string().nullish(),
+  "fonts": zod.string().nullish(),
+  "brandManualUrl": zod.string().nullish(),
+  "brandNotes": zod.string().nullish(),
+  "businessDescription": zod.string().nullish(),
+  "whatsappNumber": zod.string().nullish(),
   "websiteUrl": zod.string().nullish(),
   "facebookUrl": zod.string().nullish(),
   "instagramUrl": zod.string().nullish(),

@@ -20,6 +20,10 @@ export interface ClientBrand {
   /** @nullable */
   brandNotes?: string | null;
   /** @nullable */
+  businessDescription?: string | null;
+  /** @nullable */
+  whatsappNumber?: string | null;
+  /** @nullable */
   websiteUrl?: string | null;
   /** @nullable */
   facebookUrl?: string | null;

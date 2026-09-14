@@ -77,6 +77,8 @@ export * from './clientApprovalCreate';
 export * from './clientApprovalUpdate';
 export * from './clientBrand';
 export * from './clientBrandInput';
+export * from './clientBrandLogoInput';
+export * from './clientBrandPatch';
 export * from './clientEnabledModulesItem';
 export * from './clientInput';
 export * from './clientInputLanguage';
