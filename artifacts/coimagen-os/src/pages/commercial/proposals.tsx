@@ -4,7 +4,11 @@ import {
   useListProposals,
   useCreateProposal,
   useUpdateProposal,
+  useListProspects,
+  useListClients,
   getListProposalsQueryKey,
+  getListProspectsQueryKey,
+  getListClientsQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectLabel, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FileText } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/format";
 
@@ -27,6 +31,8 @@ export function Proposals() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("all");
   const { data: proposals, isLoading } = useListProposals({}, { query: { queryKey: getListProposalsQueryKey() } });
+  const { data: prospects } = useListProspects({}, { query: { queryKey: getListProspectsQueryKey() } });
+  const { data: clients } = useListClients({ query: { queryKey: getListClientsQueryKey() } });
   const createProposal = useCreateProposal();
   const [open, setOpen] = useState(false);
   // amount defaults to "0", not "", and is never allowed to go blank (see
@@ -37,7 +43,8 @@ export function Proposals() {
   // number. The conversion flow already throws a clear error on a null
   // amount (payment-schedule/repository.ts) — this closes the gap before
   // that point instead of relying on that guard to catch it.
-  const [form, setForm] = useState({ title: "", amount: "0", status: "draft", validUntil: "", notes: "" });
+  const emptyForm = { title: "", amount: "0", status: "draft", validUntil: "", notes: "", link: "none" };
+  const [form, setForm] = useState(emptyForm);
 
   const filtered = proposals?.filter((p) => tab === "all" || p.status === tab) ?? [];
 
@@ -48,12 +55,31 @@ export function Proposals() {
     if (!isAmountValid) setForm((f) => ({ ...f, amount: "0" }));
   };
 
+  // Without a prospectId/clientId, the conversion flow (POST /prospects/:id/convert)
+  // and commercial-followup's correo 3/4 have nothing to link this proposal to — the
+  // only way to reach either today would be staff calling the API directly. See
+  // docs/prospect-to-client-conversion.md.
+  const [linkKind, linkId] = form.link === "none" ? [null, null] : (form.link.split(":") as ["prospect" | "client", string]);
+
   const handleSubmit = () => {
     if (!form.title || !isAmountValid) return;
-    createProposal.mutate({ data: { title: form.title, amount: amountValue, status: form.status as "draft", validUntil: form.validUntil || undefined, notes: form.notes || undefined } }, {
-      onSuccess: () => { qc.invalidateQueries({ queryKey: getListProposalsQueryKey() }); setOpen(false); setForm({ title: "", amount: "0", status: "draft", validUntil: "", notes: "" }); }
+    createProposal.mutate({
+      data: {
+        title: form.title,
+        amount: amountValue,
+        status: form.status as "draft",
+        validUntil: form.validUntil || undefined,
+        notes: form.notes || undefined,
+        prospectId: linkKind === "prospect" ? Number(linkId) : undefined,
+        clientId: linkKind === "client" ? Number(linkId) : undefined,
+      },
+    }, {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListProposalsQueryKey() }); setOpen(false); setForm(emptyForm); }
     });
   };
+
+  const prospectName = (id: number) => prospects?.find((p) => p.id === id)?.name;
+  const clientName = (id: number) => clients?.find((c) => c.id === id)?.name;
 
   const totalAccepted = proposals?.filter((p) => p.status === "accepted").reduce((s, p) => s + (p.amount ?? 0), 0) ?? 0;
 
@@ -82,18 +108,23 @@ export function Proposals() {
       {isLoading ? <div className="text-muted-foreground text-sm">Cargando...</div> : (
         <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-border bg-muted/30"><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Título</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Monto</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Válida hasta</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Estado</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Fecha</th></tr></thead>
+            <thead><tr className="border-b border-border bg-muted/30"><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Título</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Vinculado a</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Monto</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Válida hasta</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Estado</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Fecha</th></tr></thead>
             <tbody>
               {filtered.map((p) => (
                 <tr key={p.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 font-medium">{p.title}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {p.clientId != null ? (clientName(p.clientId) ?? `Cliente #${p.clientId}`)
+                      : p.prospectId != null ? (prospectName(p.prospectId) ?? `Prospecto #${p.prospectId}`)
+                      : <span className="italic">Sin vincular</span>}
+                  </td>
                   <td className="px-4 py-3 tabular-nums">{formatCurrency(p.amount)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(p.validUntil)}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[p.status]}`}>{STATUS_ES[p.status] ?? p.status}</span></td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(p.createdAt)}</td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center text-muted-foreground text-sm">Sin propuestas.</td></tr>}
+              {filtered.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground text-sm">Sin propuestas.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -104,6 +135,23 @@ export function Proposals() {
           <DialogHeader><DialogTitle>Nueva Propuesta</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Título *</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+            <div>
+              <Label>Vincular a</Label>
+              <Select value={form.link} onValueChange={(v) => setForm({ ...form, link: v })}>
+                <SelectTrigger><SelectValue placeholder="Sin vincular" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin vincular</SelectItem>
+                  <SelectGroup>
+                    <SelectLabel>Prospectos</SelectLabel>
+                    {prospects?.map((p) => <SelectItem key={`prospect:${p.id}`} value={`prospect:${p.id}`}>{p.name}{p.company ? ` — ${p.company}` : ""}</SelectItem>)}
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Clientes</SelectLabel>
+                    {clients?.map((c) => <SelectItem key={`client:${c.id}`} value={`client:${c.id}`}>{c.name}</SelectItem>)}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Monto (USD) *</Label>
