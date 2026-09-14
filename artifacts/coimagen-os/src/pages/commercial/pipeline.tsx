@@ -1,32 +1,64 @@
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListProspects,
-  useUpdateProspect,
+  useConvertProspect,
   useListProposals,
   getListProspectsQueryKey,
+  getListClientsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, ArrowRight, UserCheck } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/format";
+import { useToast } from "@/hooks/use-toast";
+
+// Mirrors ConvertProspectResult's error codes (lib/prospect-conversion/repository.ts)
+// with the message staff actually needs to act on it — "no_accepted_proposal" in
+// particular is the expected, common case (a qualified prospect with no accepted
+// proposal yet), not an edge case worth a raw HTTP error string.
+function describeConvertError(err: unknown): string {
+  const code =
+    typeof err === "object" && err !== null && "data" in err
+      ? (err as { data?: { error?: string } }).data?.error
+      : undefined;
+
+  switch (code) {
+    case "no_accepted_proposal":
+      return "Este prospecto no tiene una propuesta aceptada todavía. Crea una propuesta y espera a que la acepte antes de convertirlo.";
+    case "already_converted":
+      return "Este prospecto ya fue convertido a cliente anteriormente.";
+    case "test_source_requires_confirmation":
+      return "Este prospecto está marcado como dato de prueba y no se puede convertir automáticamente.";
+    default:
+      return err instanceof Error ? err.message : "No se pudo convertir el prospecto.";
+  }
+}
 
 const STATUS_LABELS: Record<string, string> = { lead: "Lead", qualified: "Calificado", disqualified: "Descalificado", converted: "Convertido", draft: "Borrador", sent: "Enviada", accepted: "Aceptada", rejected: "Rechazada" };
 const STATUS_COLORS: Record<string, string> = { lead: "text-blue-400", qualified: "text-emerald-400", converted: "text-violet-400", accepted: "text-emerald-400", sent: "text-amber-400", draft: "text-muted-foreground", rejected: "text-red-400" };
 
 export function Pipeline() {
   const qc = useQueryClient();
+  const { toast } = useToast();
   const { data: prospects, isLoading: lp } = useListProspects({}, { query: { queryKey: getListProspectsQueryKey() } });
   const { data: proposals } = useListProposals();
-  const updateProspect = useUpdateProspect();
+  const convertProspect = useConvertProspect();
 
   const counts = { lead: 0, qualified: 0, disqualified: 0, converted: 0 };
   prospects?.forEach((p) => { if (p.status in counts) counts[p.status as keyof typeof counts]++; });
   const qualified = prospects?.filter((p) => p.status === "qualified") ?? [];
 
   const convert = (id: number) => {
-    updateProspect.mutate({ id, data: { status: "converted" } }, {
-      onSuccess: () => qc.invalidateQueries({ queryKey: getListProspectsQueryKey() })
+    convertProspect.mutate({ id }, {
+      onSuccess: (client) => {
+        qc.invalidateQueries({ queryKey: getListProspectsQueryKey() });
+        qc.invalidateQueries({ queryKey: getListClientsQueryKey() });
+        toast({ title: "Prospecto convertido", description: `${client.name} ya es cliente, con su factura de cuota generada.` });
+      },
+      onError: (err) => {
+        toast({ title: "No se pudo convertir", description: describeConvertError(err), variant: "destructive" });
+      },
     });
   };
 
@@ -62,8 +94,14 @@ export function Pipeline() {
                     <div className="text-sm font-medium">{p.name}</div>
                     <div className="text-xs text-muted-foreground">{p.company ?? "-"} · {p.industry ?? "-"}</div>
                   </div>
-                  <Button size="sm" variant="outline" className="gap-1 text-xs h-7" onClick={() => convert(p.id)}>
-                    Convertir <ArrowRight className="h-3 w-3" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 text-xs h-7"
+                    disabled={convertProspect.isPending && convertProspect.variables?.id === p.id}
+                    onClick={() => convert(p.id)}
+                  >
+                    {convertProspect.isPending && convertProspect.variables?.id === p.id ? "Convirtiendo..." : "Convertir"} <ArrowRight className="h-3 w-3" />
                   </Button>
                 </div>
               ))}

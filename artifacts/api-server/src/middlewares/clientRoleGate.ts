@@ -13,6 +13,13 @@ import { isClienteRole } from "./clientScope";
 const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   { method: "GET", pattern: /^\/organizations$/ },
   { method: "GET", pattern: /^\/organizations\/[^/]+$/ },
+  // Client Room "Editar perfil" (profile.tsx) — scoped to the caller's own
+  // organization and a safe field subset inside the handler itself
+  // (ownsClientId + isStaffManager), same pattern as onboarding/brand below;
+  // this allowlist entry only grants route-class reachability. Previously
+  // missing here, so the button always failed with 403 for a real client
+  // account (2026-09-14 integration audit).
+  { method: "PATCH", pattern: /^\/organizations\/[^/]+$/ },
   { method: "GET", pattern: /^\/projects$/ },
   { method: "GET", pattern: /^\/projects\/\d+$/ },
   { method: "GET", pattern: /^\/contracts$/ },

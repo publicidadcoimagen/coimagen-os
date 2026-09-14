@@ -4,6 +4,7 @@ import {
   useListClientApprovals, getListClientApprovalsQueryKey,
   useListInvoices, getListInvoicesQueryKey,
   useListContracts, getListContractsQueryKey,
+  useGetClientWorkflowStatus, getGetClientWorkflowStatusQueryKey,
 } from "@workspace/api-client-react";
 import { ClientRoomLayout } from "./layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +24,30 @@ type ContractRow = { id: number; title: string; status: string };
 
 const WORKFLOW_STAGE_COUNT = 10;
 
-function StageProgress({ current = 6 }: { current?: number }) {
+// Mirrors ALL_STAGES in artifacts/api-server/src/routes/workflows.ts and the
+// identical grouping in client-room/workflow.tsx — the 20 internal
+// engineering stages grouped into the 10 client-facing stages of
+// t.workflow.stages. Duplicated rather than shared, same as workflow.tsx's
+// own copy (no shared package for this constant); keep both in sync by hand.
+const STAGE_GROUPS: string[][] = [
+  ["lead_received"],
+  ["diagnosis_started", "diagnosis_completed"],
+  ["proposal_sent", "proposal_approved"],
+  ["contract_sent", "contract_signed"],
+  ["payment_received"],
+  ["onboarding_started", "onboarding_completed"],
+  ["production_started", "design_review", "development_review"],
+  ["qa_internal", "changes_requested", "client_approval"],
+  ["final_delivery"],
+  ["monthly_active", "support_active", "customer_success"],
+];
+
+function toClientStageNumber(internalStage: string): number {
+  const idx = STAGE_GROUPS.findIndex((group) => group.includes(internalStage));
+  return idx === -1 ? 1 : idx + 1;
+}
+
+function StageProgress({ current }: { current: number }) {
   return (
     <div className="flex items-center gap-1 flex-wrap">
       {Array.from({ length: WORKFLOW_STAGE_COUNT }, (_, i) => (
@@ -79,6 +103,14 @@ function ClientDashboardBody({ slug }: { slug: string }) {
   );
 
   const org = rawOrg as Org | undefined;
+  const clientId = org?.clientId ?? 0;
+  // retry:false + tolerate the error, same as client-room/workflow.tsx — a
+  // 404 here just means this client has no workflow row yet (e.g. contract
+  // not signed), not a real failure.
+  const { data: workflow } = useGetClientWorkflowStatus(clientId, {
+    query: { queryKey: getGetClientWorkflowStatusQueryKey(clientId), enabled: !!clientId, retry: false },
+  });
+  const currentStage = workflow ? toClientStageNumber(workflow.currentStage) : null;
   const pendingApprovals = (rawApprovals as Approval[]).filter((a) => a.status === "pending");
   const unsignedContracts = (rawContracts as ContractRow[]).filter((c) => c.status === "sent");
   const pendingInvoices = (rawInvoices as Invoice[])
@@ -123,15 +155,25 @@ function ClientDashboardBody({ slug }: { slug: string }) {
           ))}
         </div>
 
-        {/* Workflow progress */}
+        {/* Workflow progress — same data source as /client/:slug/workflow */}
         <Card className="border-border/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold">{t.dashboard.workflowStatus}</p>
-              <Badge variant="outline" className="text-[10px] py-0 bg-green-400/10 text-green-400 border-green-400/30">{t.dashboard.inProduction}</Badge>
+              {workflow && (
+                <Badge variant="outline" className="text-[10px] py-0 bg-green-400/10 text-green-400 border-green-400/30">
+                  {workflow.status === "completed" ? t.workflow.completed : t.workflow.inProgress}
+                </Badge>
+              )}
             </div>
-            <StageProgress current={6} />
-            <p className="text-[11px] text-muted-foreground mt-2">{t.dashboard.currentStagePrefix} <strong>{t.dashboard.production}</strong> — {t.dashboard.inProcess}</p>
+            {workflow && currentStage ? (
+              <>
+                <StageProgress current={currentStage - 1} />
+                <p className="text-[11px] text-muted-foreground mt-2">{t.workflow.currentStageLabel(t.workflow.stages[currentStage - 1]?.name ?? "")}</p>
+              </>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">{t.workflow.noWorkflow}</p>
+            )}
           </CardContent>
         </Card>
 
