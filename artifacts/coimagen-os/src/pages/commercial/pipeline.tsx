@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   useListProspects,
   useConvertProspect,
+  useUpdateProspect,
   useListProposals,
   getListProspectsQueryKey,
   getListClientsQueryKey,
@@ -9,7 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, ArrowRight, UserCheck } from "lucide-react";
+import { TrendingUp, ArrowRight, UserCheck, Check, X } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,9 +45,11 @@ export function Pipeline() {
   const { data: prospects, isLoading: lp } = useListProspects({}, { query: { queryKey: getListProspectsQueryKey() } });
   const { data: proposals } = useListProposals();
   const convertProspect = useConvertProspect();
+  const updateProspect = useUpdateProspect();
 
   const counts = { lead: 0, qualified: 0, disqualified: 0, converted: 0 };
   prospects?.forEach((p) => { if (p.status in counts) counts[p.status as keyof typeof counts]++; });
+  const leads = prospects?.filter((p) => p.status === "lead") ?? [];
   const qualified = prospects?.filter((p) => p.status === "qualified") ?? [];
 
   const convert = (id: number) => {
@@ -59,6 +62,17 @@ export function Pipeline() {
       onError: (err) => {
         toast({ title: "No se pudo convertir", description: describeConvertError(err), variant: "destructive" });
       },
+    });
+  };
+
+  // Was missing entirely — no button anywhere moved a prospect out of "lead",
+  // so "Prospectos Calificados" below (and therefore "Convertir") could never
+  // have anything in it from real UI use. Found 2026-09-14 running the real
+  // pilot: 19 leads, 0 qualified, ever.
+  const moveStage = (id: number, to: "qualified" | "disqualified") => {
+    updateProspect.mutate({ id, data: { status: to } }, {
+      onSuccess: () => qc.invalidateQueries({ queryKey: getListProspectsQueryKey() }),
+      onError: (err) => toast({ title: "No se pudo actualizar", description: err instanceof Error ? err.message : "Inténtalo de nuevo.", variant: "destructive" }),
     });
   };
 
@@ -82,7 +96,44 @@ export function Pipeline() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4 text-blue-400" /> Leads sin calificar</CardTitle></CardHeader>
+          <CardContent>
+            {leads.length === 0 && <p className="text-sm text-muted-foreground">No hay leads pendientes de calificar.</p>}
+            <div className="space-y-2">
+              {leads.map((p) => (
+                <div key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/40">
+                  <div>
+                    <div className="text-sm font-medium">{p.name}</div>
+                    <div className="text-xs text-muted-foreground">{p.company ?? "-"} · {p.industry ?? "-"}</div>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 text-xs h-7"
+                      disabled={updateProspect.isPending && updateProspect.variables?.id === p.id}
+                      onClick={() => moveStage(p.id, "qualified")}
+                    >
+                      <Check className="h-3 w-3" /> Calificar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="gap-1 text-xs h-7 text-muted-foreground"
+                      disabled={updateProspect.isPending && updateProspect.variables?.id === p.id}
+                      onClick={() => moveStage(p.id, "disqualified")}
+                    >
+                      <X className="h-3 w-3" /> Descalificar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader><CardTitle className="text-base flex items-center gap-2"><UserCheck className="h-4 w-4 text-emerald-400" /> Prospectos Calificados</CardTitle></CardHeader>
           <CardContent>
