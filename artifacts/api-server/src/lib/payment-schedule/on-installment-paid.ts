@@ -2,6 +2,8 @@ import { eq } from "drizzle-orm";
 import { db, invoicesTable, proposalsTable, subscriptionsTable, clientsTable } from "@workspace/db";
 import { markInvoicePaid, advanceNextInstallment, allInstallmentsPaid } from "./repository";
 import { sendPaymentConfirmedEmail } from "./payment-confirmed-email";
+import { createClientPortalAccount } from "../portal-onboarding/create-client-account";
+import { sendPortalCredentialsEmail } from "../portal-onboarding/credentials-email";
 import { logger } from "../logger";
 
 // The single authoritative place that reacts to a confirmed cuota payment
@@ -27,6 +29,21 @@ export async function handleInstallmentPaid(invoiceId: number): Promise<void> {
   if (invoice.clientId) {
     const [client] = await db.select({ name: clientsTable.name, email: clientsTable.email }).from(clientsTable).where(eq(clientsTable.id, invoice.clientId));
     if (client?.email) {
+      // Portal account + credentials, only the first time this client ever
+      // pays anything — createClientPortalAccount itself checks for an
+      // existing role="cliente" row for this clientId and returns null if
+      // one already exists, so a later cuota/mensualidad never re-creates
+      // or re-sends credentials.
+      try {
+        const created = await createClientPortalAccount(invoice.clientId, client.name, client.email);
+        if (created) {
+          const emailId = await sendPortalCredentialsEmail(client.email, client.name, created.temporaryPassword);
+          logger.info({ invoiceId, clientId: invoice.clientId, emailId }, "Cuenta de portal creada y credenciales enviadas");
+        }
+      } catch (err) {
+        logger.warn({ err, invoiceId, clientId: invoice.clientId }, "No se pudo crear la cuenta de portal / enviar credenciales");
+      }
+
       try {
         const emailId = await sendPaymentConfirmedEmail(client.email, client.name, invoice.number, invoice.amount, invoice.currency, false);
         logger.info({ invoiceId, emailId }, "Correo de pago confirmado enviado al cliente");
