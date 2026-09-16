@@ -26,6 +26,12 @@ const STATUS_COLOR: Record<string, string> = {
   accepted: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30", rejected: "bg-red-500/20 text-red-300 border-red-500/30",
 };
 const STATUSES = ["draft", "sent", "accepted", "rejected"];
+// "accepted" is deliberately excluded here: it must only ever be set by the
+// client approving from their public proposal link (/propuesta/:token),
+// which also generates the payment-schedule invoices. Creating a proposal
+// already "accepted" from this dialog skipped that invoice generation
+// silently — see backend guard in proposals.ts.
+const CREATABLE_STATUSES = ["draft", "sent", "rejected"];
 
 export function Proposals() {
   const qc = useQueryClient();
@@ -161,7 +167,7 @@ export function Proposals() {
                 <Label>Estado</Label>
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_ES[s]}</SelectItem>)}</SelectContent>
+                  <SelectContent>{CREATABLE_STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_ES[s]}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
