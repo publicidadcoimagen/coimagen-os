@@ -1,6 +1,8 @@
 import { eq } from "drizzle-orm";
-import { db, invoicesTable, proposalsTable, subscriptionsTable } from "@workspace/db";
+import { db, invoicesTable, proposalsTable, subscriptionsTable, clientsTable } from "@workspace/db";
 import { markInvoicePaid, advanceNextInstallment, allInstallmentsPaid } from "./repository";
+import { sendPaymentConfirmedEmail } from "./payment-confirmed-email";
+import { logger } from "../logger";
 
 // The single authoritative place that reacts to a confirmed cuota payment
 // — called ONLY from webhooks-paypal.ts's PAYMENT.CAPTURE.COMPLETED
@@ -13,6 +15,26 @@ export async function handleInstallmentPaid(invoiceId: number): Promise<void> {
 
   const [invoice] = await db.select().from(invoicesTable).where(eq(invoicesTable.id, invoiceId));
   if (!invoice?.proposalId) return; // not a payment-schedule invoice (manual staff invoice) — nothing else to do
+
+  // Best-effort, same pattern as the fiscal-invoice alert in
+  // webhooks-paypal.ts — a Resend outage must never fail the payment
+  // itself. reactivatedAccess is always false here: this is a new
+  // proposal's deposit/milestone cuota, and a client can't have been
+  // access-gate-restricted before their subscription even exists (that
+  // only happens below, once ALL installments are paid). The recurring
+  // mensualidad's own "you were past_due, now reactivated" case is handled
+  // separately in webhooks-paypal.ts's handleRecurringPaymentCompleted.
+  if (invoice.clientId) {
+    const [client] = await db.select({ name: clientsTable.name, email: clientsTable.email }).from(clientsTable).where(eq(clientsTable.id, invoice.clientId));
+    if (client?.email) {
+      try {
+        const emailId = await sendPaymentConfirmedEmail(client.email, client.name, invoice.number, invoice.amount, invoice.currency, false);
+        logger.info({ invoiceId, emailId }, "Correo de pago confirmado enviado al cliente");
+      } catch (err) {
+        logger.warn({ err, invoiceId }, "No se pudo enviar el correo de pago confirmado");
+      }
+    }
+  }
 
   const allPaid = await allInstallmentsPaid(invoice.proposalId);
   if (!allPaid) {
