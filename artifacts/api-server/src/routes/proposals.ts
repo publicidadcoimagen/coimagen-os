@@ -36,9 +36,20 @@ router.get("/proposals", async (req, res): Promise<void> => {
   res.json(rows.map(fmt));
 });
 
+// "accepted" only ever gets set by the client approving from their public
+// proposal link (POST /public/proposals/:token/approve), which also
+// generates the payment-schedule invoices (createInstallmentInvoices). A
+// proposal created or PATCHed straight to "accepted" from here would skip
+// that invoice generation silently — this happened for real (proposal
+// #7, "ECOMERCE", 2026-09-15) before this guard existed.
+const ACCEPTED_STATUS_ERROR = {
+  error: "El estado 'accepted' no se puede asignar manualmente — solo lo activa el cliente al aprobar desde su enlace público, lo que además genera las facturas del plan de pagos.",
+};
+
 router.post("/proposals", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const parsed = CreateProposalBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  if (parsed.data.status === "accepted") { res.status(400).json(ACCEPTED_STATUS_ERROR); return; }
   const [row] = await db.insert(proposalsTable).values({
     title: parsed.data.title,
     prospectId: parsed.data.prospectId ?? null,
@@ -64,6 +75,7 @@ router.patch("/proposals/:id", requireRole("ceo", "admin"), async (req, res): Pr
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateProposalBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  if (parsed.data.status === "accepted") { res.status(400).json(ACCEPTED_STATUS_ERROR); return; }
   const updateData: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
   if (parsed.data.amount !== undefined) updateData.amount = parsed.data.amount.toString();
   const [row] = await db.update(proposalsTable).set(updateData).where(eq(proposalsTable.id, params.data.id)).returning();
