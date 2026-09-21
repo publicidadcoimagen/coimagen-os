@@ -1,37 +1,22 @@
 // Real-Postgres tests (PGlite, embedded/ephemeral) for lib/agent-scope.ts —
-// Context Engine v0. Same rationale as prospect-conversion.test.ts: this is
+// MCP Agent Scope v0. Same rationale as prospect-conversion.test.ts: this is
 // specifically an authorization boundary, so it's tested against a real
 // Postgres `inArray`/`eq` evaluation, not a mock.
+//
+// The schema below is NOT hand-copied — generateSchemaSql() runs the real
+// drizzle-kit generator against the live `clientsTable`/`mcpAgentScopesTable`
+// definitions in lib/db/src/schema/*.ts and returns the actual CREATE TABLE
+// SQL drizzle-kit would emit. A hand-typed copy here previously could (and
+// silently did, in this file's first version) drift from the real table the
+// moment someone edited it without remembering to update the test's SQL —
+// see the audit finding this PR fixes.
 import { test, describe, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle, type PgliteDatabase } from "drizzle-orm/pglite";
 import * as schema from "@workspace/db/schema";
+import { generateSchemaSql } from "@workspace/db/testing";
 import { agentClientIds, agentOwnsClientId } from "../src/lib/agent-scope";
-
-const SCHEMA_SQL = `
-  create table clients (
-    id serial primary key,
-    name text not null,
-    email text, phone text, company text, industry text,
-    status text not null default 'prospect',
-    notes text,
-    is_founder boolean not null default false,
-    founder_number integer,
-    enabled_modules jsonb not null default '[]',
-    language text not null default 'es',
-    access_gate_exempt boolean not null default false,
-    created_at timestamp not null default now(),
-    updated_at timestamp
-  );
-  create table mcp_agent_scopes (
-    agent_key varchar(128) not null,
-    client_id integer not null references clients(id) on delete cascade,
-    note text,
-    created_at timestamp with time zone not null default now(),
-    primary key (agent_key, client_id)
-  );
-`;
 
 let pglite: PGlite;
 let testDb: PgliteDatabase<typeof schema>;
@@ -43,12 +28,13 @@ async function seedClient(name: string) {
 
 before(async () => {
   pglite = new PGlite();
-  await pglite.exec(SCHEMA_SQL);
+  const sql = generateSchemaSql(["clientsTable", "mcpAgentScopesTable"]);
+  await pglite.exec(sql);
   testDb = drizzle(pglite, { schema }) as unknown as PgliteDatabase<typeof schema>;
 });
 after(async () => pglite.close());
 
-describe("agentClientIds / agentOwnsClientId — Context Engine v0", () => {
+describe("agentClientIds / agentOwnsClientId — MCP Agent Scope v0", () => {
   test("agentKey con cero filas de scope: falla cerrado ([-1]), nunca 've todo'", async () => {
     const ids = await agentClientIds("agent-sin-scopes", testDb as unknown as Parameters<typeof agentClientIds>[1]);
     assert.deepEqual(ids, [-1]);

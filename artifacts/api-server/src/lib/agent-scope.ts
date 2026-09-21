@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, mcpAgentScopesTable } from "@workspace/db";
 
-// Context Engine v0 — the single authorization check a future Coimagen MCP
+// MCP Agent Scope v0 — the single authorization check a future Coimagen MCP
 // tool must call before touching any client-specific data. Mirrors
 // middlewares/clientScope.ts's fail-closed spirit for role="cliente": an
 // agentKey with no rows in mcp_agent_scopes must match zero real clientIds,
@@ -10,6 +10,50 @@ import { db, mcpAgentScopesTable } from "@workspace/db";
 // same reason (never let a real clientId of 0-or-falsy collide with "no
 // access", and never rely on an empty array behaving safely in every
 // downstream `inArray(...)` call).
+//
+// ## agentKey is an identifier, NEVER a secret
+// `agentKey` is a label used to look up a row in `mcp_agent_scopes` — it is
+// NOT a credential and must never be treated as one. In particular:
+//   - Do not use the raw agentKey as a bearer token / API key by itself.
+//   - It is fine for agentKey to appear in logs, audit trails, or error
+//     messages — it identifies WHO is asking, it does not prove WHO they
+//     say they are.
+// How an agent/token actually proves it owns a given agentKey at runtime —
+// hashing, expiration, revocation, rotation — is a SEPARATE, still-pending
+// design problem, out of scope for this file and this PR. Whatever that
+// mechanism ends up being, it authenticates first and hands this module a
+// trusted agentKey; this module only ever answers "given this identifier,
+// which clientId(s) is it allowed to touch."
+//
+// ## Design: making agentOwnsClientId impossible to skip (not implemented yet)
+// A boolean-returning function is easy to call and then ignore — nothing
+// today stops a future MCP tool from forgetting to check it, or checking it
+// and proceeding anyway on `false`. Audit finding F.1 ("collapse of the
+// only real tenant boundary") means this specific check deserves more than
+// "please remember to call this." Two complementary mechanisms, both still
+// to be designed/built when the actual MCP tool layer exists:
+//   1. Transport-level choke point (`artifacts/mcp-server`, not built yet):
+//      tools are never called directly — a single dispatcher resolves
+//      agentKey + the tool's declared clientId, calls agentOwnsClientId
+//      BEFORE invoking the tool handler, and the tool registration API
+//      itself only accepts handlers of a "clientId-scoped tool" shape, so
+//      there is no code path to register a tool that skips the check. Same
+//      pattern as `clientRoleGate.ts`'s default-deny single choke point,
+//      applied to tools instead of Express routes.
+//   2. Data-layer enforcement (buildable independently of #1, in a later
+//      PR): stop returning a plain `boolean` from agentOwnsClientId and
+//      instead make it the only way to obtain an opaque "scoped access"
+//      value; then change client-scoped repository functions to require
+//      that value as a parameter instead of a raw `clientId: number` — so
+//      calling them without having gone through authorization first is a
+//      compile error, not just a missed runtime check ("parse, don't
+//      validate"). This is a stronger guarantee than clientScope.ts gives
+//      today for human staff, deliberately: a single Express request only
+//      needs the check applied once per request, while a tool-calling agent
+//      gets a fresh, isolated decision on every single call.
+// Recommendation: build both — #2 does not depend on artifacts/mcp-server
+// existing and can start as soon as there is a second real caller of this
+// module; #1 is the outer belt-and-suspenders once the MCP package exists.
 const NO_ACCESS: readonly [number] = [-1];
 
 // clientId(s) this agentKey is allowed to touch, or [-1] if none are
