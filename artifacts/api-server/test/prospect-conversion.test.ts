@@ -201,6 +201,10 @@ describe("POST /prospects/:id/convert — casos positivos", () => {
     assert.equal(parseFloat(invoices[0].amount), 22500, "50% del amount de la propuesta (45000)");
     assert.equal(invoices[1].status, "draft");
     assert.equal(invoices.every((i) => i.clientId === result.client.id), true);
+    // Regression: publicToken was never set here until 2026-09-16, so
+    // PaymentBox (createPaypalOrder(invoice.publicToken, ...)) on the public
+    // proposal page silently had nothing to pay against.
+    assert.equal(invoices.every((i) => typeof i.publicToken === "string" && i.publicToken.length > 0), true);
   });
 
   test("prospecto de prueba con confirmTestSource:true sí se convierte — la fricción es deliberada, no un bloqueo permanente", async () => {

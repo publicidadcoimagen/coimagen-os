@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { eq, and, asc, inArray } from "drizzle-orm";
 import { db, invoicesTable, invoicePaymentsTable, type Invoice, type Proposal } from "@workspace/db";
 import { generateInstallments } from "./generate";
@@ -52,6 +53,13 @@ export async function createInstallmentInvoices(
       proposalId: proposal.id,
       installmentLabel: installment.label,
       currency: proposal.currency,
+      // Column has no DB-level default (nullable only for pre-existing
+      // staff-created invoices that predate this field) — every installment
+      // generated here needs one, since PaymentBox on the public proposal
+      // page (/propuesta/:token) requires it to create the PayPal order.
+      // Was missing entirely until 2026-09-16, which silently broke the
+      // real payment step for any proposal accepted through the public link.
+      publicToken: randomUUID(),
     })),
   ).returning();
 
