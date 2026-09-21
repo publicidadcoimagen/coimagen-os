@@ -63,3 +63,4 @@ export * from "./products";
 export * from "./orders";
 export * from "./client-impersonation";
 export * from "./access-gate-tickets";
+export * from "./mcp-agent-scopes";
