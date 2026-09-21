@@ -6,6 +6,7 @@ import { verifyPaypalWebhookSignature } from "../lib/paypal/webhook-verify";
 import { handleInstallmentPaid } from "../lib/payment-schedule/on-installment-paid";
 import { applyFiscalInvoice } from "../lib/payment-schedule/generate";
 import { sendStaleSubscriptionAlertEmail, sendPaymentFailedClientEmail } from "../lib/subscription-alerts/email";
+import { sendPaymentConfirmedEmail } from "../lib/payment-schedule/payment-confirmed-email";
 import { hasSentPaymentFailedAlert, recordPaymentFailedAlertSent, clearPaymentFailedAlert } from "../lib/subscription-alerts/payment-failed-repository";
 import { clearLatePaymentSurchargeAlert } from "../lib/subscription-alerts/late-payment-surcharge-repository";
 import { getInvoiceFiscalData, getClientFiscalData } from "../lib/fiscal-data/repository";
@@ -205,7 +206,8 @@ export async function handleRecurringPaymentCompleted(event: PaypalEvent): Promi
   // "cancelled" or "pending_authorization": a completed charge on a
   // cancelled subscription would be a PayPal-side anomaly to investigate,
   // not something to silently paper over by reactivating it here.
-  if (subscription.status === "past_due") {
+  const wasPastDue = subscription.status === "past_due";
+  if (wasPastDue) {
     await db.update(subscriptionsTable).set({ status: "active", updatedAt: new Date() })
       .where(eq(subscriptionsTable.id, subscription.id));
     // Clears the Día 0 AND Día 3 dedup records too — a client who fails,
@@ -217,6 +219,21 @@ export async function handleRecurringPaymentCompleted(event: PaypalEvent): Promi
     // (Camila's call, Día 3 design).
     await clearPaymentFailedAlert(subscription.id);
     await clearLatePaymentSurchargeAlert(subscription.id);
+  }
+
+  // Best-effort — never lets a Resend outage fail the webhook itself.
+  // wasPastDue announces the access-gate reactivation that just happened
+  // above as a side effect of the status flip (evaluateAccessGate reads
+  // subscriptions.status live) — this email is the announcement, not a
+  // second unblocking mechanism.
+  const [recurringClient] = await db.select({ name: clientsTable.name, email: clientsTable.email }).from(clientsTable).where(eq(clientsTable.id, subscription.clientId));
+  if (recurringClient?.email) {
+    try {
+      const emailId = await sendPaymentConfirmedEmail(recurringClient.email, recurringClient.name, invoice.number, amount, currency, wasPastDue);
+      logger.info({ invoiceId: invoice.id, emailId, wasPastDue }, "Correo de pago confirmado enviado al cliente (mensualidad)");
+    } catch (err) {
+      logger.warn({ err, invoiceId: invoice.id }, "No se pudo enviar el correo de pago confirmado (mensualidad)");
+    }
   }
 
   if (!subscription.requiresFiscalInvoice) return;

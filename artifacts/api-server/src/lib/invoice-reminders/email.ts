@@ -6,6 +6,9 @@ import type { ReminderStage } from "./eligibility";
 // deliberately, not reinvented here.
 const FROM_ADDRESS = "Coimagen Media Agency <info@coimagenmedia.com>";
 const TEAM_ADDRESS = "info@coimagenmedia.com";
+// Same base URL as subscription-alerts/email.ts's late-payment-surcharge
+// link — the client's own public payment page for this exact invoice.
+const INVOICE_PAGE_BASE_URL = "https://www.coimagenmedia.com/factura";
 
 function wrapEmailHtml(bodyHtml: string): string {
   return `<!DOCTYPE html>
@@ -125,7 +128,14 @@ export async function sendClientReminderEmail(invoice: Invoice, clientName: stri
 
   const subject = stage === "overdue" ? `Tu factura ${number} está vencida` : `Tu factura ${number} vence pronto`;
   const accent = stage === "overdue" ? "#f87171" : "#00cfff";
-  const html = shell(heading, bodyParagraphs, "https://wa.me/526644769223", "Hablar por WhatsApp →", accent);
+  // The button must take the client straight to paying, not to contacting
+  // staff — invoice.publicToken is only null for pre-existing staff-created
+  // invoices that predate the column (see payment-schedule/repository.ts),
+  // so the WhatsApp link stays as a fallback for those, not the default.
+  const [ctaHref, ctaLabel] = invoice.publicToken
+    ? [`${INVOICE_PAGE_BASE_URL}/${invoice.publicToken}`, "Pagar factura →"]
+    : ["https://wa.me/526644769223", "Hablar por WhatsApp →"];
+  const html = shell(heading, bodyParagraphs, ctaHref, ctaLabel, accent);
 
   return send(clientEmail, subject, html);
 }
