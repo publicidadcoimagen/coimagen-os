@@ -17,8 +17,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectLabel, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileText } from "lucide-react";
+import { Plus, FileText, Copy } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/format";
+import { useToast } from "@/hooks/use-toast";
+
+// Same pattern as commercial/diagnosis.tsx's PUBLIC_RESULTS_BASE_URL — the
+// public, unauthenticated page a client sees to accept a proposal (and pay
+// the first invoice once accepted). Before this button existed, a proposal
+// created manually for an already-qualified prospect (i.e. outside
+// commercial-followup's automated correo 3/4, which only fires for
+// status="lead" prospects still in the digital-diagnosis funnel) had no way
+// for non-technical staff to get this URL to the client at all.
+const PUBLIC_PROPOSAL_BASE_URL = "https://www.coimagenmedia.com/propuesta";
 
 const STATUS_ES: Record<string, string> = { draft: "Borrador", sent: "Enviada", accepted: "Aceptada", rejected: "Rechazada" };
 const STATUS_COLOR: Record<string, string> = {
@@ -35,6 +45,7 @@ const CREATABLE_STATUSES = ["draft", "sent", "rejected"];
 
 export function Proposals() {
   const qc = useQueryClient();
+  const { toast } = useToast();
   const [tab, setTab] = useState("all");
   const { data: proposals, isLoading } = useListProposals({}, { query: { queryKey: getListProposalsQueryKey() } });
   const { data: prospects } = useListProspects({}, { query: { queryKey: getListProspectsQueryKey() } });
@@ -87,6 +98,19 @@ export function Proposals() {
   const prospectName = (id: number) => prospects?.find((p) => p.id === id)?.name;
   const clientName = (id: number) => clients?.find((c) => c.id === id)?.name;
 
+  const handleCopyLink = async (publicToken: string) => {
+    const url = `${PUBLIC_PROPOSAL_BASE_URL}/${publicToken}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Enlace copiado", description: url });
+    } catch {
+      // Clipboard API can be unavailable (older browser, non-HTTPS
+      // context) — surface the URL itself so staff can still select and
+      // copy it manually instead of a silent failure.
+      toast({ title: "No se pudo copiar automáticamente", description: url, variant: "destructive" });
+    }
+  };
+
   const totalAccepted = proposals?.filter((p) => p.status === "accepted").reduce((s, p) => s + (p.amount ?? 0), 0) ?? 0;
 
   return (
@@ -114,7 +138,7 @@ export function Proposals() {
       {isLoading ? <div className="text-muted-foreground text-sm">Cargando...</div> : (
         <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
-            <thead><tr className="border-b border-border bg-muted/30"><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Título</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Vinculado a</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Monto</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Válida hasta</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Estado</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Fecha</th></tr></thead>
+            <thead><tr className="border-b border-border bg-muted/30"><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Título</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Vinculado a</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Monto</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Válida hasta</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Estado</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Fecha</th><th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Enlace</th></tr></thead>
             <tbody>
               {filtered.map((p) => (
                 <tr key={p.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
@@ -128,9 +152,14 @@ export function Proposals() {
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(p.validUntil)}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[p.status]}`}>{STATUS_ES[p.status] ?? p.status}</span></td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(p.createdAt)}</td>
+                  <td className="px-4 py-3">
+                    <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" onClick={() => handleCopyLink(p.publicToken)}>
+                      <Copy className="h-3.5 w-3.5" /> Copiar enlace
+                    </Button>
+                  </td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground text-sm">Sin propuestas.</td></tr>}
+              {filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground text-sm">Sin propuestas.</td></tr>}
             </tbody>
           </table>
         </div>
