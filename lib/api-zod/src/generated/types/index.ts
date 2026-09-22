@@ -62,6 +62,7 @@ export * from './beckyBeckLegacyProductUpdateCategory';
 export * from './bug';
 export * from './bugCreate';
 export * from './bugUpdate';
+export * from './cancelPaypalOrderRequest';
 export * from './capturePaypalOrderRequest';
 export * from './capturePaypalOrderResponse';
 export * from './capturePublicOrderBody';
