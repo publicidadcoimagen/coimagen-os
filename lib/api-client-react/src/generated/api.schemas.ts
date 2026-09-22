@@ -1360,6 +1360,10 @@ export interface CapturePaypalOrderResponse {
   status: string;
 }
 
+export interface CancelPaypalOrderRequest {
+  paypalOrderId: string;
+}
+
 export type ApprovalType = typeof ApprovalType[keyof typeof ApprovalType];
 
 

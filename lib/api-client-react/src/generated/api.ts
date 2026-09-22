@@ -52,6 +52,7 @@ import type {
   Bug,
   BugCreate,
   BugUpdate,
+  CancelPaypalOrderRequest,
   CapturePaypalOrderRequest,
   CapturePaypalOrderResponse,
   CapturePublicOrderBody,
@@ -1122,6 +1123,78 @@ export const useCapturePublicInvoicePaypalOrder = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCapturePublicInvoicePaypalOrderMutationOptions(options));
+    }
+
+export const getCancelPublicInvoicePaypalOrderUrl = (token: string,) => {
+
+
+
+
+  return `/api/public/invoices/${token}/cancel-paypal-order`
+}
+
+/**
+ * @summary Client explicitly cancelled the PayPal popup (SDK onCancel) before approving. Marks the matching invoice_payments row "failed" so the double-payment guard (findActivePaymentAttempt) stops blocking a retry immediately, instead of waiting out the 3-hour order-expiry window. Idempotent — cancelling an already-resolved order is a no-op.
+ */
+export const cancelPublicInvoicePaypalOrder = async (token: string,
+    cancelPaypalOrderRequest: CancelPaypalOrderRequest, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getCancelPublicInvoicePaypalOrderUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      cancelPaypalOrderRequest,)
+  }
+);}
+
+
+
+
+export const getCancelPublicInvoicePaypalOrderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelPublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CancelPaypalOrderRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelPublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CancelPaypalOrderRequest>}, TContext> => {
+
+const mutationKey = ['cancelPublicInvoicePaypalOrder'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelPublicInvoicePaypalOrder>>, {token: string;data: BodyType<CancelPaypalOrderRequest>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  cancelPublicInvoicePaypalOrder(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelPublicInvoicePaypalOrderMutationResult = NonNullable<Awaited<ReturnType<typeof cancelPublicInvoicePaypalOrder>>>
+    export type CancelPublicInvoicePaypalOrderMutationBody = BodyType<CancelPaypalOrderRequest>
+    export type CancelPublicInvoicePaypalOrderMutationError = ErrorType<void>
+
+    /**
+ * @summary Client explicitly cancelled the PayPal popup (SDK onCancel) before approving. Marks the matching invoice_payments row "failed" so the double-payment guard (findActivePaymentAttempt) stops blocking a retry immediately, instead of waiting out the 3-hour order-expiry window. Idempotent — cancelling an already-resolved order is a no-op.
+ */
+export const useCancelPublicInvoicePaypalOrder = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelPublicInvoicePaypalOrder>>, TError,{token: string;data: BodyType<CancelPaypalOrderRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof cancelPublicInvoicePaypalOrder>>,
+        TError,
+        {token: string;data: BodyType<CancelPaypalOrderRequest>},
+        TContext
+      > => {
+      return useMutation(getCancelPublicInvoicePaypalOrderMutationOptions(options));
     }
 
 export const getSubmitPublicInvoiceFiscalDataUrl = (token: string,) => {

@@ -109,8 +109,37 @@ export async function allInstallmentsPaid(proposalId: number): Promise<boolean> 
 // server-side, not just in the frontend, because the frontend's PayPal
 // button re-appearing after a slow webhook is exactly the scenario this
 // guards against — an easily-skippable frontend-only check wouldn't help.
-export async function findActivePaymentAttempt(invoiceId: number, now = new Date()) {
-  const rows = await db.select().from(invoicePaymentsTable)
+export async function findActivePaymentAttempt(
+  invoiceId: number,
+  now = new Date(),
+  dbClient: Pick<typeof db, "select"> = db,
+) {
+  const rows = await dbClient.select().from(invoicePaymentsTable)
     .where(and(eq(invoicePaymentsTable.invoiceId, invoiceId), inArray(invoicePaymentsTable.status, ACTIVE_PAYMENT_STATUSES)));
   return rows.find((row) => isPaymentAttemptStillActive(row.createdAt, now)) ?? null;
+}
+
+// Called when the client cancels the PayPal popup (SDK onCancel) instead of
+// approving it — releases findActivePaymentAttempt's block immediately
+// instead of making the client wait out the 3-hour order-expiry window for
+// a payment they explicitly said they don't want right now. Only touches
+// the row while it's still in an ACTIVE_PAYMENT_STATUSES state, so this is
+// safe to call idempotently (a cancel request arriving after the order was
+// already captured — e.g. approved in another tab — is a silent no-op, not
+// an error, and never overwrites a real "captured" result with "failed").
+// Scoped by invoiceId, not just paypalOrderId, so a client can only cancel
+// an order that actually belongs to the invoice their own public token
+// resolves to.
+export async function markPaymentAttemptCancelled(
+  invoiceId: number,
+  paypalOrderId: string,
+  dbClient: Pick<typeof db, "update"> = db,
+): Promise<void> {
+  await dbClient.update(invoicePaymentsTable)
+    .set({ status: "failed" })
+    .where(and(
+      eq(invoicePaymentsTable.invoiceId, invoiceId),
+      eq(invoicePaymentsTable.paypalOrderId, paypalOrderId),
+      inArray(invoicePaymentsTable.status, ACTIVE_PAYMENT_STATUSES),
+    ));
 }

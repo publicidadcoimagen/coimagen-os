@@ -249,6 +249,18 @@ export const CapturePublicInvoicePaypalOrderResponse = zod.object({
 
 
 /**
+ * @summary Client explicitly cancelled the PayPal popup (SDK onCancel) before approving. Marks the matching invoice_payments row "failed" so the double-payment guard (findActivePaymentAttempt) stops blocking a retry immediately, instead of waiting out the 3-hour order-expiry window. Idempotent — cancelling an already-resolved order is a no-op.
+ */
+export const CancelPublicInvoicePaypalOrderParams = zod.object({
+  "token": zod.coerce.string().uuid()
+})
+
+export const CancelPublicInvoicePaypalOrderBody = zod.object({
+  "paypalOrderId": zod.string()
+})
+
+
+/**
  * @summary Client's RFC/razón social/constancia for THIS cuota (CASO 1) — must be submitted before create-paypal-order will run if requiresFiscalInvoice was checked.
  */
 export const SubmitPublicInvoiceFiscalDataParams = zod.object({

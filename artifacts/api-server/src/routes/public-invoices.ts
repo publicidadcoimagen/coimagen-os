@@ -7,13 +7,15 @@ import {
   CreatePublicInvoicePaypalOrderBody,
   CapturePublicInvoicePaypalOrderParams,
   CapturePublicInvoicePaypalOrderBody,
+  CancelPublicInvoicePaypalOrderParams,
+  CancelPublicInvoicePaypalOrderBody,
   SubmitPublicInvoiceFiscalDataParams,
   SubmitPublicInvoiceFiscalDataBody,
   SubmitPublicSubscriptionFiscalDataParams,
   SubmitPublicSubscriptionFiscalDataBody,
   DeclinePublicInvoiceParams,
 } from "@workspace/api-zod";
-import { setRequiresFiscalInvoice, findActivePaymentAttempt } from "../lib/payment-schedule/repository";
+import { setRequiresFiscalInvoice, findActivePaymentAttempt, markPaymentAttemptCancelled } from "../lib/payment-schedule/repository";
 import { applyRecoveryDiscount } from "../lib/payment-schedule/generate";
 import { getInvoiceFiscalData, submitInvoiceFiscalData } from "../lib/fiscal-data/repository";
 import { findPendingSubscriptionForProposal, finalizeSubscriptionAuthorization } from "../lib/subscription-authorization";
@@ -209,6 +211,25 @@ router.post("/public/invoices/:token/capture-paypal-order", async (req, res): Pr
     logger.error({ err, invoiceId: invoice.id, paypalOrderId: parsedBody.data.paypalOrderId }, "No se pudo capturar la orden de PayPal");
     res.status(502).json({ error: "No se pudo confirmar el pago con PayPal. Si el cargo se realizó, se reflejará en unos momentos." });
   }
+});
+
+// Client cancelled the PayPal popup (SDK onCancel) instead of approving it.
+// createOrder already inserted the invoice_payments row as "created" before
+// the popup even opened (that's how the SDK gets an order ID to show it),
+// so cancelling the popup alone never touches that row — without this call,
+// findActivePaymentAttempt keeps blocking a retry for up to 3 hours (see
+// eligibility.ts) even though the client explicitly backed out.
+router.post("/public/invoices/:token/cancel-paypal-order", async (req, res): Promise<void> => {
+  const parsedParams = CancelPublicInvoicePaypalOrderParams.safeParse(req.params);
+  if (!parsedParams.success) { res.status(400).json({ error: parsedParams.error.message }); return; }
+  const parsedBody = CancelPublicInvoicePaypalOrderBody.safeParse(req.body);
+  if (!parsedBody.success) { res.status(400).json({ error: parsedBody.error.message }); return; }
+
+  const invoice = await findInvoiceByToken(parsedParams.data.token);
+  if (!invoice) { res.status(404).json({ error: "Factura no encontrada" }); return; }
+
+  await markPaymentAttemptCancelled(invoice.id, parsedBody.data.paypalOrderId);
+  res.status(200).json({ ok: true });
 });
 
 // Client's one-time fiscal choice for their recurring monthly plan (CASO

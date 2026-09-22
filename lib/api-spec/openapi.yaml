@@ -284,6 +284,28 @@ paths:
         "404":
           description: Not found
 
+  /public/invoices/{token}/cancel-paypal-order:
+    parameters:
+      - name: token
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      operationId: cancelPublicInvoicePaypalOrder
+      tags: [public]
+      summary: Client explicitly cancelled the PayPal popup (SDK onCancel) before approving. Marks the matching invoice_payments row "failed" so the double-payment guard (findActivePaymentAttempt) stops blocking a retry immediately, instead of waiting out the 3-hour order-expiry window. Idempotent — cancelling an already-resolved order is a no-op.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CancelPaypalOrderRequest"
+      responses:
+        "200":
+          description: Marked failed (or already was resolved)
+        "404":
+          description: Not found
+
   /public/invoices/{token}/fiscal-data:
     parameters:
       - name: token
@@ -5344,6 +5366,12 @@ components:
       required: [status]
       properties:
         status: { type: string }
+
+    CancelPaypalOrderRequest:
+      type: object
+      required: [paypalOrderId]
+      properties:
+        paypalOrderId: { type: string }
 
     # ── APPROVAL ──────────────────────────────────────────────────────────────
     Approval:
