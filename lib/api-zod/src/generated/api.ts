@@ -2443,6 +2443,73 @@ export const DeleteInvoiceParams = zod.object({
 
 
 /**
+ * @summary Real PayPal payment-attempt evidence for one invoice — the full invoice_payments history plus which attempt (if any) is currently blocking a retry, per the same guard logic as create-paypal-order.
+ */
+export const ListInvoicePaymentsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListInvoicePaymentsResponse = zod.object({
+  "activeAttempt": zod.union([zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}),zod.null()]),
+  "history": zod.array(zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Staff manually releases a stuck created/approved payment attempt (marks it "failed") without waiting for the guard window to expire — same effect as the client-facing cancel-paypal-order endpoint, callable by staff for any invoice.
+ */
+export const ReleaseInvoicePaymentAttemptParams = zod.object({
+  "id": zod.coerce.number(),
+  "paymentId": zod.coerce.number()
+})
+
+export const ReleaseInvoicePaymentAttemptResponse = zod.object({
+  "activeAttempt": zod.union([zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}),zod.null()]),
+  "history": zod.array(zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}))
+})
+
+
+/**
  * @summary Staff uploads the real CFDI PDF once the accountant issues it (P-payments fiscal-docs) — automatically emails it to the client on success.
  */
 export const UploadInvoiceFiscalDocumentParams = zod.object({

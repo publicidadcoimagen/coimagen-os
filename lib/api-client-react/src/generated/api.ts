@@ -138,6 +138,7 @@ import type {
   IntegrationUpdate,
   Invoice,
   InvoiceInput,
+  InvoicePaymentEvidence,
   InvoicePublicView,
   InvoiceReminderStatus,
   InvoiceUpdate,
@@ -8320,6 +8321,155 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getDeleteInvoiceMutationOptions(options));
+    }
+
+export const getListInvoicePaymentsUrl = (id: number,) => {
+
+
+
+
+  return `/api/invoices/${id}/payments`
+}
+
+/**
+ * @summary Real PayPal payment-attempt evidence for one invoice — the full invoice_payments history plus which attempt (if any) is currently blocking a retry, per the same guard logic as create-paypal-order.
+ */
+export const listInvoicePayments = async (id: number, options?: RequestInit): Promise<InvoicePaymentEvidence> => {
+
+  return customFetch<InvoicePaymentEvidence>(getListInvoicePaymentsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListInvoicePaymentsQueryKey = (id: number,) => {
+    return [
+    `/api/invoices/${id}/payments`
+    ] as const;
+    }
+
+
+export const getListInvoicePaymentsQueryOptions = <TData = Awaited<ReturnType<typeof listInvoicePayments>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listInvoicePayments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListInvoicePaymentsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listInvoicePayments>>> = ({ signal }) => listInvoicePayments(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInvoicePayments>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListInvoicePaymentsQueryResult = NonNullable<Awaited<ReturnType<typeof listInvoicePayments>>>
+export type ListInvoicePaymentsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Real PayPal payment-attempt evidence for one invoice — the full invoice_payments history plus which attempt (if any) is currently blocking a retry, per the same guard logic as create-paypal-order.
+ */
+
+export function useListInvoicePayments<TData = Awaited<ReturnType<typeof listInvoicePayments>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listInvoicePayments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListInvoicePaymentsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getReleaseInvoicePaymentAttemptUrl = (id: number,
+    paymentId: number,) => {
+
+
+
+
+  return `/api/invoices/${id}/payments/${paymentId}/release`
+}
+
+/**
+ * @summary Staff manually releases a stuck created/approved payment attempt (marks it "failed") without waiting for the guard window to expire — same effect as the client-facing cancel-paypal-order endpoint, callable by staff for any invoice.
+ */
+export const releaseInvoicePaymentAttempt = async (id: number,
+    paymentId: number, options?: RequestInit): Promise<InvoicePaymentEvidence> => {
+
+  return customFetch<InvoicePaymentEvidence>(getReleaseInvoicePaymentAttemptUrl(id,paymentId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getReleaseInvoicePaymentAttemptMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof releaseInvoicePaymentAttempt>>, TError,{id: number;paymentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof releaseInvoicePaymentAttempt>>, TError,{id: number;paymentId: number}, TContext> => {
+
+const mutationKey = ['releaseInvoicePaymentAttempt'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof releaseInvoicePaymentAttempt>>, {id: number;paymentId: number}> = (props) => {
+          const {id,paymentId} = props ?? {};
+
+          return  releaseInvoicePaymentAttempt(id,paymentId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReleaseInvoicePaymentAttemptMutationResult = NonNullable<Awaited<ReturnType<typeof releaseInvoicePaymentAttempt>>>
+
+    export type ReleaseInvoicePaymentAttemptMutationError = ErrorType<void>
+
+    /**
+ * @summary Staff manually releases a stuck created/approved payment attempt (marks it "failed") without waiting for the guard window to expire — same effect as the client-facing cancel-paypal-order endpoint, callable by staff for any invoice.
+ */
+export const useReleaseInvoicePaymentAttempt = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof releaseInvoicePaymentAttempt>>, TError,{id: number;paymentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof releaseInvoicePaymentAttempt>>,
+        TError,
+        {id: number;paymentId: number},
+        TContext
+      > => {
+      return useMutation(getReleaseInvoicePaymentAttemptMutationOptions(options));
     }
 
 export const getUploadInvoiceFiscalDocumentUrl = (id: number,) => {
