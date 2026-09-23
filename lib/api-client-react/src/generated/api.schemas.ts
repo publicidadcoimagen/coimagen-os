@@ -1489,6 +1489,14 @@ export interface ApprovalUpdate {
   notes?: string;
 }
 
+export type InvoiceCurrency = typeof InvoiceCurrency[keyof typeof InvoiceCurrency];
+
+
+export const InvoiceCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
+
 export type InvoiceStatus = typeof InvoiceStatus[keyof typeof InvoiceStatus];
 
 
@@ -1508,6 +1516,7 @@ export interface Invoice {
   /** @nullable */
   clientName?: string | null;
   amount: number;
+  currency: InvoiceCurrency;
   status: InvoiceStatus;
   /** @nullable */
   issuedDate?: string | null;
@@ -1520,6 +1529,14 @@ export interface Invoice {
   updatedAt?: string | null;
   requiresFiscalInvoice: boolean;
 }
+
+export type InvoiceInputCurrency = typeof InvoiceInputCurrency[keyof typeof InvoiceInputCurrency];
+
+
+export const InvoiceInputCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
 
 export type InvoiceInputStatus = typeof InvoiceInputStatus[keyof typeof InvoiceInputStatus];
 
@@ -1537,11 +1554,20 @@ export interface InvoiceInput {
   number: string;
   clientId?: number;
   amount: number;
+  currency?: InvoiceInputCurrency;
   status?: InvoiceInputStatus;
   issuedDate?: string;
   dueDate?: string;
   description?: string;
 }
+
+export type InvoiceUpdateCurrency = typeof InvoiceUpdateCurrency[keyof typeof InvoiceUpdateCurrency];
+
+
+export const InvoiceUpdateCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
 
 export type InvoiceUpdateStatus = typeof InvoiceUpdateStatus[keyof typeof InvoiceUpdateStatus];
 
@@ -1559,6 +1585,7 @@ export interface InvoiceUpdate {
   number?: string;
   clientId?: number;
   amount?: number;
+  currency?: InvoiceUpdateCurrency;
   status?: InvoiceUpdateStatus;
   issuedDate?: string;
   dueDate?: string;
@@ -1706,6 +1733,14 @@ export interface ProspectingAuditReviewed {
   checklist: ProspectingChecklist;
 }
 
+export type SubscriptionCurrency = typeof SubscriptionCurrency[keyof typeof SubscriptionCurrency];
+
+
+export const SubscriptionCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
+
 export type SubscriptionBillingCycle = typeof SubscriptionBillingCycle[keyof typeof SubscriptionBillingCycle];
 
 
@@ -1732,6 +1767,7 @@ export interface Subscription {
   clientName?: string | null;
   plan: string;
   amount: number;
+  currency: SubscriptionCurrency;
   billingCycle: SubscriptionBillingCycle;
   status: SubscriptionStatus;
   /** @nullable */
@@ -1744,6 +1780,14 @@ export interface Subscription {
   /** @nullable */
   updatedAt?: string | null;
 }
+
+export type SubscriptionInputCurrency = typeof SubscriptionInputCurrency[keyof typeof SubscriptionInputCurrency];
+
+
+export const SubscriptionInputCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
 
 export type SubscriptionInputBillingCycle = typeof SubscriptionInputBillingCycle[keyof typeof SubscriptionInputBillingCycle];
 
@@ -1768,12 +1812,21 @@ export interface SubscriptionInput {
   /** @minLength 1 */
   plan: string;
   amount: number;
+  currency?: SubscriptionInputCurrency;
   billingCycle?: SubscriptionInputBillingCycle;
   status?: SubscriptionInputStatus;
   startDate?: string;
   nextBillingDate?: string;
   notes?: string;
 }
+
+export type SubscriptionUpdateCurrency = typeof SubscriptionUpdateCurrency[keyof typeof SubscriptionUpdateCurrency];
+
+
+export const SubscriptionUpdateCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
 
 export type SubscriptionUpdateBillingCycle = typeof SubscriptionUpdateBillingCycle[keyof typeof SubscriptionUpdateBillingCycle];
 
@@ -1798,6 +1851,7 @@ export interface SubscriptionUpdate {
   /** @minLength 1 */
   plan?: string;
   amount?: number;
+  currency?: SubscriptionUpdateCurrency;
   billingCycle?: SubscriptionUpdateBillingCycle;
   status?: SubscriptionUpdateStatus;
   startDate?: string;
@@ -1805,18 +1859,31 @@ export interface SubscriptionUpdate {
   notes?: string;
 }
 
+export type CurrencyAmountCurrency = typeof CurrencyAmountCurrency[keyof typeof CurrencyAmountCurrency];
+
+
+export const CurrencyAmountCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
+
+export interface CurrencyAmount {
+  currency: CurrencyAmountCurrency;
+  amount: number;
+}
+
 export interface RevenueSummary {
-  mrr: number;
-  arr: number;
+  mrrByCurrency: CurrencyAmount[];
+  arrByCurrency: CurrencyAmount[];
   highTicketCount: number;
-  highTicketTotal: number;
+  highTicketTotalByCurrency: CurrencyAmount[];
   dormantCount: number;
   activeSubscriptions: number;
 }
 
 export interface MrrDataPoint {
   month: string;
-  mrr: number;
+  mrrByCurrency: CurrencyAmount[];
 }
 
 export type CostCategory = typeof CostCategory[keyof typeof CostCategory];

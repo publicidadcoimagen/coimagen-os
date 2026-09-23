@@ -28,6 +28,7 @@ router.get("/invoices", async (req, res): Promise<void> => {
     clientId: invoicesTable.clientId,
     clientName: clientsTable.name,
     amount: invoicesTable.amount,
+    currency: invoicesTable.currency,
     status: invoicesTable.status,
     issuedDate: invoicesTable.issuedDate,
     dueDate: invoicesTable.dueDate,
@@ -55,6 +56,7 @@ router.post("/invoices", requireRole("ceo", "admin"), async (req, res): Promise<
     number: parsed.data.number,
     clientId: parsed.data.clientId ?? null,
     amount: parsed.data.amount.toString(),
+    currency: parsed.data.currency ?? "MXN",
     status: parsed.data.status ?? "draft",
     issuedDate: parsed.data.issuedDate ?? null,
     dueDate: parsed.data.dueDate ?? null,
@@ -73,7 +75,7 @@ router.get("/invoices/:id", async (req, res): Promise<void> => {
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.select({
     id: invoicesTable.id, number: invoicesTable.number, clientId: invoicesTable.clientId,
-    clientName: clientsTable.name, amount: invoicesTable.amount, status: invoicesTable.status,
+    clientName: clientsTable.name, amount: invoicesTable.amount, currency: invoicesTable.currency, status: invoicesTable.status,
     issuedDate: invoicesTable.issuedDate, dueDate: invoicesTable.dueDate, description: invoicesTable.description,
     createdAt: invoicesTable.createdAt, updatedAt: invoicesTable.updatedAt,
     requiresFiscalInvoice: invoicesTable.requiresFiscalInvoice,

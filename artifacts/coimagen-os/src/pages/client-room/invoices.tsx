@@ -8,13 +8,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Receipt, CheckCircle2, Clock, AlertCircle, TrendingUp } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
+import { formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
 
 type Org = { id: number; slug: string; clientId?: number | null };
 type Invoice = {
-  id: number; number: string; amount: number; status: string;
+  id: number; number: string; amount: number; currency: string; status: string;
   issuedDate?: string | null; dueDate?: string | null;
   description?: string | null; clientId?: number | null;
 };
+
+function breakdownByCurrency(rows: { amount: number; currency: string }[]): { currency: string; amount: number }[] {
+  const totals = new Map<string, number>();
+  for (const r of rows) totals.set(r.currency, (totals.get(r.currency) ?? 0) + (r.amount ?? 0));
+  return [...totals.entries()].map(([currency, amount]) => ({ currency, amount }));
+}
 
 const STATUS_COLOR: Record<string, string> = {
   draft: "bg-slate-400/15 text-slate-400 border-slate-400/30",
@@ -53,8 +60,8 @@ function ClientInvoicesBody({ slug }: { slug: string }) {
   );
 
   const invoices = (rawInvoices as Invoice[]).filter((inv) => org?.clientId ? inv.clientId === org.clientId : false);
-  const totalPaid = invoices.filter((i) => i.status === "paid").reduce((acc, i) => acc + (i.amount ?? 0), 0);
-  const totalPending = invoices.filter((i) => i.status === "sent" || i.status === "draft").reduce((acc, i) => acc + (i.amount ?? 0), 0);
+  const totalPaid = breakdownByCurrency(invoices.filter((i) => i.status === "paid"));
+  const totalPending = breakdownByCurrency(invoices.filter((i) => i.status === "sent" || i.status === "draft"));
 
   return (
     <div className="space-y-5">
@@ -68,8 +75,8 @@ function ClientInvoicesBody({ slug }: { slug: string }) {
 
         <div className="grid grid-cols-3 gap-3">
           {[
-            { label: t.invoices.totalPaid, value: `$${totalPaid.toFixed(2)}`, icon: CheckCircle2, color: "text-green-400" },
-            { label: t.invoices.pendingAmount, value: `$${totalPending.toFixed(2)}`, icon: Clock, color: "text-orange-400" },
+            { label: t.invoices.totalPaid, value: formatCurrencyBreakdown(totalPaid), icon: CheckCircle2, color: "text-green-400" },
+            { label: t.invoices.pendingAmount, value: formatCurrencyBreakdown(totalPending), icon: Clock, color: "text-orange-400" },
             { label: t.invoices.totalInvoices, value: invoices.length, icon: TrendingUp, color: "text-primary" },
           ].map(({ label, value, icon: Icon, color }) => (
             <Card key={label} className="border-border/50"><CardContent className="p-3">
@@ -105,7 +112,7 @@ function ClientInvoicesBody({ slug }: { slug: string }) {
                         <Badge variant="outline" className={`text-[10px] py-0 ${color}`}><Icon className="h-2.5 w-2.5 mr-0.5" />{label}</Badge>
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                        <span className="font-semibold text-foreground">${(inv.amount ?? 0).toFixed(2)} MXN</span>
+                        <span className="font-semibold text-foreground">{formatCurrency(inv.amount, inv.currency)}</span>
                         {inv.issuedDate && <span>{t.invoices.issuedLabel} {inv.issuedDate}</span>}
                         {inv.dueDate && <span className={new Date(inv.dueDate) < new Date() && inv.status !== "paid" ? "text-red-400" : ""}>{t.invoices.dueLabel} {inv.dueDate}</span>}
                       </div>

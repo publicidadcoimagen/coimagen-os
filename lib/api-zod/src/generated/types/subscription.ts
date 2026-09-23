@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { SubscriptionBillingCycle } from './subscriptionBillingCycle';
+import type { SubscriptionCurrency } from './subscriptionCurrency';
 import type { SubscriptionStatus } from './subscriptionStatus';
 
 export interface Subscription {
@@ -16,6 +17,7 @@ export interface Subscription {
   clientName?: string | null;
   plan: string;
   amount: number;
+  currency: SubscriptionCurrency;
   billingCycle: SubscriptionBillingCycle;
   status: SubscriptionStatus;
   /** @nullable */
