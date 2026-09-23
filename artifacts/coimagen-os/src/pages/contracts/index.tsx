@@ -26,14 +26,20 @@ import {
   ChevronRight, TrendingUp,
 } from "lucide-react";
 
+// Aligned with Coimagen's real package catalog (2026-09-23, Camila's call
+// — replaces the previous list of one-off service names, which didn't
+// match anything actually sold). "type" is free text on contractsTable, no
+// schema enum to migrate — safe to swap outright with zero real contracts
+// in production yet (confirmed: both Contracts and the Client Room showed
+// 0 before this change). NDA/Addendum/Renovación/cartas stay: they're
+// legal-document categories orthogonal to which package a client bought,
+// not packages themselves.
 const CONTRACT_TYPES = [
-  { value: "desarrollo_web",      label: "Contrato Desarrollo Web" },
-  { value: "seo",                 label: "Contrato SEO" },
-  { value: "google_business",     label: "Contrato Google Business" },
-  { value: "automatizacion_ia",   label: "Contrato Automatización IA" },
-  { value: "coimagen_os",         label: "Contrato COIMAGEN OS" },
-  { value: "medical_os",          label: "Contrato Medical OS" },
-  { value: "mensualidad",         label: "Contrato Mensualidad" },
+  { value: "starter",     label: "Contrato Starter" },
+  { value: "growth",      label: "Contrato Growth" },
+  { value: "automation",  label: "Contrato Automation" },
+  { value: "ai_business", label: "Contrato AI Business" },
+  { value: "ecommerce",   label: "Contrato Ecommerce" },
   { value: "nda",                 label: "NDA" },
   { value: "addendum",            label: "Addendum" },
   { value: "renovacion",          label: "Renovación" },
@@ -75,7 +81,7 @@ function typeLabel(t: string) {
 function CreateContractDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [type, setType] = useState("desarrollo_web");
+  const [type, setType] = useState("starter");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [service, setService] = useState("");
@@ -97,7 +103,7 @@ function CreateContractDialog({ open, onClose }: { open: boolean; onClose: () =>
   });
 
   const reset = () => {
-    setType("desarrollo_web"); setTitle(""); setDescription(""); setService("");
+    setType("starter"); setTitle(""); setDescription(""); setService("");
     setAmount(""); setCurrency("MXN"); setExpiresAt(""); setClientId(""); setProjectId(""); setCreatedBy("");
   };
 

@@ -16,13 +16,20 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-// Both templates (id 3 "Contrato_Maestro_Coimagen_V2", id 4
-// "Coimagen_Master_Agreement_V2") were created directly in DocuSeal by
+// Both templates (id 11 "Contrato_Maestro_Coimagen_V3", id 10
+// "Coimagen_Master_Agreement_V3") were created directly in DocuSeal by
 // Camila for this flow — confirmed against the real DocuSeal DB, not
 // guessed. No env var indirection: these are stable content templates,
 // not per-environment config like DOCUSEAL_BASE_URL.
-const DOCUSEAL_TEMPLATE_ID_ES = 3;
-const DOCUSEAL_TEMPLATE_ID_EN = 4;
+//
+// Updated 2026-09-23: the old V2 templates (ids 3/4) no longer exist in
+// DocuSeal at all — Camila replaced them with V3 (fixed-currency clause),
+// which silently broke every real "Enviar a firma" click until this fix
+// (DocuSeal rejects a submission request for a nonexistent template_id).
+// Confirmed the new ids directly via GET /api/templates against the real
+// instance, not assumed.
+const DOCUSEAL_TEMPLATE_ID_ES = 11;
+const DOCUSEAL_TEMPLATE_ID_EN = 10;
 // The one submitter role both templates define — see lib/docuseal/client.ts.
 const DOCUSEAL_SUBMITTER_ROLE = "Primera Parte";
 
@@ -177,7 +184,23 @@ router.post("/contracts/:id/send", requireRole("ceo", "admin"), async (req, res)
   if (!client) { res.status(400).json({ error: "Cliente no encontrado" }); return; }
   if (!client.email) { res.status(400).json({ error: "El cliente no tiene email registrado" }); return; }
 
-  const templateId = client.language === "en" ? DOCUSEAL_TEMPLATE_ID_EN : DOCUSEAL_TEMPLATE_ID_ES;
+  const isEn = client.language === "en";
+  const templateId = isEn ? DOCUSEAL_TEMPLATE_ID_EN : DOCUSEAL_TEMPLATE_ID_ES;
+
+  // Prefill values keyed by the field names set directly in DocuSeal
+  // (2026-09-23 — see the template-id comment above). No schema field
+  // stores a client's country: clients.language ("es"/"en") is the only
+  // signal today, and it already drives which template/jurisdiction this
+  // send uses (Contrato Maestro cláusula 13) — reusing it here for
+  // country_of_operation is consistent with that existing precedent, not a
+  // new assumption, but it's still an inference, not a stored fact (an
+  // English-speaking client outside the US/Mexico would be misclassified).
+  const today = new Date();
+  const contractDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+  const currency = contract.currency ?? "MXN";
+  const monthlyFee = contract.amount != null
+    ? `${new Intl.NumberFormat(isEn ? "en-US" : "es-MX", { style: "currency", currency }).format(contract.amount / 100)}/${isEn ? "mo" : "mes"}`
+    : "";
 
   let submission;
   try {
@@ -186,6 +209,16 @@ router.post("/contracts/:id/send", requireRole("ceo", "admin"), async (req, res)
       name: client.name,
       role: DOCUSEAL_SUBMITTER_ROLE,
       externalId: String(contract.id),
+      values: {
+        client_name: client.name,
+        client_company: client.company ?? "",
+        client_email: client.email,
+        client_phone: client.phone ?? "",
+        contract_date: contractDate,
+        contracted_service: contract.service ?? contract.title,
+        monthly_fee: monthlyFee,
+        country_of_operation: isEn ? "United States" : "México",
+      },
     });
   } catch (err) {
     if (err instanceof DocusealNotConfiguredError) {
