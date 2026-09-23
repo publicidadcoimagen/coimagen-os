@@ -85,4 +85,54 @@ describe("approveProposalByToken — camino real de /public/proposals/:token/app
     const body = second.body as { nextInvoice: { publicToken: string } | null };
     assert.equal(typeof body.nextInvoice?.publicToken, "string");
   });
+
+  test("propuesta ya aprobada pero vencida (validUntil en el pasado): nextInvoice se oculta, expired:true — el bug real: antes esto seguía devolviendo la cuota pagable sin importar la fecha", async () => {
+    const client = await seedClient("Cliente vencido");
+    const proposal = await seedProposal({
+      clientId: client.id,
+      amount: "10000",
+      status: "accepted",
+      validUntil: new Date("2020-01-01"),
+    });
+    await testDb.insert(schema.invoicesTable).values({
+      number: `TEST-${Date.now()}-${Math.random()}`,
+      proposalId: proposal.id,
+      clientId: client.id,
+      amount: "10000",
+      currency: "MXN",
+      status: "sent",
+      publicToken: "11111111-1111-1111-1111-111111111111",
+    });
+
+    const result = await approveProposalByToken(proposal.publicToken, testDb as unknown as Parameters<typeof approveProposalByToken>[1]);
+    assert.equal(result.status, 200);
+
+    const body = result.body as { expired: boolean; nextInvoice: unknown };
+    assert.equal(body.expired, true);
+    assert.equal(body.nextInvoice, null, "una propuesta vencida no debe seguir ofreciendo una cuota pagable");
+  });
+
+  test("propuesta aprobada con validUntil en el futuro: sigue mostrando nextInvoice normalmente — el fix de vencimiento no rompe el caso vigente", async () => {
+    const client = await seedClient("Cliente vigente");
+    const proposal = await seedProposal({
+      clientId: client.id,
+      amount: "10000",
+      status: "accepted",
+      validUntil: new Date("2099-01-01"),
+    });
+    await testDb.insert(schema.invoicesTable).values({
+      number: `TEST-${Date.now()}-${Math.random()}`,
+      proposalId: proposal.id,
+      clientId: client.id,
+      amount: "10000",
+      currency: "MXN",
+      status: "sent",
+      publicToken: "22222222-2222-2222-2222-222222222222",
+    });
+
+    const result = await approveProposalByToken(proposal.publicToken, testDb as unknown as Parameters<typeof approveProposalByToken>[1]);
+    const body = result.body as { expired: boolean; nextInvoice: { publicToken: string } | null };
+    assert.equal(body.expired, false);
+    assert.ok(body.nextInvoice, "una propuesta vigente debe seguir mostrando su cuota pagable");
+  });
 });

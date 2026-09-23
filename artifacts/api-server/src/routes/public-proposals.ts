@@ -41,8 +41,19 @@ async function findPaymentSchedule(proposalId: number, dbClient: DbClient) {
   }));
 }
 
+// A proposal past its validUntil stays whatever status it already has
+// (accepted proposals don't silently flip back) — this only governs whether
+// the public page still offers a live way to pay. Before this check,
+// serializePublicView returned nextInvoice for ANY accepted proposal
+// regardless of validUntil, so an already-approved-but-expired proposal
+// kept showing working PayPal/card buttons indefinitely.
+function isExpired(p: Proposal): boolean {
+  return p.validUntil !== null && new Date(p.validUntil) < new Date();
+}
+
 async function serializePublicView(p: Proposal, dbClient: DbClient) {
-  const activeInvoice = p.status === "accepted" ? await findActiveInvoice(p.id, dbClient) : null;
+  const expired = isExpired(p);
+  const activeInvoice = p.status === "accepted" && !expired ? await findActiveInvoice(p.id, dbClient) : null;
   const paymentSchedule = p.status === "accepted" ? await findPaymentSchedule(p.id, dbClient) : [];
   return {
     title: p.title,
@@ -50,6 +61,7 @@ async function serializePublicView(p: Proposal, dbClient: DbClient) {
     amount: p.amount !== null ? parseFloat(p.amount) : null,
     notes: p.notes,
     validUntil: p.validUntil,
+    expired,
     nextInvoice: activeInvoice
       ? {
           publicToken: activeInvoice.publicToken!,
