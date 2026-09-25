@@ -24,6 +24,9 @@ const CLIENT_ALLOWED: { method: string; pattern: RegExp }[] = [
   { method: "GET", pattern: /^\/projects\/\d+$/ },
   { method: "GET", pattern: /^\/contracts$/ },
   { method: "GET", pattern: /^\/contracts\/\d+$/ },
+  // Fresh signed-PDF/audit URLs for the embedded viewer — same own-clientId
+  // scoping as GET /contracts/:id, enforced inside the handler.
+  { method: "GET", pattern: /^\/contracts\/\d+\/signed-documents$/ },
   { method: "PATCH", pattern: /^\/contracts\/\d+$/ },
   { method: "GET", pattern: /^\/invoices$/ },
   { method: "GET", pattern: /^\/invoices\/\d+$/ },

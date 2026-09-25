@@ -112,6 +112,7 @@ export * from './contentCalendarItemUpdate';
 export * from './contentCalendarTarget';
 export * from './contract';
 export * from './contractCreate';
+export * from './contractSignedDocuments';
 export * from './contractUpdate';
 export * from './convertProspectBody';
 export * from './convertTicketBody';

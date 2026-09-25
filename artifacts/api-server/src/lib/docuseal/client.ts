@@ -154,3 +154,43 @@ export async function getDocusealCombinedDocumentUrl(submissionId: string): Prom
   const url = (parsed as Record<string, unknown>).combined_document_url;
   return typeof url === "string" ? url : null;
 }
+
+// Fresh, short-lived download URLs for a completed submission's signed PDF
+// and audit log. DocuSeal file URLs are signed tokens that stop working
+// after a while (2026-09-25: a signed_document_url persisted at backfill
+// time returned 403 "Not authorized" hours later; exact lifetime not
+// confirmed), so a stored URL can never be served back to a browser.
+// Callers must fetch these on demand, right before showing the document.
+export async function getDocusealSubmissionDocumentUrls(
+  submissionId: string,
+): Promise<{ signedDocumentUrl: string | null; auditLogUrl: string | null }> {
+  const { baseUrl, token } = docusealConfig();
+
+  const res = await fetch(`${baseUrl}/api/submissions/${submissionId}?include=combined_document_url`, {
+    headers: { "X-Auth-Token": token },
+  });
+
+  const text = await res.text();
+  if (!res.ok) {
+    throw new DocusealApiError(`DocuSeal rechazó la consulta de la submission ${submissionId} (${res.status}): ${text}`, res.status);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new DocusealApiError(`Respuesta de DocuSeal no es JSON válido para la submission ${submissionId}`, res.status);
+  }
+  if (!parsed || typeof parsed !== "object") return { signedDocumentUrl: null, auditLogUrl: null };
+
+  const p = parsed as Record<string, unknown>;
+  const combined = typeof p.combined_document_url === "string" ? p.combined_document_url : null;
+  // Fallback if the combined PDF isn't built yet: the signed document
+  // itself (one per template — Coimagen's contracts have exactly one).
+  const documents = Array.isArray(p.documents) ? p.documents as Array<Record<string, unknown>> : [];
+  const firstDoc = typeof documents[0]?.url === "string" ? documents[0].url as string : null;
+  return {
+    signedDocumentUrl: combined ?? firstDoc,
+    auditLogUrl: typeof p.audit_log_url === "string" ? p.audit_log_url : null,
+  };
+}

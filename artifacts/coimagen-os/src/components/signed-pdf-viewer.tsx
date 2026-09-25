@@ -1,4 +1,5 @@
-import { ExternalLink, FileText } from "lucide-react";
+import { ExternalLink, FileText, Loader2 } from "lucide-react";
+import { useGetContractSignedDocuments, getGetContractSignedDocumentsQueryKey } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 
 // Signed contract PDF shown inline on the page (Camila, 2026-09-25) — a
@@ -6,6 +7,12 @@ import { Button } from "@/components/ui/button";
 // DocuSeal file is served `Content-Disposition: inline` with no
 // X-Frame-Options/CSP, and os.coimagenmedia.com sets no frame-src, so the
 // browser's own PDF viewer can render it framed.
+//
+// The URL is fetched fresh from GET /contracts/:id/signed-documents every
+// time the viewer mounts: DocuSeal file URLs are signed tokens that stop
+// working after a while, so the one stored on the contract row returns 403
+// "Not authorized" once it's old — that's what broke the first
+// version of this viewer.
 //
 // Mobile browsers are the known exception: Android Chrome has no in-page
 // PDF viewer (pdfViewerEnabled === false → blank frame), and iOS Safari
@@ -22,14 +29,48 @@ function canEmbedPdf(): boolean {
   return !isIOS && !isAndroid;
 }
 
+// Shared by the viewer and the CEO page's audit-log link, so both reuse one
+// request. Refetched on every mount, so the URL is always freshly issued.
+export function useFreshSignedDocuments(contractId: number) {
+  return useGetContractSignedDocuments(contractId, {
+    query: {
+      queryKey: getGetContractSignedDocumentsQueryKey(contractId),
+      staleTime: 5 * 60 * 1000,
+      refetchOnMount: "always",
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  });
+}
+
 export interface SignedPdfViewerLabels {
   frameTitle: string;
   openInNewTab: string;
   mobileHint: string;
+  loading: string;
+  error: string;
 }
 
-export function SignedPdfViewer({ url, labels }: { url: string; labels: SignedPdfViewerLabels }) {
+export function SignedPdfViewer({ contractId, labels }: { contractId: number; labels: SignedPdfViewerLabels }) {
   const embed = canEmbedPdf();
+  const { data, isLoading, isError } = useFreshSignedDocuments(contractId);
+  const url = data?.signedDocumentUrl ?? null;
+
+  if (isLoading) {
+    return (
+      <div className="rounded-lg border border-border/50 p-6 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" />{labels.loading}
+      </div>
+    );
+  }
+
+  if (isError || !url) {
+    return (
+      <div className="rounded-lg border border-red-400/30 bg-red-400/10 p-4 text-xs text-red-400 text-center">
+        {labels.error}
+      </div>
+    );
+  }
 
   const openButton = (
     <Button size="sm" variant="outline" className="h-8 text-xs" asChild>

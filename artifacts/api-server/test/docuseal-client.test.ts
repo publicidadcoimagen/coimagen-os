@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   createDocusealSubmission,
   getDocusealCombinedDocumentUrl,
+  getDocusealSubmissionDocumentUrls,
   DocusealApiError,
   DocusealNotConfiguredError,
 } from "../src/lib/docuseal/client";
@@ -226,5 +227,55 @@ describe("getDocusealCombinedDocumentUrl", () => {
       () => getDocusealCombinedDocumentUrl("2"),
       DocusealNotConfiguredError,
     );
+  });
+});
+
+describe("getDocusealSubmissionDocumentUrls (fresh URLs — stored ones stop working)", () => {
+  let originalBaseUrl: string | undefined;
+  let originalToken: string | undefined;
+
+  before(() => {
+    originalBaseUrl = process.env.DOCUSEAL_BASE_URL;
+    originalToken = process.env.DOCUSEAL_API_TOKEN;
+    process.env.DOCUSEAL_BASE_URL = "https://firmas.example.com";
+    process.env.DOCUSEAL_API_TOKEN = "test-token-not-for-real-use";
+  });
+
+  after(() => {
+    if (originalBaseUrl === undefined) delete process.env.DOCUSEAL_BASE_URL;
+    else process.env.DOCUSEAL_BASE_URL = originalBaseUrl;
+    if (originalToken === undefined) delete process.env.DOCUSEAL_API_TOKEN;
+    else process.env.DOCUSEAL_API_TOKEN = originalToken;
+  });
+
+  test("returns the combined PDF and audit log URLs from a live GET", async (t) => {
+    let capturedUrl: string | undefined;
+    t.mock.method(globalThis, "fetch", async (url: unknown) => {
+      capturedUrl = String(url);
+      return new Response(JSON.stringify({
+        combined_document_url: "https://firmas.example.com/file/fresh/combined.pdf",
+        audit_log_url: "https://firmas.example.com/file/fresh/audit.pdf",
+        documents: [{ url: "https://firmas.example.com/file/fresh/doc.pdf" }],
+      }), { status: 200 });
+    });
+    const out = await getDocusealSubmissionDocumentUrls("7");
+    assert.equal(capturedUrl, "https://firmas.example.com/api/submissions/7?include=combined_document_url");
+    assert.deepEqual(out, {
+      signedDocumentUrl: "https://firmas.example.com/file/fresh/combined.pdf",
+      auditLogUrl: "https://firmas.example.com/file/fresh/audit.pdf",
+    });
+  });
+
+  test("falls back to the signed document itself when the combined PDF isn't built yet", async (t) => {
+    t.mock.method(globalThis, "fetch", async () =>
+      new Response(JSON.stringify({ combined_document_url: null, audit_log_url: null, documents: [{ url: "https://firmas.example.com/file/fresh/doc.pdf" }] }), { status: 200 }));
+    const out = await getDocusealSubmissionDocumentUrls("7");
+    assert.equal(out.signedDocumentUrl, "https://firmas.example.com/file/fresh/doc.pdf");
+    assert.equal(out.auditLogUrl, null);
+  });
+
+  test("throws DocusealApiError on a non-2xx response", async (t) => {
+    t.mock.method(globalThis, "fetch", async () => new Response("nope", { status: 404 }));
+    await assert.rejects(() => getDocusealSubmissionDocumentUrls("7"), DocusealApiError);
   });
 });

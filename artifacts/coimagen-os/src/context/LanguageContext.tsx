@@ -248,6 +248,8 @@ const translations = {
       hideSigned: "Ocultar contrato",
       openInNewTab: "Abrir en pestaña nueva",
       pdfFrameTitle: "Contrato firmado",
+      pdfLoading: "Cargando contrato…",
+      pdfError: "No se pudo cargar el contrato. Intenta de nuevo en un momento.",
       pdfMobileHint: "En este dispositivo el contrato se abre mejor en una pestaña nueva, donde puedes verlo completo y descargarlo.",
       status: {
         draft: "Borrador", sent: "Enviado", signed: "Firmado",
@@ -580,6 +582,8 @@ const translations = {
       hideSigned: "Hide contract",
       openInNewTab: "Open in new tab",
       pdfFrameTitle: "Signed contract",
+      pdfLoading: "Loading contract…",
+      pdfError: "The contract couldn't be loaded. Please try again in a moment.",
       pdfMobileHint: "On this device the contract opens best in a new tab, where you can view it in full and download it.",
       status: {
         draft: "Draft", sent: "Sent", signed: "Signed",

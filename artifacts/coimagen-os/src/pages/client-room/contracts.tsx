@@ -25,6 +25,7 @@ type Contract = {
   // (webhooks-docuseal.ts) once DocuSeal generates it. Can lag behind
   // status "signed" by a few seconds, or stay null if that fetch failed.
   signedDocumentUrl?: string | null;
+  docusealSubmissionId?: string | null;
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -124,7 +125,7 @@ function ClientContractsBody({ slug }: { slug: string }) {
                         </a>
                       </Button>
                     )}
-                    {(c.status === "signed" || c.status === "active") && c.signedDocumentUrl && (
+                    {(c.status === "signed" || c.status === "active") && c.docusealSubmissionId && (
                       <Button
                         size="sm"
                         variant="outline"
@@ -136,11 +137,11 @@ function ClientContractsBody({ slug }: { slug: string }) {
                       </Button>
                     )}
                   </CardContent>
-                  {openPdfId === c.id && c.signedDocumentUrl && (
+                  {openPdfId === c.id && (
                     <div className="px-3 pb-3">
                       <SignedPdfViewer
-                        url={c.signedDocumentUrl}
-                        labels={{ frameTitle: t.contracts.pdfFrameTitle, openInNewTab: t.contracts.openInNewTab, mobileHint: t.contracts.pdfMobileHint }}
+                        contractId={c.id}
+                        labels={{ frameTitle: t.contracts.pdfFrameTitle, openInNewTab: t.contracts.openInNewTab, mobileHint: t.contracts.pdfMobileHint, loading: t.contracts.pdfLoading, error: t.contracts.pdfError }}
                       />
                     </div>
                   )}
