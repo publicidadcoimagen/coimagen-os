@@ -1312,6 +1312,7 @@ export interface ProposalPublicView {
   notes?: string | null;
   /** @nullable */
   validUntil?: string | null;
+  expired: boolean;
   nextInvoice?: InvoicePublicView | null;
   paymentSchedule?: PaymentScheduleItem[];
 }

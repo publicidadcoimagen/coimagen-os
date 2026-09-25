@@ -141,6 +141,7 @@ export const GetPublicProposalResponse = zod.object({
   "amount": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
+  "expired": zod.boolean(),
   "nextInvoice": zod.union([zod.object({
   "publicToken": zod.string().uuid(),
   "label": zod.string(),
@@ -174,6 +175,7 @@ export const ApprovePublicProposalResponse = zod.object({
   "amount": zod.number().nullish(),
   "notes": zod.string().nullish(),
   "validUntil": zod.string().nullish(),
+  "expired": zod.boolean(),
   "nextInvoice": zod.union([zod.object({
   "publicToken": zod.string().uuid(),
   "label": zod.string(),

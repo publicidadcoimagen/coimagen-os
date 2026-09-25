@@ -5272,18 +5272,24 @@ components:
         validUntil: { type: string }
     ProposalPublicView:
       type: object
-      required: [title, status]
+      required: [title, status, expired]
       properties:
         title:       { type: string }
         status:      { type: string, enum: [draft, sent, accepted, rejected] }
         amount:      { type: ["number", "null"] }
         notes:       { type: ["string", "null"] }
         validUntil:  { type: ["string", "null"] }
+        # True once validUntil has passed. Doesn't change status (an
+        # accepted proposal stays "accepted") — it only suppresses
+        # nextInvoice below, so an expired proposal's payment page can no
+        # longer be used to pay, even if it was already approved.
+        expired: { type: boolean }
         # Populated once the proposal is accepted — the deposit cuota to pay
         # right away, rendered inline on the same /propuesta/:token page.
-        # Null while still draft/sent, and null again if the proposal has no
+        # Null while still draft/sent, null if the proposal has no
         # clientId/amount (can't generate invoices — see
-        # payment-schedule/repository.ts's createInstallmentInvoices).
+        # payment-schedule/repository.ts's createInstallmentInvoices), and
+        # null once expired regardless of how it was set before.
         nextInvoice: { oneOf: [{ $ref: "#/components/schemas/InvoicePublicView" }, { type: "null" }] }
         # Pendiente #6a — every installment invoice generated for this
         # proposal (paid, sent, or still draft/not-yet-due), so the client

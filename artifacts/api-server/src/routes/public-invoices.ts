@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
-import { db, invoicesTable, invoicePaymentsTable, subscriptionsTable, clientsTable, type Invoice } from "@workspace/db";
+import { db, invoicesTable, invoicePaymentsTable, subscriptionsTable, clientsTable, proposalsTable, type Invoice } from "@workspace/db";
 import {
   GetPublicInvoiceParams,
   CreatePublicInvoicePaypalOrderParams,
@@ -29,6 +29,24 @@ const router: IRouter = Router();
 async function findInvoiceByToken(token: string): Promise<Invoice | null> {
   const [invoice] = await db.select().from(invoicesTable).where(eq(invoicesTable.publicToken, token)).limit(1);
   return invoice ?? null;
+}
+
+// Invoices have no expiry of their own — "vencida" only ever means the
+// parent proposal's validUntil (see public-proposals.ts's isExpired). Only
+// gates the routes that actually start a new charge (create-paypal-order);
+// an order already approved before expiry can still be captured, same as
+// invoice.status transitions being the source of truth everywhere else.
+// dbClient is injectable (same pattern as public-proposals.ts's DbClient)
+// so this can be tested against a real PGlite instance without touching
+// createOrder/PayPal.
+export async function isParentProposalExpired(
+  proposalId: number | null,
+  dbClient: Pick<typeof db, "select"> = db,
+): Promise<boolean> {
+  if (!proposalId) return false;
+  const [proposal] = await dbClient.select({ validUntil: proposalsTable.validUntil })
+    .from(proposalsTable).where(eq(proposalsTable.id, proposalId)).limit(1);
+  return !!proposal?.validUntil && new Date(proposal.validUntil) < new Date();
 }
 
 async function serializeInvoicePublicView(invoice: Invoice) {
@@ -144,6 +162,10 @@ router.post("/public/invoices/:token/create-paypal-order", async (req, res): Pro
   if (invoice.status === "paid") { res.status(409).json({ error: "Esta cuota ya fue pagada" }); return; }
   if (invoice.status !== "sent" && invoice.status !== "overdue") {
     res.status(409).json({ error: "Esta cuota todavía no está disponible para pago" });
+    return;
+  }
+  if (await isParentProposalExpired(invoice.proposalId)) {
+    res.status(409).json({ error: "La propuesta de esta cuota ya venció. Contacta a Coimagen para renovar los términos antes de pagar." });
     return;
   }
 
