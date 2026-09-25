@@ -17,7 +17,7 @@ router.get("/subscriptions", async (req, res): Promise<void> => {
   const qp = ListSubscriptionsQueryParams.safeParse(req.query);
   let query = db.select({
     id: subscriptionsTable.id, clientId: subscriptionsTable.clientId, clientName: clientsTable.name,
-    plan: subscriptionsTable.plan, amount: subscriptionsTable.amount, billingCycle: subscriptionsTable.billingCycle,
+    plan: subscriptionsTable.plan, amount: subscriptionsTable.amount, currency: subscriptionsTable.currency, billingCycle: subscriptionsTable.billingCycle,
     status: subscriptionsTable.status, startDate: subscriptionsTable.startDate, nextBillingDate: subscriptionsTable.nextBillingDate,
     notes: subscriptionsTable.notes, createdAt: subscriptionsTable.createdAt, updatedAt: subscriptionsTable.updatedAt,
   }).from(subscriptionsTable).leftJoin(clientsTable, eq(subscriptionsTable.clientId, clientsTable.id)).$dynamic();
@@ -36,6 +36,7 @@ router.post("/subscriptions", requireRole("ceo", "admin"), async (req, res): Pro
     clientId: parsed.data.clientId ?? null,
     plan: parsed.data.plan,
     amount: parsed.data.amount.toString(),
+    currency: parsed.data.currency ?? "MXN",
     billingCycle: parsed.data.billingCycle ?? "monthly",
     status: parsed.data.status ?? "active",
     startDate: parsed.data.startDate ?? null,
@@ -55,7 +56,7 @@ router.get("/subscriptions/:id", async (req, res): Promise<void> => {
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const [row] = await db.select({
     id: subscriptionsTable.id, clientId: subscriptionsTable.clientId, clientName: clientsTable.name,
-    plan: subscriptionsTable.plan, amount: subscriptionsTable.amount, billingCycle: subscriptionsTable.billingCycle,
+    plan: subscriptionsTable.plan, amount: subscriptionsTable.amount, currency: subscriptionsTable.currency, billingCycle: subscriptionsTable.billingCycle,
     status: subscriptionsTable.status, startDate: subscriptionsTable.startDate, nextBillingDate: subscriptionsTable.nextBillingDate,
     notes: subscriptionsTable.notes, createdAt: subscriptionsTable.createdAt, updatedAt: subscriptionsTable.updatedAt,
   }).from(subscriptionsTable).leftJoin(clientsTable, eq(subscriptionsTable.clientId, clientsTable.id)).where(eq(subscriptionsTable.id, params.data.id));

@@ -5451,13 +5451,14 @@ components:
     # ── INVOICE ───────────────────────────────────────────────────────────────
     Invoice:
       type: object
-      required: [id, number, amount, status, createdAt, requiresFiscalInvoice]
+      required: [id, number, amount, currency, status, createdAt, requiresFiscalInvoice]
       properties:
         id: { type: integer }
         number: { type: string }
         clientId: { type: ["integer", "null"] }
         clientName: { type: ["string", "null"] }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         status: { type: string, enum: [draft, sent, paid, overdue, cancelled] }
         issuedDate: { type: ["string", "null"] }
         dueDate: { type: ["string", "null"] }
@@ -5472,6 +5473,7 @@ components:
         number: { type: string, minLength: 1 }
         clientId: { type: integer }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD], default: MXN }
         status: { type: string, enum: [draft, sent, paid, overdue, cancelled], default: draft }
         issuedDate: { type: string }
         dueDate: { type: string }
@@ -5482,6 +5484,7 @@ components:
         number: { type: string, minLength: 1 }
         clientId: { type: integer }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         status: { type: string, enum: [draft, sent, paid, overdue, cancelled] }
         issuedDate: { type: string }
         dueDate: { type: string }
@@ -5597,13 +5600,14 @@ components:
     # ── SUBSCRIPTION ──────────────────────────────────────────────────────────
     Subscription:
       type: object
-      required: [id, plan, amount, billingCycle, status, createdAt]
+      required: [id, plan, amount, currency, billingCycle, status, createdAt]
       properties:
         id: { type: integer }
         clientId: { type: ["integer", "null"] }
         clientName: { type: ["string", "null"] }
         plan: { type: string }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         billingCycle: { type: string, enum: [monthly, quarterly, annual] }
         status: { type: string, enum: [active, paused, cancelled] }
         startDate: { type: ["string", "null"] }
@@ -5618,6 +5622,7 @@ components:
         clientId: { type: integer }
         plan: { type: string, minLength: 1 }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD], default: MXN }
         billingCycle: { type: string, enum: [monthly, quarterly, annual], default: monthly }
         status: { type: string, enum: [active, paused, cancelled], default: active }
         startDate: { type: string }
@@ -5629,6 +5634,7 @@ components:
         clientId: { type: integer }
         plan: { type: string, minLength: 1 }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         billingCycle: { type: string, enum: [monthly, quarterly, annual] }
         status: { type: string, enum: [active, paused, cancelled] }
         startDate: { type: string }
@@ -5636,22 +5642,34 @@ components:
         notes: { type: string }
 
     # ── REVENUE ───────────────────────────────────────────────────────────────
+    # MRR/ARR/high-ticket total are never a single blended number across
+    # currencies (no FX conversion exists anywhere in this system — see
+    # lib/agent-scope.ts-adjacent currency audit, 2026-09-22) — each is a
+    # breakdown of one entry per currency actually present, e.g.
+    # [{currency: "MXN", amount: 3000}, {currency: "USD", amount: 300}].
+    # Never sum these entries into one number.
+    CurrencyAmount:
+      type: object
+      required: [currency, amount]
+      properties:
+        currency: { type: string, enum: [MXN, USD] }
+        amount: { type: number }
     RevenueSummary:
       type: object
-      required: [mrr, arr, highTicketCount, highTicketTotal, dormantCount, activeSubscriptions]
+      required: [mrrByCurrency, arrByCurrency, highTicketCount, highTicketTotalByCurrency, dormantCount, activeSubscriptions]
       properties:
-        mrr: { type: number }
-        arr: { type: number }
+        mrrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        arrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
         highTicketCount: { type: integer }
-        highTicketTotal: { type: number }
+        highTicketTotalByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
         dormantCount: { type: integer }
         activeSubscriptions: { type: integer }
     MrrDataPoint:
       type: object
-      required: [month, mrr]
+      required: [month, mrrByCurrency]
       properties:
         month: { type: string }
-        mrr: { type: number }
+        mrrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
 
     # ── COST ──────────────────────────────────────────────────────────────────
     Cost:

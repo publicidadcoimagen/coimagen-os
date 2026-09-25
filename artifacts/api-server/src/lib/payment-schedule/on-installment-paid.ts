@@ -76,6 +76,7 @@ export async function handleInstallmentPaid(invoiceId: number): Promise<void> {
     proposalId: proposal.id,
     plan: proposal.title,
     amount: proposal.monthlyAmount,
+    currency: proposal.currency,
     billingCycle: "monthly",
     status: "pending_authorization",
   });

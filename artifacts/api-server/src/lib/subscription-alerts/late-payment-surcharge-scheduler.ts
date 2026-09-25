@@ -28,6 +28,7 @@ export async function runLatePaymentSurchargeJob(now = new Date()): Promise<{ se
         clientId: subscription.clientId,
         proposalId: subscription.proposalId,
         amount: surchargeAmount.toString(),
+        currency: subscription.currency,
         status: "sent",
         issuedDate: today,
         dueDate: today,

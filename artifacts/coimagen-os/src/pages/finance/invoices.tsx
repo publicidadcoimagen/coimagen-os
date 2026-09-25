@@ -20,7 +20,15 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Receipt, FileUp, CreditCard } from "lucide-react";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { formatDate, formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
+
+const CURRENCIES = ["MXN", "USD"] as const;
+
+function breakdownByCurrency(rows: { amount: number; currency: string }[]): { currency: string; amount: number }[] {
+  const totals = new Map<string, number>();
+  for (const r of rows) totals.set(r.currency, (totals.get(r.currency) ?? 0) + r.amount);
+  return [...totals.entries()].map(([currency, amount]) => ({ currency, amount }));
+}
 
 const PAYMENT_STATUS_ES: Record<string, string> = {
   created: "Creado", approved: "Aprobado", captured: "Capturado", failed: "Fallido/liberado", refunded: "Reembolsado",
@@ -70,7 +78,7 @@ function PaymentEvidencePanel({ invoiceId, onClose }: { invoiceId: number; onClo
                 <div className="text-sm">
                   <p className="font-medium text-amber-300">Intento activo bloqueando reintentos</p>
                   <p className="text-xs text-muted-foreground">
-                    Creado hace {formatAge(data.activeAttempt.ageSeconds)} · {formatCurrency(data.activeAttempt.amount)} {data.activeAttempt.currency} · orden {data.activeAttempt.paypalOrderId}
+                    Creado hace {formatAge(data.activeAttempt.ageSeconds)} · {formatCurrency(data.activeAttempt.amount, data.activeAttempt.currency)} · orden {data.activeAttempt.paypalOrderId}
                   </p>
                 </div>
                 <Button
@@ -102,7 +110,7 @@ function PaymentEvidencePanel({ invoiceId, onClose }: { invoiceId: number; onClo
                     <tr key={a.id} className="border-b border-border/50">
                       <td className="px-3 py-2 text-muted-foreground">{formatDate(a.createdAt)}</td>
                       <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full border ${PAYMENT_STATUS_COLOR[a.status] ?? ""}`}>{PAYMENT_STATUS_ES[a.status] ?? a.status}</span></td>
-                      <td className="px-3 py-2 tabular-nums">{formatCurrency(a.amount)} {a.currency}</td>
+                      <td className="px-3 py-2 tabular-nums">{formatCurrency(a.amount, a.currency)}</td>
                       <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">{a.paypalOrderId}</td>
                       <td className="px-3 py-2 text-muted-foreground">{formatAge(a.ageSeconds)}</td>
                       <td className="px-3 py-2">
@@ -154,7 +162,7 @@ export function Invoices() {
   const updateInvoice = useUpdateInvoice();
   const uploadFiscalDocument = useUploadInvoiceFiscalDocument();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ number: "", clientId: "", amount: "", status: "draft", issuedDate: "", dueDate: "", description: "" });
+  const [form, setForm] = useState({ number: "", clientId: "", amount: "", currency: "MXN", status: "draft", issuedDate: "", dueDate: "", description: "" });
   const [fiscalDocInvoiceId, setFiscalDocInvoiceId] = useState<number | null>(null);
   const [fiscalDocFile, setFiscalDocFile] = useState<File | null>(null);
   const [fiscalDocError, setFiscalDocError] = useState<string | null>(null);
@@ -182,14 +190,14 @@ export function Invoices() {
   };
 
   const filtered = invoices?.filter((i) => tab === "all" || i.status === tab) ?? [];
-  const totalPaid = invoices?.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0) ?? 0;
-  const totalPending = invoices?.filter((i) => i.status === "sent").reduce((s, i) => s + i.amount, 0) ?? 0;
-  const totalOverdue = invoices?.filter((i) => i.status === "overdue").reduce((s, i) => s + i.amount, 0) ?? 0;
+  const totalPaid = breakdownByCurrency(invoices?.filter((i) => i.status === "paid") ?? []);
+  const totalPending = breakdownByCurrency(invoices?.filter((i) => i.status === "sent") ?? []);
+  const totalOverdue = breakdownByCurrency(invoices?.filter((i) => i.status === "overdue") ?? []);
 
   const handleSubmit = () => {
     if (!form.number || !form.amount) return;
-    createInvoice.mutate({ data: { number: form.number, clientId: form.clientId ? parseInt(form.clientId) : undefined, amount: parseFloat(form.amount), status: form.status as "draft", issuedDate: form.issuedDate || undefined, dueDate: form.dueDate || undefined, description: form.description || undefined } }, {
-      onSuccess: () => { qc.invalidateQueries({ queryKey: getListInvoicesQueryKey() }); setOpen(false); setForm({ number: "", clientId: "", amount: "", status: "draft", issuedDate: "", dueDate: "", description: "" }); }
+    createInvoice.mutate({ data: { number: form.number, clientId: form.clientId ? parseInt(form.clientId) : undefined, amount: parseFloat(form.amount), currency: form.currency as "MXN" | "USD", status: form.status as "draft", issuedDate: form.issuedDate || undefined, dueDate: form.dueDate || undefined, description: form.description || undefined } }, {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListInvoicesQueryKey() }); setOpen(false); setForm({ number: "", clientId: "", amount: "", currency: "MXN", status: "draft", issuedDate: "", dueDate: "", description: "" }); }
     });
   };
 
@@ -204,9 +212,9 @@ export function Invoices() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Total Pagado</div><div className="text-2xl font-bold text-emerald-400">{formatCurrency(totalPaid)}</div></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Por Cobrar</div><div className="text-2xl font-bold text-amber-400">{formatCurrency(totalPending)}</div></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Vencido</div><div className="text-2xl font-bold text-red-400">{formatCurrency(totalOverdue)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Total Pagado</div><div className="text-lg font-bold text-emerald-400">{formatCurrencyBreakdown(totalPaid)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Por Cobrar</div><div className="text-lg font-bold text-amber-400">{formatCurrencyBreakdown(totalPending)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Vencido</div><div className="text-lg font-bold text-red-400">{formatCurrencyBreakdown(totalOverdue)}</div></CardContent></Card>
       </div>
 
       <div className="flex gap-2">
@@ -234,7 +242,7 @@ export function Invoices() {
                 <tr key={inv.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{inv.number}</td>
                   <td className="px-4 py-3 font-medium">{inv.clientName ?? "-"}</td>
-                  <td className="px-4 py-3 tabular-nums font-medium">{formatCurrency(inv.amount)}</td>
+                  <td className="px-4 py-3 tabular-nums font-medium">{formatCurrency(inv.amount, inv.currency)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.issuedDate)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.dueDate)}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[inv.status]}`}>{STATUS_ES[inv.status] ?? inv.status}</span></td>
@@ -269,7 +277,14 @@ export function Invoices() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Número *</Label><Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="INV-007" /></div>
-              <div><Label>Monto (USD) *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+              <div><Label>Monto *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+            </div>
+            <div>
+              <Label>Moneda *</Label>
+              <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Cliente</Label>

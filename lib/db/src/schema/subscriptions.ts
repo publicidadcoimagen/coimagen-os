@@ -15,6 +15,15 @@ export const subscriptionsTable = pgTable("subscriptions", {
   proposalId: integer("proposal_id").references(() => proposalsTable.id, { onDelete: "set null" }),
   plan: text("plan").notNull(),
   amount: numeric("amount").notNull(),
+  // MXN or USD — previously only derivable by joining back to
+  // proposals.currency, which left any subscription created without a
+  // proposal (manual staff row) with no real way to know its currency at
+  // all (silently treated as MXN wherever it was read). Set explicitly at
+  // creation from here on: proposal.currency for proposal-driven
+  // subscriptions (on-installment-paid.ts), staff's own choice for manual
+  // ones (routes/subscriptions.ts) — same "no conversion, ever" rule as
+  // invoices.currency.
+  currency: text("currency").notNull().default("MXN"),
   billingCycle: text("billing_cycle").notNull().default("monthly"),
   // Gains "pending_authorization" alongside the pre-existing values (active
   // etc.) — set the moment a proposal's final installment is paid, before

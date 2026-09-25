@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { InvoiceCurrency } from './invoiceCurrency';
 import type { InvoiceStatus } from './invoiceStatus';
 
 export interface Invoice {
@@ -15,6 +16,7 @@ export interface Invoice {
   /** @nullable */
   clientName?: string | null;
   amount: number;
+  currency: InvoiceCurrency;
   status: InvoiceStatus;
   /** @nullable */
   issuedDate?: string | null;
