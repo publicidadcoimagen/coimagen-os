@@ -1919,6 +1919,7 @@ export const getImpersonateClientUrl = (id: number,) => {
 }
 
 /**
+ * Provisions the client's Client Room organization first if it has none (slug from the client name, numbered on collision).
  * @summary Start a staff "Ver como cliente" read-only impersonation session for this client
  */
 export const impersonateClient = async (id: number, options?: RequestInit): Promise<ImpersonateClientResult> => {

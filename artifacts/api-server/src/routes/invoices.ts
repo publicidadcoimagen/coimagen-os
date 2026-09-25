@@ -18,6 +18,7 @@ import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 import { recordFiscalDocumentUpload, markFiscalDocumentEmailed } from "../lib/fiscal-data/repository";
 import { getFiscalDocument } from "../lib/fiscal-blobs";
 import { sendFiscalDocumentToClientEmail } from "../lib/fiscal-data/email";
+import { handleInstallmentPaid, isTransitionToPaid } from "../lib/payment-schedule/on-installment-paid";
 import { listPaymentAttempts, releasePaymentAttempt } from "../lib/payment-schedule/repository";
 import { logger } from "../lib/logger";
 
@@ -94,8 +95,19 @@ router.patch("/invoices/:id", requireRole("ceo", "admin"), async (req, res): Pro
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const updateData: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
   if (parsed.data.amount !== undefined) updateData.amount = parsed.data.amount.toString();
-  const [row] = await db.update(invoicesTable).set(updateData).where(eq(invoicesTable.id, params.data.id)).returning();
+  const [before] = await db.select({ status: invoicesTable.status }).from(invoicesTable).where(eq(invoicesTable.id, params.data.id));
+  let [row] = await db.update(invoicesTable).set(updateData).where(eq(invoicesTable.id, params.data.id)).returning();
   if (!row) { res.status(404).json({ error: "Invoice not found" }); return; }
+  // Staff marking a cuota as paid by hand (e.g. a transfer outside PayPal)
+  // goes through the exact same path as a confirmed PayPal capture —
+  // Client Room + portal account + credentials, payment-confirmed email,
+  // next installment, subscription on the last one (Camila, 2026-09-25:
+  // "siempre portal automático"). Only on the actual transition to paid,
+  // so re-saving an already-paid invoice never re-sends anything.
+  if (isTransitionToPaid(before?.status, parsed.data.status)) {
+    await handleInstallmentPaid(row.id);
+    [row] = await db.select().from(invoicesTable).where(eq(invoicesTable.id, row.id));
+  }
   let clientName: string | null = null;
   if (row.clientId) {
     const [c] = await db.select().from(clientsTable).where(eq(clientsTable.id, row.clientId));

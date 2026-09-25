@@ -474,6 +474,7 @@ export const MarkClientFounderResponse = zod.object({
 
 
 /**
+ * Provisions the client's Client Room organization first if it has none (slug from the client name, numbered on collision).
  * @summary Start a staff "Ver como cliente" read-only impersonation session for this client
  */
 export const ImpersonateClientParams = zod.object({
