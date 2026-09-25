@@ -245,6 +245,10 @@ const translations = {
       signing: "Firmando...",
       sign: "Firmar",
       viewSigned: "Ver contrato firmado",
+      hideSigned: "Ocultar contrato",
+      openInNewTab: "Abrir en pestaña nueva",
+      pdfFrameTitle: "Contrato firmado",
+      pdfMobileHint: "En este dispositivo el contrato se abre mejor en una pestaña nueva, donde puedes verlo completo y descargarlo.",
       status: {
         draft: "Borrador", sent: "Enviado", signed: "Firmado",
         active: "Activo", expired: "Vencido", cancelled: "Cancelado",
@@ -573,6 +577,10 @@ const translations = {
       signing: "Signing...",
       sign: "Sign",
       viewSigned: "View signed contract",
+      hideSigned: "Hide contract",
+      openInNewTab: "Open in new tab",
+      pdfFrameTitle: "Signed contract",
+      pdfMobileHint: "On this device the contract opens best in a new tab, where you can view it in full and download it.",
       status: {
         draft: "Draft", sent: "Sent", signed: "Signed",
         active: "Active", expired: "Expired", cancelled: "Cancelled",

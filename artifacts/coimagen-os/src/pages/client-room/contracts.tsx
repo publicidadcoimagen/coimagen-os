@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRoute } from "wouter";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileSignature, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
+import { SignedPdfViewer } from "@/components/signed-pdf-viewer";
 
 type Org = { id: number; slug: string; clientId?: number | null };
 type Contract = {
@@ -53,6 +55,7 @@ export function ClientContracts() {
 // of ClientRoomLayout) throws on every render (fixed 2026-08-26).
 function ClientContractsBody({ slug }: { slug: string }) {
   const { t, lang } = useLang();
+  const [openPdfId, setOpenPdfId] = useState<number | null>(null);
 
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
   const org = rawOrg as Org | undefined;
@@ -126,14 +129,21 @@ function ClientContractsBody({ slug }: { slug: string }) {
                         size="sm"
                         variant="outline"
                         className="h-7 text-xs flex-shrink-0"
-                        asChild
+                        onClick={() => setOpenPdfId(openPdfId === c.id ? null : c.id)}
+                        aria-expanded={openPdfId === c.id}
                       >
-                        <a href={c.signedDocumentUrl} target="_blank" rel="noopener noreferrer">
-                          {t.contracts.viewSigned}
-                        </a>
+                        {openPdfId === c.id ? t.contracts.hideSigned : t.contracts.viewSigned}
                       </Button>
                     )}
                   </CardContent>
+                  {openPdfId === c.id && c.signedDocumentUrl && (
+                    <div className="px-3 pb-3">
+                      <SignedPdfViewer
+                        url={c.signedDocumentUrl}
+                        labels={{ frameTitle: t.contracts.pdfFrameTitle, openInNewTab: t.contracts.openInNewTab, mobileHint: t.contracts.pdfMobileHint }}
+                      />
+                    </div>
+                  )}
                 </Card>
               );
             })}
