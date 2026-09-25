@@ -1592,6 +1592,35 @@ export interface InvoiceUpdate {
   description?: string;
 }
 
+export type InvoicePaymentAttemptStatus = typeof InvoicePaymentAttemptStatus[keyof typeof InvoicePaymentAttemptStatus];
+
+
+export const InvoicePaymentAttemptStatus = {
+  created: 'created',
+  approved: 'approved',
+  captured: 'captured',
+  failed: 'failed',
+  refunded: 'refunded',
+} as const;
+
+export interface InvoicePaymentAttempt {
+  id: number;
+  status: InvoicePaymentAttemptStatus;
+  paypalOrderId: string;
+  currency: string;
+  amount: number;
+  createdAt: string;
+  /** @nullable */
+  capturedAt?: string | null;
+  ageSeconds: number;
+  stillBlocking: boolean;
+}
+
+export interface InvoicePaymentEvidence {
+  activeAttempt: InvoicePaymentAttempt | null;
+  history: InvoicePaymentAttempt[];
+}
+
 export interface CommercialFollowupStatus {
   prospectId: number;
   prospectName: string;

@@ -244,14 +244,15 @@ const translations = {
       expiresLabel: "Vence:",
       signing: "Firmando...",
       sign: "Firmar",
+      viewSigned: "Ver contrato firmado",
       status: {
         draft: "Borrador", sent: "Enviado", signed: "Firmado",
         active: "Activo", expired: "Vencido", cancelled: "Cancelado",
       } as Record<string, string>,
       types: {
-        desarrollo_web: "Desarrollo Web", seo: "SEO", google_business: "Google Business",
-        automatizacion_ia: "Automatización IA", coimagen_os: "COIMAGEN OS", medical_os: "Medical OS",
-        mensualidad: "Mensualidad", nda: "NDA", addendum: "Addendum", renovacion: "Renovación",
+        starter: "Starter", growth: "Growth", automation: "Automation",
+        ai_business: "AI Business", ecommerce: "Ecommerce",
+        nda: "NDA", addendum: "Addendum", renovacion: "Renovación",
         carta_aprobacion_visual: "Carta de Aprobación", carta_entrega_final: "Carta de Entrega",
       } as Record<string, string>,
     },
@@ -282,9 +283,8 @@ const translations = {
       types: {
         nda: "NDA", addendum: "Addendum", renovacion: "Renovación",
         carta_aprobacion_visual: "Carta de Aprobación Visual", carta_entrega_final: "Carta de Entrega Final",
-        desarrollo_web: "Contrato Desarrollo Web", seo: "Contrato SEO",
-        google_business: "Contrato Google Business", automatizacion_ia: "Contrato Automatización IA",
-        coimagen_os: "Contrato COIMAGEN OS", medical_os: "Contrato Medical OS", mensualidad: "Contrato Mensualidad",
+        starter: "Contrato Starter", growth: "Contrato Growth", automation: "Contrato Automation",
+        ai_business: "Contrato AI Business", ecommerce: "Contrato Ecommerce",
       } as Record<string, string>,
     },
     messages: {
@@ -572,14 +572,15 @@ const translations = {
       expiresLabel: "Expires:",
       signing: "Signing...",
       sign: "Sign",
+      viewSigned: "View signed contract",
       status: {
         draft: "Draft", sent: "Sent", signed: "Signed",
         active: "Active", expired: "Expired", cancelled: "Cancelled",
       } as Record<string, string>,
       types: {
-        desarrollo_web: "Web Development", seo: "SEO", google_business: "Google Business",
-        automatizacion_ia: "AI Automation", coimagen_os: "COIMAGEN OS", medical_os: "Medical OS",
-        mensualidad: "Monthly Plan", nda: "NDA", addendum: "Addendum", renovacion: "Renewal",
+        starter: "Starter", growth: "Growth", automation: "Automation",
+        ai_business: "AI Business", ecommerce: "Ecommerce",
+        nda: "NDA", addendum: "Addendum", renovacion: "Renewal",
         carta_aprobacion_visual: "Approval Letter", carta_entrega_final: "Delivery Letter",
       } as Record<string, string>,
     },
@@ -610,9 +611,8 @@ const translations = {
       types: {
         nda: "NDA", addendum: "Addendum", renovacion: "Renewal",
         carta_aprobacion_visual: "Visual Approval Letter", carta_entrega_final: "Final Delivery Letter",
-        desarrollo_web: "Web Development Contract", seo: "SEO Contract",
-        google_business: "Google Business Contract", automatizacion_ia: "AI Automation Contract",
-        coimagen_os: "COIMAGEN OS Contract", medical_os: "Medical OS Contract", mensualidad: "Monthly Plan Contract",
+        starter: "Starter Contract", growth: "Growth Contract", automation: "Automation Contract",
+        ai_business: "AI Business Contract", ecommerce: "Ecommerce Contract",
       } as Record<string, string>,
     },
     messages: {

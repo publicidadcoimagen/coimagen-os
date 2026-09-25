@@ -22,13 +22,21 @@
 export interface DocusealSubmitter {
   email: string;
   name: string;
-  // Both templates in use (id 3 "Contrato_Maestro_Coimagen_V2" and id 4
-  // "Coimagen_Master_Agreement_V2") define a single role named "Primera
+  // Both templates in use (id 11 "Contrato_Maestro_Coimagen_V3" and id 10
+  // "Coimagen_Master_Agreement_V3") define a single role named "Primera
   // Parte" (confirmed via `select submitters from templates` on the real
   // DocuSeal DB) — passed explicitly rather than relying on positional
   // inference so this keeps working if a template ever grows more roles.
   role?: string;
   externalId?: string;
+  // Prefill values for the template's own fields, keyed by field NAME —
+  // both V3 templates were auto-detected with no names at all until
+  // 2026-09-23 (every field silently rendered blank for the signer to fill
+  // in themselves, contract data included). Named to match exactly:
+  // client_name, client_company, client_email, client_phone, contract_date,
+  // contracted_service, monthly_fee, country_of_operation (same 8 names in
+  // both languages).
+  values?: Record<string, string>;
 }
 
 export interface DocusealSubmissionResult {
@@ -77,6 +85,7 @@ export async function createDocusealSubmission(
         name: submitter.name,
         role: submitter.role,
         external_id: submitter.externalId,
+        values: submitter.values,
       }],
     }),
   });

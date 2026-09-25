@@ -13,7 +13,7 @@ const serializeAccess = (r: typeof clientAccessTable.$inferSelect) => ({
 });
 
 router.get("/clients/:clientId/access", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
-  const clientId = parseInt(req.params.clientId);
+  const clientId = parseInt(String(req.params.clientId));
   if (isNaN(clientId)) { res.status(400).json({ error: "Invalid clientId" }); return; }
   const rows = await db.select().from(clientAccessTable)
     .where(eq(clientAccessTable.clientId, clientId))

@@ -6,7 +6,10 @@ import {
   useUpdateInvoice,
   useUploadInvoiceFiscalDocument,
   useListClients,
+  useListInvoicePayments,
+  useReleaseInvoicePaymentAttempt,
   getListInvoicesQueryKey,
+  getListInvoicePaymentsQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Receipt, FileUp } from "lucide-react";
+import { Plus, Receipt, FileUp, CreditCard } from "lucide-react";
 import { formatDate, formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
 
 const CURRENCIES = ["MXN", "USD"] as const;
@@ -25,6 +28,110 @@ function breakdownByCurrency(rows: { amount: number; currency: string }[]): { cu
   const totals = new Map<string, number>();
   for (const r of rows) totals.set(r.currency, (totals.get(r.currency) ?? 0) + r.amount);
   return [...totals.entries()].map(([currency, amount]) => ({ currency, amount }));
+}
+
+const PAYMENT_STATUS_ES: Record<string, string> = {
+  created: "Creado", approved: "Aprobado", captured: "Capturado", failed: "Fallido/liberado", refunded: "Reembolsado",
+};
+const PAYMENT_STATUS_COLOR: Record<string, string> = {
+  created: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  approved: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  captured: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  failed: "bg-muted text-muted-foreground border-border",
+  refunded: "bg-red-500/20 text-red-300 border-red-500/30",
+};
+
+function formatAge(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours} h ${minutes % 60} min`;
+}
+
+// Real PayPal payment-attempt evidence for one invoice — what's actually in
+// invoice_payments, not a reconstruction. No "método de pago" column: PayPal
+// Wallet and "Tarjeta de débito/crédito" both go through the same Orders
+// API flow into this same table, so the data to distinguish them doesn't
+// exist today (honest limitation, not an oversight).
+function PaymentEvidencePanel({ invoiceId, onClose }: { invoiceId: number; onClose: () => void }) {
+  const qc = useQueryClient();
+  const { data, isLoading } = useListInvoicePayments(invoiceId, { query: { queryKey: getListInvoicePaymentsQueryKey(invoiceId) } });
+  const release = useReleaseInvoicePaymentAttempt();
+
+  const handleRelease = (paymentId: number) => {
+    release.mutate({ id: invoiceId, paymentId }, {
+      onSuccess: () => qc.invalidateQueries({ queryKey: getListInvoicePaymentsQueryKey(invoiceId) }),
+    });
+  };
+
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader><DialogTitle>Evidencia de pago — Factura #{invoiceId}</DialogTitle></DialogHeader>
+        {isLoading ? (
+          <div className="text-muted-foreground text-sm">Cargando...</div>
+        ) : (
+          <div className="space-y-4">
+            {data?.activeAttempt ? (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 flex items-center justify-between gap-3">
+                <div className="text-sm">
+                  <p className="font-medium text-amber-300">Intento activo bloqueando reintentos</p>
+                  <p className="text-xs text-muted-foreground">
+                    Creado hace {formatAge(data.activeAttempt.ageSeconds)} · {formatCurrency(data.activeAttempt.amount, data.activeAttempt.currency)} · orden {data.activeAttempt.paypalOrderId}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs flex-shrink-0"
+                  disabled={release.isPending}
+                  onClick={() => handleRelease(data.activeAttempt!.id)}
+                >
+                  {release.isPending ? "Liberando..." : "Liberar"}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Ningún intento bloqueando reintentos ahora mismo.</p>
+            )}
+
+            <div className="rounded-lg border border-border overflow-hidden">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Fecha</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Resultado</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Monto</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Orden PayPal</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Antigüedad</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground"></th>
+                </tr></thead>
+                <tbody>
+                  {data?.history.map((a) => (
+                    <tr key={a.id} className="border-b border-border/50">
+                      <td className="px-3 py-2 text-muted-foreground">{formatDate(a.createdAt)}</td>
+                      <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full border ${PAYMENT_STATUS_COLOR[a.status] ?? ""}`}>{PAYMENT_STATUS_ES[a.status] ?? a.status}</span></td>
+                      <td className="px-3 py-2 tabular-nums">{formatCurrency(a.amount, a.currency)}</td>
+                      <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">{a.paypalOrderId}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{formatAge(a.ageSeconds)}</td>
+                      <td className="px-3 py-2">
+                        {a.stillBlocking && (
+                          <Button size="sm" variant="outline" className="h-6 text-xs" disabled={release.isPending} onClick={() => handleRelease(a.id)}>
+                            Liberar
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {!data?.history.length && <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">Sin intentos de pago registrados.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        <DialogFooter><Button variant="outline" onClick={onClose}>Cerrar</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function fileToDataUri(file: File): Promise<string> {
@@ -60,6 +167,7 @@ export function Invoices() {
   const [fiscalDocFile, setFiscalDocFile] = useState<File | null>(null);
   const [fiscalDocError, setFiscalDocError] = useState<string | null>(null);
   const [fiscalDocResult, setFiscalDocResult] = useState<string | null>(null);
+  const [paymentsInvoiceId, setPaymentsInvoiceId] = useState<number | null>(null);
 
   const closeFiscalDocDialog = () => {
     setFiscalDocInvoiceId(null);
@@ -149,6 +257,11 @@ export function Invoices() {
                         <FileUp className="h-3 w-3" /> Subir factura fiscal
                       </Button>
                     )}
+                    {inv.status !== "draft" && (
+                      <Button size="sm" variant="outline" className="h-6 text-xs gap-1" onClick={() => setPaymentsInvoiceId(inv.id)}>
+                        <CreditCard className="h-3 w-3" /> Ver pagos
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -224,6 +337,10 @@ export function Invoices() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {paymentsInvoiceId !== null && (
+        <PaymentEvidencePanel invoiceId={paymentsInvoiceId} onClose={() => setPaymentsInvoiceId(null)} />
+      )}
     </div>
   );
 }

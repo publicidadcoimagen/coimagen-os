@@ -1,7 +1,7 @@
 // Real-Postgres (PGlite) tests for the PayPal-cancel double-payment-guard
 // fix: cancelling the popup (SDK onCancel, see PaymentBox.tsx) now marks
 // the matching invoice_payments row "failed" instead of leaving it
-// "created" for up to 3 hours (see eligibility.ts's ORDER_EXPIRY_MS) — that
+// "created" for up to the guard window (see eligibility.ts's ORDER_EXPIRY_MS) — that
 // stale row was what made a second payment attempt (PayPal or card) fail
 // with "Ya hay un pago en proceso para esta cuota" even though the client
 // explicitly backed out of the first one.
