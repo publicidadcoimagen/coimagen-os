@@ -503,6 +503,7 @@ paths:
       operationId: impersonateClient
       tags: [clients]
       summary: Start a staff "Ver como cliente" read-only impersonation session for this client
+      description: Provisions the client's Client Room organization first if it has none (slug from the client name, numbered on collision).
       parameters:
         - { name: id, in: path, required: true, schema: { type: integer } }
       responses:
@@ -514,8 +515,6 @@ paths:
                 $ref: "#/components/schemas/ImpersonateClientResult"
         "404":
           description: Client not found
-        "409":
-          description: Client has no Client Room organization yet
 
   /impersonation/end:
     post:

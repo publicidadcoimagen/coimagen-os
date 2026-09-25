@@ -24,6 +24,7 @@ import { pgcrypto } from "@electric-sql/pglite/contrib/pgcrypto";
 import { drizzle, type PgliteDatabase } from "drizzle-orm/pglite";
 import * as schema from "@workspace/db/schema";
 import { convertProspectToClient } from "../src/lib/prospect-conversion/repository";
+import { ensureClientRoom } from "../src/lib/client-room/ensure-organization";
 import prospectsRouter from "../src/routes/prospects";
 import { requireRole } from "../src/middlewares/requireAuth";
 
@@ -43,6 +44,17 @@ const SCHEMA_SQL = `
     enabled_modules jsonb not null default '[]',
     language text not null default 'es',
     access_gate_exempt boolean not null default false,
+    created_at timestamp not null default now(),
+    updated_at timestamp
+  );
+  create table organizations (
+    id serial primary key,
+    slug text not null unique,
+    name text not null,
+    description text,
+    client_id integer references clients(id) on delete set null,
+    logo_url text, primary_color text, contact_email text, contact_phone text,
+    language text not null default 'es',
     created_at timestamp not null default now(),
     updated_at timestamp
   );
@@ -205,6 +217,39 @@ describe("POST /prospects/:id/convert — casos positivos", () => {
     // PaymentBox (createPaypalOrder(invoice.publicToken, ...)) on the public
     // proposal page silently had nothing to pay against.
     assert.equal(invoices.every((i) => typeof i.publicToken === "string" && i.publicToken.length > 0), true);
+
+    // Client Room from day one (2026-09-25): before this, organizations were
+    // only created by hand, so a converted client had no portal to land in.
+    const orgs = await testDb.select().from(schema.organizationsTable).where(eq(schema.organizationsTable.clientId, result.client.id));
+    assert.equal(orgs.length, 1);
+    assert.match(orgs[0].slug, /^prospecto-de-prueba(-\d+)?$/);
+    assert.equal(orgs[0].contactEmail, prospect.email);
+  });
+
+  test("dos clientes con el mismo nombre reciben slugs distintos de Client Room (número si ya existe)", async () => {
+    const a = await seedProspect({ name: "Clínica Duplicada" });
+    await seedAcceptedProposal(a.id);
+    const b = await seedProspect({ name: "Clinica duplicada" });
+    await seedAcceptedProposal(b.id);
+    const ra = await convertProspectToClient(a.id, actor, { confirmTestSource: false }, testDb as unknown as Parameters<typeof convertProspectToClient>[3]);
+    const rb = await convertProspectToClient(b.id, actor, { confirmTestSource: false }, testDb as unknown as Parameters<typeof convertProspectToClient>[3]);
+    assert.ok(ra.ok && rb.ok);
+    if (!ra.ok || !rb.ok) return;
+    const [orgA] = await testDb.select().from(schema.organizationsTable).where(eq(schema.organizationsTable.clientId, ra.client.id));
+    const [orgB] = await testDb.select().from(schema.organizationsTable).where(eq(schema.organizationsTable.clientId, rb.client.id));
+    assert.equal(orgA.slug, "clinica-duplicada");
+    assert.equal(orgB.slug, "clinica-duplicada-2");
+  });
+
+  test("ensureClientRoom es idempotente: un cliente que ya tiene Client Room no recibe otra", async () => {
+    const [client] = await testDb.insert(schema.clientsTable).values({ name: "Milevia Ubers Flotilla", status: "active" }).returning();
+    const exec = testDb as unknown as Parameters<typeof ensureClientRoom>[1];
+    const first = await ensureClientRoom(client.id, exec);
+    const second = await ensureClientRoom(client.id, exec);
+    assert.equal(first.id, second.id);
+    assert.equal(first.slug, "milevia-ubers-flotilla");
+    const orgs = await testDb.select().from(schema.organizationsTable).where(eq(schema.organizationsTable.clientId, client.id));
+    assert.equal(orgs.length, 1);
   });
 
   test("prospecto de prueba con confirmTestSource:true sí se convierte — la fricción es deliberada, no un bloqueo permanente", async () => {

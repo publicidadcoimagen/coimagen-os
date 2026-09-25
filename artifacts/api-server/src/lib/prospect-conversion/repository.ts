@@ -1,6 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db, clientsTable, prospectsTable, proposalsTable, diagnosesTable, clientNotesTable, clientTimelineTable, type Client } from "@workspace/db";
 import { createInstallmentInvoices } from "../payment-schedule/repository";
+import { ensureClientRoom } from "../client-room/ensure-organization";
 
 // Prospects whose `source` marks them as test/synthetic data, not a real
 // lead — see routes/prospects.ts and Corte 1 (prospect 23, source
@@ -80,6 +81,12 @@ export async function convertProspectToClient(
       // prospect (see the design doc's §4 callout on this exact collision).
       status: "active",
     }).returning();
+
+    // Client Room from day one, inside this same transaction — a failed
+    // conversion never leaves an orphan organization behind. Payment
+    // confirmation (on-installment-paid.ts) and "Ver como cliente" also
+    // ensure it, for clients created any other way.
+    await ensureClientRoom(client.id, tx);
 
     // Link, never migrate: diagnoses/proposals keep their original
     // prospectId untouched and gain clientId, same dual-FK pattern the

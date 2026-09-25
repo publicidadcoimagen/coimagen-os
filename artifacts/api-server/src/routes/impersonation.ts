@@ -1,9 +1,10 @@
 import { Router, type IRouter } from "express";
 import { randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { db, clientsTable, organizationsTable, clientImpersonationSessionsTable, auditLogsTable } from "@workspace/db";
+import { db, clientsTable, clientImpersonationSessionsTable, auditLogsTable } from "@workspace/db";
 import { ImpersonateClientParams, EndImpersonationBody } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { ensureClientRoom } from "../lib/client-room/ensure-organization";
 
 const router: IRouter = Router();
 
@@ -18,8 +19,9 @@ router.post("/clients/:id/impersonate", requireRole("ceo", "admin"), async (req,
   const [client] = await db.select().from(clientsTable).where(eq(clientsTable.id, params.data.id));
   if (!client) { res.status(404).json({ error: "Client not found" }); return; }
 
-  const [org] = await db.select().from(organizationsTable).where(eq(organizationsTable.clientId, client.id));
-  if (!org) { res.status(409).json({ error: "This client has no Client Room organization yet" }); return; }
+  // Provisions the Client Room on the spot if this client never got one
+  // (real case: client 24 had none, so "Ver como cliente" used to 409).
+  const org = await ensureClientRoom(client.id);
 
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + SESSION_MINUTES * 60 * 1000);
