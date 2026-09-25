@@ -7,10 +7,17 @@ import { sendPortalCredentialsEmail } from "../portal-onboarding/credentials-ema
 import { ensureClientRoom } from "../client-room/ensure-organization";
 import { logger } from "../logger";
 
+// True only when a staff edit actually moves an invoice INTO "paid" — the
+// manual PATCH route uses this to run handleInstallmentPaid exactly once,
+// same as the PayPal webhook, never again on a later edit of a paid invoice.
+export function isTransitionToPaid(previousStatus: string | undefined, nextStatus: string | undefined): boolean {
+  return nextStatus === "paid" && previousStatus !== undefined && previousStatus !== "paid";
+}
+
 // The single authoritative place that reacts to a confirmed cuota payment
-// — called ONLY from webhooks-paypal.ts's PAYMENT.CAPTURE.COMPLETED
-// handler, never from the synchronous capture-order route (see that
-// route's comment for why). Idempotency is the caller's job: the webhook
+// — called from webhooks-paypal.ts's PAYMENT.CAPTURE.COMPLETED handler and
+// from staff's manual mark-as-paid (PATCH /invoices/:id), never from the
+// synchronous capture-order route (see that route's comment for why). Idempotency is the caller's job: the webhook
 // handler must check invoice_payments.status before calling this, so it
 // only ever runs once per invoice.
 export async function handleInstallmentPaid(invoiceId: number): Promise<void> {
