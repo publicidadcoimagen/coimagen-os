@@ -12,6 +12,7 @@ import {
 import { requireRole } from "../middlewares/requireAuth";
 import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 import { createDocusealSubmission, DocusealApiError, DocusealNotConfiguredError } from "../lib/docuseal/client";
+import { backfillSignedDocumentUrls } from "../lib/docuseal/backfill";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -63,7 +64,7 @@ router.get("/contracts", async (req, res): Promise<void> => {
   if (!q.data.includeTest) conditions.push(eq(contractsTable.isTest, false));
   if (conditions.length > 0) query = query.where(and(...conditions));
 
-  const rows = await query.orderBy(desc(contractsTable.createdAt));
+  const rows = await backfillSignedDocumentUrls(await query.orderBy(desc(contractsTable.createdAt)));
   res.json(rows.map(serialize));
 });
 
@@ -103,7 +104,8 @@ router.get("/contracts/:id", async (req, res): Promise<void> => {
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
   const [row] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
   if (!row || (isClienteRole(req) && row.clientId !== ownClientId(req))) { res.status(404).json({ error: "Not found" }); return; }
-  res.json(serialize(row));
+  const [filled] = await backfillSignedDocumentUrls([row]);
+  res.json(serialize(filled));
 });
 
 // A cliente-role caller can no longer self-mark their own contract as

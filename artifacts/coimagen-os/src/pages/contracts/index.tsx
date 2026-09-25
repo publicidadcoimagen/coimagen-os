@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -65,6 +66,7 @@ type Contract = {
   amount?: number | null; currency?: string | null;
   sentAt?: string | null; signedAt?: string | null; expiresAt?: string | null;
   createdBy?: string | null; createdAt: string; updatedAt?: string | null;
+  isTest?: boolean;
 };
 
 function statusMeta(s: string) {
@@ -223,6 +225,9 @@ function ContractRow({ contract, onDelete }: { contract: Contract; onDelete: (id
                 <StatusIcon className="h-2.5 w-2.5 mr-0.5" />
                 {meta.label}
               </Badge>
+              {contract.isTest && (
+                <Badge variant="outline" className="text-[10px] py-0 text-amber-400 border-amber-400/40">PRUEBA</Badge>
+              )}
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <span className="text-[10px] text-muted-foreground">{typeLabel(contract.type)}</span>
@@ -265,10 +270,14 @@ export function ContractEngine() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [activeTab, setActiveTab] = useState("all");
+  // Test contracts (is_test) are hidden server-side by default so they never
+  // inflate the Firmados/valor KPIs — this only surfaces them in the list.
+  const [showTest, setShowTest] = useState(false);
 
+  const listParams = showTest ? { includeTest: true } : {};
   const { data: rawContracts = [], isLoading } = useListContracts(
-    {},
-    { query: { queryKey: getListContractsQueryKey() } },
+    listParams,
+    { query: { queryKey: getListContractsQueryKey(listParams) } },
   );
 
   const { mutate: deleteContract } = useDeleteContract({
@@ -289,12 +298,13 @@ export function ContractEngine() {
     return true;
   });
 
+  const real = all.filter((c) => !c.isTest);
   const kpis = {
-    total: all.length,
-    signed: all.filter((c) => c.status === "signed" || c.status === "active").length,
-    pending: all.filter((c) => c.status === "draft" || c.status === "sent" || c.status === "viewed").length,
-    expired: all.filter((c) => c.status === "expired").length,
-    value: all.filter((c) => c.status === "signed" || c.status === "active").reduce((acc, c) => acc + (c.amount ?? 0), 0),
+    total: real.length,
+    signed: real.filter((c) => c.status === "signed" || c.status === "active").length,
+    pending: real.filter((c) => c.status === "draft" || c.status === "sent" || c.status === "viewed").length,
+    expired: real.filter((c) => c.status === "expired").length,
+    value: real.filter((c) => c.status === "signed" || c.status === "active").reduce((acc, c) => acc + (c.amount ?? 0), 0),
   };
 
   const STATUS_TABS = [
@@ -364,6 +374,10 @@ export function ContractEngine() {
             {CONTRACT_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-1.5">
+          <Switch id="show-test-contracts" checked={showTest} onCheckedChange={setShowTest} />
+          <Label htmlFor="show-test-contracts" className="text-xs text-muted-foreground cursor-pointer">Mostrar pruebas</Label>
+        </div>
         {(search || filterType !== "all") && (
           <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => { setSearch(""); setFilterType("all"); }}>
             <RefreshCw className="h-3 w-3 mr-1" />Limpiar

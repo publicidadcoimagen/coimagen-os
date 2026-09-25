@@ -57,9 +57,13 @@ function ClientContractsBody({ slug }: { slug: string }) {
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
   const org = rawOrg as Org | undefined;
 
+  // includeTest: a client's own contract is still their document even if it
+  // was flagged is_test (e.g. the pilot account's real DocuSeal signature,
+  // contract 4) — the server already scopes a cliente caller to their own
+  // clientId, and nothing here feeds a KPI.
   const { data: rawContracts = [], isLoading } = useListContracts(
-    {},
-    { query: { queryKey: getListContractsQueryKey() } },
+    { includeTest: true },
+    { query: { queryKey: getListContractsQueryKey({ includeTest: true }) } },
   );
 
   const contracts = (rawContracts as Contract[]).filter((c) => org?.clientId ? c.clientId === org.clientId : false);
