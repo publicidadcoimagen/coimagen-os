@@ -10,6 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SignedPdfViewer } from "@/components/signed-pdf-viewer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -330,9 +331,9 @@ export function ContractDetail() {
       />
 
       {/* Body */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Sidebar */}
-        <div className="col-span-1 space-y-3">
+        <div className="lg:col-span-1 space-y-3">
           <Card className="border-border/50">
             <CardContent className="p-3 space-y-3">
               <p className="text-xs font-semibold text-muted-foreground">Información</p>
@@ -389,11 +390,6 @@ export function ContractDetail() {
                       </div>
                     </div>
                   )}
-                  {contract.signedDocumentUrl && (
-                    <a href={contract.signedDocumentUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-                      <ExternalLink className="h-3 w-3" />Documento firmado
-                    </a>
-                  )}
                   {contract.auditLogUrl && (
                     <a href={contract.auditLogUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
                       <ExternalLink className="h-3 w-3" />Registro de auditoría
@@ -431,15 +427,31 @@ export function ContractDetail() {
         </div>
 
         {/* Content tabs */}
-        <div className="col-span-2">
-          <Tabs defaultValue="details">
+        <div className="lg:col-span-2">
+          <Tabs defaultValue={contract.signedDocumentUrl ? "signed" : "details"}>
             <TabsList className="h-8">
+              {contract.signedDocumentUrl && (
+                <TabsTrigger value="signed" className="text-xs gap-1"><ShieldCheck className="h-3 w-3" />Contrato firmado</TabsTrigger>
+              )}
               <TabsTrigger value="details" className="text-xs gap-1"><FileText className="h-3 w-3" />Detalles</TabsTrigger>
               <TabsTrigger value="content" className="text-xs gap-1"><ScrollText className="h-3 w-3" />Contenido</TabsTrigger>
               {(contract.terms || contract.notes) && (
                 <TabsTrigger value="terms" className="text-xs gap-1"><CheckCircle2 className="h-3 w-3" />Términos y notas</TabsTrigger>
               )}
             </TabsList>
+
+            {contract.signedDocumentUrl && (
+              <TabsContent value="signed" className="mt-3">
+                <SignedPdfViewer
+                  url={contract.signedDocumentUrl}
+                  labels={{
+                    frameTitle: "Contrato firmado",
+                    openInNewTab: "Abrir en pestaña nueva",
+                    mobileHint: "En este dispositivo el contrato se abre mejor en una pestaña nueva, donde puedes verlo completo y descargarlo.",
+                  }}
+                />
+              </TabsContent>
+            )}
 
             <TabsContent value="details" className="mt-3 space-y-3">
               {contract.service && (
