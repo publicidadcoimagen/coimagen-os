@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq, and, asc, inArray } from "drizzle-orm";
+import { eq, and, asc, desc, inArray } from "drizzle-orm";
 import { db, invoicesTable, invoicePaymentsTable, type Invoice, type Proposal } from "@workspace/db";
 import { generateInstallments } from "./generate";
 import { isPaymentAttemptStillActive } from "./eligibility";
@@ -121,15 +121,15 @@ export async function findActivePaymentAttempt(
 
 // Called when the client cancels the PayPal popup (SDK onCancel) instead of
 // approving it — releases findActivePaymentAttempt's block immediately
-// instead of making the client wait out the 3-hour order-expiry window for
-// a payment they explicitly said they don't want right now. Only touches
-// the row while it's still in an ACTIVE_PAYMENT_STATUSES state, so this is
-// safe to call idempotently (a cancel request arriving after the order was
-// already captured — e.g. approved in another tab — is a silent no-op, not
-// an error, and never overwrites a real "captured" result with "failed").
-// Scoped by invoiceId, not just paypalOrderId, so a client can only cancel
-// an order that actually belongs to the invoice their own public token
-// resolves to.
+// instead of making the client wait out the order-expiry window (see
+// eligibility.ts) for a payment they explicitly said they don't want right
+// now. Only touches the row while it's still in an ACTIVE_PAYMENT_STATUSES
+// state, so this is safe to call idempotently (a cancel request arriving
+// after the order was already captured — e.g. approved in another tab — is
+// a silent no-op, not an error, and never overwrites a real "captured"
+// result with "failed"). Scoped by invoiceId, not just paypalOrderId, so a
+// client can only cancel an order that actually belongs to the invoice
+// their own public token resolves to.
 export async function markPaymentAttemptCancelled(
   invoiceId: number,
   paypalOrderId: string,
@@ -140,6 +140,37 @@ export async function markPaymentAttemptCancelled(
     .where(and(
       eq(invoicePaymentsTable.invoiceId, invoiceId),
       eq(invoicePaymentsTable.paypalOrderId, paypalOrderId),
+      inArray(invoicePaymentsTable.status, ACTIVE_PAYMENT_STATUSES),
+    ));
+}
+
+// Full invoice_payments history for one invoice, newest first, each row
+// annotated with the same active/blocking computation
+// findActivePaymentAttempt uses server-side — so the staff evidence view
+// (routes/invoices.ts's GET .../payments) can show "still blocking" without
+// reimplementing or drifting from the real guard logic.
+export async function listPaymentAttempts(invoiceId: number, now = new Date()) {
+  const rows = await db.select().from(invoicePaymentsTable)
+    .where(eq(invoicePaymentsTable.invoiceId, invoiceId))
+    .orderBy(desc(invoicePaymentsTable.createdAt));
+  return rows.map((row) => ({
+    ...row,
+    ageSeconds: Math.floor((now.getTime() - row.createdAt.getTime()) / 1000),
+    stillBlocking: ACTIVE_PAYMENT_STATUSES.includes(row.status as (typeof ACTIVE_PAYMENT_STATUSES)[number]) && isPaymentAttemptStillActive(row.createdAt, now),
+  }));
+}
+
+// Staff-facing equivalent of markPaymentAttemptCancelled, keyed by the
+// payment row's own id (what the evidence view shows) instead of requiring
+// the paypalOrderId — lets staff release a stuck attempt directly from
+// routes/invoices.ts's evidence panel without waiting for the guard window,
+// same idempotency guarantee (only touches a still-created/approved row).
+export async function releasePaymentAttempt(invoiceId: number, paymentId: number): Promise<void> {
+  await db.update(invoicePaymentsTable)
+    .set({ status: "failed" })
+    .where(and(
+      eq(invoicePaymentsTable.invoiceId, invoiceId),
+      eq(invoicePaymentsTable.id, paymentId),
       inArray(invoicePaymentsTable.status, ACTIVE_PAYMENT_STATUSES),
     ));
 }
