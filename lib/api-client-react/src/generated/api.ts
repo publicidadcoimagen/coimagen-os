@@ -92,6 +92,7 @@ import type {
   ContentCalendarItemUpdate,
   Contract,
   ContractCreate,
+  ContractSignedDocuments,
   ContractUpdate,
   ConvertProspectBody,
   ConvertTicketBody,
@@ -15014,6 +15015,84 @@ export const useDeleteContract = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getDeleteContractMutationOptions(options));
     }
+
+export const getGetContractSignedDocumentsUrl = (id: number,) => {
+
+
+
+
+  return `/api/contracts/${id}/signed-documents`
+}
+
+/**
+ * DocuSeal file URLs are signed tokens that stop working after a while, so they are fetched from DocuSeal on every call and never served from the stored contract row. Same access rule as GET /contracts/{id}.
+ * @summary Fresh short-lived URLs for a signed contract's PDF and audit log
+ */
+export const getContractSignedDocuments = async (id: number, options?: RequestInit): Promise<ContractSignedDocuments> => {
+
+  return customFetch<ContractSignedDocuments>(getGetContractSignedDocumentsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetContractSignedDocumentsQueryKey = (id: number,) => {
+    return [
+    `/api/contracts/${id}/signed-documents`
+    ] as const;
+    }
+
+
+export const getGetContractSignedDocumentsQueryOptions = <TData = Awaited<ReturnType<typeof getContractSignedDocuments>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getContractSignedDocuments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetContractSignedDocumentsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getContractSignedDocuments>>> = ({ signal }) => getContractSignedDocuments(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getContractSignedDocuments>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetContractSignedDocumentsQueryResult = NonNullable<Awaited<ReturnType<typeof getContractSignedDocuments>>>
+export type GetContractSignedDocumentsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Fresh short-lived URLs for a signed contract's PDF and audit log
+ */
+
+export function useGetContractSignedDocuments<TData = Awaited<ReturnType<typeof getContractSignedDocuments>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getContractSignedDocuments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetContractSignedDocumentsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getSendContractUrl = (id: number,) => {
 

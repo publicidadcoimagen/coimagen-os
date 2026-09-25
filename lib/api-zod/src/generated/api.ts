@@ -4654,6 +4654,20 @@ export const DeleteContractParams = zod.object({
 
 
 /**
+ * DocuSeal file URLs are signed tokens that stop working after a while, so they are fetched from DocuSeal on every call and never served from the stored contract row. Same access rule as GET /contracts/{id}.
+ * @summary Fresh short-lived URLs for a signed contract's PDF and audit log
+ */
+export const GetContractSignedDocumentsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetContractSignedDocumentsResponse = zod.object({
+  "signedDocumentUrl": zod.string().nullable(),
+  "auditLogUrl": zod.string().nullable()
+})
+
+
+/**
  * @summary Send a draft contract for e-signature via DocuSeal (picks the ES/EN template from the client's language)
  */
 export const SendContractParams = zod.object({

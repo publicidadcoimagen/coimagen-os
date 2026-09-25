@@ -10,7 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SignedPdfViewer } from "@/components/signed-pdf-viewer";
+import { SignedPdfViewer, useFreshSignedDocuments } from "@/components/signed-pdf-viewer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -72,6 +72,18 @@ type Contract = {
   auditLogUrl?: string | null;
   signerIp?: string | null;
 };
+
+// Fresh URL from GET /contracts/:id/signed-documents — the stored
+// auditLogUrl stops working after a while (see signed-pdf-viewer).
+function AuditLogLink({ contractId }: { contractId: number }) {
+  const { data } = useFreshSignedDocuments(contractId);
+  if (!data?.auditLogUrl) return null;
+  return (
+    <a href={data.auditLogUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
+      <ExternalLink className="h-3 w-3" />Registro de auditoría
+    </a>
+  );
+}
 
 function statusMeta(s: string) {
   return CONTRACT_STATUSES.find((x) => x.value === s) ?? {
@@ -286,6 +298,10 @@ export function ContractDetail() {
     </div>
   );
 
+  // Signed through DocuSeal → a fresh PDF URL can always be fetched; never
+  // keyed off the stored signedDocumentUrl, which may be missing or expired.
+  const hasDocusealSignature = (contract.status === "signed" || contract.status === "active") && !!contract.docusealSubmissionId;
+
   const meta = statusMeta(contract.status);
   const StatusIcon = meta.icon;
   const amountFmt = contract.amount
@@ -390,11 +406,7 @@ export function ContractDetail() {
                       </div>
                     </div>
                   )}
-                  {contract.auditLogUrl && (
-                    <a href={contract.auditLogUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-primary hover:underline">
-                      <ExternalLink className="h-3 w-3" />Registro de auditoría
-                    </a>
-                  )}
+                  {(contract.status === "signed" || contract.status === "active") && <AuditLogLink contractId={contract.id} />}
                 </div>
               </CardContent>
             </Card>
@@ -428,9 +440,9 @@ export function ContractDetail() {
 
         {/* Content tabs */}
         <div className="lg:col-span-2">
-          <Tabs defaultValue={contract.signedDocumentUrl ? "signed" : "details"}>
+          <Tabs defaultValue={hasDocusealSignature ? "signed" : "details"}>
             <TabsList className="h-8">
-              {contract.signedDocumentUrl && (
+              {hasDocusealSignature && (
                 <TabsTrigger value="signed" className="text-xs gap-1"><ShieldCheck className="h-3 w-3" />Contrato firmado</TabsTrigger>
               )}
               <TabsTrigger value="details" className="text-xs gap-1"><FileText className="h-3 w-3" />Detalles</TabsTrigger>
@@ -440,14 +452,16 @@ export function ContractDetail() {
               )}
             </TabsList>
 
-            {contract.signedDocumentUrl && (
+            {hasDocusealSignature && (
               <TabsContent value="signed" className="mt-3">
                 <SignedPdfViewer
-                  url={contract.signedDocumentUrl}
+                  contractId={contract.id}
                   labels={{
                     frameTitle: "Contrato firmado",
                     openInNewTab: "Abrir en pestaña nueva",
                     mobileHint: "En este dispositivo el contrato se abre mejor en una pestaña nueva, donde puedes verlo completo y descargarlo.",
+                    loading: "Cargando contrato…",
+                    error: "No se pudo cargar el contrato desde DocuSeal. Intenta de nuevo en un momento.",
                   }}
                 />
               </TabsContent>

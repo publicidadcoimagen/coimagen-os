@@ -3460,6 +3460,26 @@ paths:
         "204":
           description: No Content
 
+  /contracts/{id}/signed-documents:
+    get:
+      operationId: getContractSignedDocuments
+      summary: Fresh short-lived URLs for a signed contract's PDF and audit log
+      description: DocuSeal file URLs are signed tokens that stop working after a while, so they are fetched from DocuSeal on every call and never served from the stored contract row. Same access rule as GET /contracts/{id}.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ContractSignedDocuments" }
+        "404":
+          description: Contract not found, not signed via DocuSeal, or not the caller's
+        "502":
+          description: DocuSeal unavailable
   /contracts/{id}/send:
     post:
       operationId: sendContract
@@ -6866,6 +6886,12 @@ components:
         resolvedAt: { type: string }
         notes: { type: string }
 
+    ContractSignedDocuments:
+      type: object
+      required: [signedDocumentUrl, auditLogUrl]
+      properties:
+        signedDocumentUrl: { type: string, nullable: true }
+        auditLogUrl: { type: string, nullable: true }
     Contract:
       type: object
       required: [id, type, status, title, createdAt, isTest]

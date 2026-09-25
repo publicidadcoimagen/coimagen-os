@@ -3220,6 +3220,11 @@ export interface QcTicketUpdate {
   notes?: string;
 }
 
+export interface ContractSignedDocuments {
+  signedDocumentUrl: string | null;
+  auditLogUrl: string | null;
+}
+
 export interface Contract {
   id: number;
   type: string;

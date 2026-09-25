@@ -5,13 +5,14 @@ import {
   ListContractsQueryParams,
   CreateContractBody,
   GetContractParams,
+  GetContractSignedDocumentsParams,
   UpdateContractParams,
   UpdateContractBody,
   DeleteContractParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 import { isClienteRole, ownClientId } from "../middlewares/clientScope";
-import { createDocusealSubmission, DocusealApiError, DocusealNotConfiguredError } from "../lib/docuseal/client";
+import { createDocusealSubmission, getDocusealSubmissionDocumentUrls, DocusealApiError, DocusealNotConfiguredError } from "../lib/docuseal/client";
 import { backfillSignedDocumentUrls } from "../lib/docuseal/backfill";
 import { logger } from "../lib/logger";
 
@@ -106,6 +107,27 @@ router.get("/contracts/:id", async (req, res): Promise<void> => {
   if (!row || (isClienteRole(req) && row.clientId !== ownClientId(req))) { res.status(404).json({ error: "Not found" }); return; }
   const [filled] = await backfillSignedDocumentUrls([row]);
   res.json(serialize(filled));
+});
+
+// Fresh DocuSeal URLs, fetched on every call — the ones stored on the row
+// stop working after a while (403 "Not authorized" hours later),
+// which is what broke the embedded PDF viewer (2026-09-25). Same access
+// rule as GET /contracts/:id: a cliente only ever gets their own contract.
+router.get("/contracts/:id/signed-documents", async (req, res): Promise<void> => {
+  const params = GetContractSignedDocumentsParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  const [row] = await db.select().from(contractsTable).where(eq(contractsTable.id, params.data.id));
+  if (!row || (isClienteRole(req) && row.clientId !== ownClientId(req))) { res.status(404).json({ error: "Not found" }); return; }
+  if (!row.docusealSubmissionId || (row.status !== "signed" && row.status !== "active")) {
+    res.status(404).json({ error: "Este contrato no tiene documento firmado en DocuSeal" });
+    return;
+  }
+  try {
+    res.json(await getDocusealSubmissionDocumentUrls(row.docusealSubmissionId));
+  } catch (err) {
+    req.log.warn({ err, contractId: row.id }, "No se pudieron obtener URLs frescas de DocuSeal");
+    res.status(502).json({ error: "No se pudo obtener el documento de DocuSeal" });
+  }
 });
 
 // A cliente-role caller can no longer self-mark their own contract as
