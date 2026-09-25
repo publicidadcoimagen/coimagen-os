@@ -5,8 +5,9 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CurrencyAmount } from './currencyAmount';
 
 export interface MrrDataPoint {
   month: string;
-  mrr: number;
+  mrrByCurrency: CurrencyAmount[];
 }

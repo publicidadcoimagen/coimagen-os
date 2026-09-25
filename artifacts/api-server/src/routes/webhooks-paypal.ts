@@ -315,6 +315,7 @@ export async function handleRecurringPaymentFailed(event: PaypalEvent): Promise<
         clientId: subscription.clientId,
         proposalId: subscription.proposalId,
         amount: subscription.amount,
+        currency: subscription.currency,
         status: "overdue",
         issuedDate: today,
         dueDate: today,

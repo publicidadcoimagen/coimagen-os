@@ -153,7 +153,7 @@ export function Proposals() {
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[p.status]}`}>{STATUS_ES[p.status] ?? p.status}</span></td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(p.createdAt)}</td>
                   <td className="px-4 py-3">
-                    <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" onClick={() => handleCopyLink(p.publicToken)}>
+                    <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" disabled={!p.publicToken} onClick={() => p.publicToken && handleCopyLink(p.publicToken)}>
                       <Copy className="h-3.5 w-3.5" /> Copiar enlace
                     </Button>
                   </td>

@@ -14,7 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, RefreshCw } from "lucide-react";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { formatDate, formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
+
+const CURRENCIES = ["MXN", "USD"] as const;
 
 const STATUS_ES: Record<string, string> = { active: "Activa", paused: "Pausada", cancelled: "Cancelada" };
 const CYCLE_ES: Record<string, string> = { monthly: "Mensual", quarterly: "Trimestral", annual: "Anual" };
@@ -30,21 +32,22 @@ export function Subscriptions() {
   const { data: clients } = useListClients();
   const createSub = useCreateSubscription();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ clientId: "", plan: "", amount: "", billingCycle: "monthly", startDate: "", nextBillingDate: "", notes: "" });
+  const [form, setForm] = useState({ clientId: "", plan: "", amount: "", currency: "MXN", billingCycle: "monthly", startDate: "", nextBillingDate: "", notes: "" });
 
   const activeSubs = subs?.filter((s) => s.status === "active") ?? [];
-  const mrr = activeSubs.reduce((sum, s) => {
-    const amt = s.amount;
-    if (s.billingCycle === "monthly") return sum + amt;
-    if (s.billingCycle === "quarterly") return sum + amt / 3;
-    if (s.billingCycle === "annual") return sum + amt / 12;
-    return sum;
-  }, 0);
+  const mrrByCurrency = (() => {
+    const totals = new Map<string, number>();
+    for (const s of activeSubs) {
+      const monthly = s.billingCycle === "quarterly" ? s.amount / 3 : s.billingCycle === "annual" ? s.amount / 12 : s.amount;
+      totals.set(s.currency, (totals.get(s.currency) ?? 0) + monthly);
+    }
+    return [...totals.entries()].map(([currency, amount]) => ({ currency, amount }));
+  })();
 
   const handleSubmit = () => {
     if (!form.plan || !form.amount) return;
-    createSub.mutate({ data: { clientId: form.clientId ? parseInt(form.clientId) : undefined, plan: form.plan, amount: parseFloat(form.amount), billingCycle: form.billingCycle as "monthly", startDate: form.startDate || undefined, nextBillingDate: form.nextBillingDate || undefined, notes: form.notes || undefined } }, {
-      onSuccess: () => { qc.invalidateQueries({ queryKey: getListSubscriptionsQueryKey() }); setOpen(false); setForm({ clientId: "", plan: "", amount: "", billingCycle: "monthly", startDate: "", nextBillingDate: "", notes: "" }); }
+    createSub.mutate({ data: { clientId: form.clientId ? parseInt(form.clientId) : undefined, plan: form.plan, amount: parseFloat(form.amount), currency: form.currency as "MXN" | "USD", billingCycle: form.billingCycle as "monthly", startDate: form.startDate || undefined, nextBillingDate: form.nextBillingDate || undefined, notes: form.notes || undefined } }, {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListSubscriptionsQueryKey() }); setOpen(false); setForm({ clientId: "", plan: "", amount: "", currency: "MXN", billingCycle: "monthly", startDate: "", nextBillingDate: "", notes: "" }); }
     });
   };
 
@@ -59,7 +62,7 @@ export function Subscriptions() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">MRR Total</div><div className="text-2xl font-bold text-emerald-400">{formatCurrency(mrr)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">MRR Total</div><div className="text-lg font-bold text-emerald-400">{formatCurrencyBreakdown(mrrByCurrency)}</div></CardContent></Card>
         <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Activas</div><div className="text-2xl font-bold">{activeSubs.length}</div></CardContent></Card>
         <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Pausadas / Canceladas</div><div className="text-2xl font-bold text-muted-foreground">{(subs?.length ?? 0) - activeSubs.length}</div></CardContent></Card>
       </div>
@@ -80,7 +83,7 @@ export function Subscriptions() {
                 <tr key={s.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 font-medium">{s.plan}</td>
                   <td className="px-4 py-3 text-muted-foreground">{s.clientName ?? "-"}</td>
-                  <td className="px-4 py-3 tabular-nums">{formatCurrency(s.amount)}</td>
+                  <td className="px-4 py-3 tabular-nums">{formatCurrency(s.amount, s.currency)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{CYCLE_ES[s.billingCycle] ?? s.billingCycle}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(s.nextBillingDate)}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[s.status]}`}>{STATUS_ES[s.status] ?? s.status}</span></td>
@@ -100,12 +103,19 @@ export function Subscriptions() {
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Monto *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
               <div>
-                <Label>Ciclo</Label>
-                <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v })}>
+                <Label>Moneda *</Label>
+                <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{Object.entries(CYCLE_ES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+                  <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
+            </div>
+            <div>
+              <Label>Ciclo</Label>
+              <Select value={form.billingCycle} onValueChange={(v) => setForm({ ...form, billingCycle: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(CYCLE_ES).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Cliente</Label>

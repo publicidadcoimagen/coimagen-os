@@ -1948,6 +1948,41 @@ paths:
         "404":
           description: Not found
 
+  /invoices/{id}/payments:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: listInvoicePayments
+      tags: [invoices]
+      summary: Real PayPal payment-attempt evidence for one invoice — the full invoice_payments history plus which attempt (if any) is currently blocking a retry, per the same guard logic as create-paypal-order.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicePaymentEvidence"
+        "404":
+          description: Not found
+
+  /invoices/{id}/payments/{paymentId}/release:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+      - { name: paymentId, in: path, required: true, schema: { type: integer } }
+    post:
+      operationId: releaseInvoicePaymentAttempt
+      tags: [invoices]
+      summary: Staff manually releases a stuck created/approved payment attempt (marks it "failed") without waiting for the guard window to expire — same effect as the client-facing cancel-paypal-order endpoint, callable by staff for any invoice.
+      responses:
+        "200":
+          description: Released (or was already resolved — idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicePaymentEvidence"
+        "404":
+          description: Not found
+
   /invoices/{id}/fiscal-document:
     parameters:
       - { name: id, in: path, required: true, schema: { type: integer } }
@@ -5422,13 +5457,14 @@ components:
     # ── INVOICE ───────────────────────────────────────────────────────────────
     Invoice:
       type: object
-      required: [id, number, amount, status, createdAt, requiresFiscalInvoice]
+      required: [id, number, amount, currency, status, createdAt, requiresFiscalInvoice]
       properties:
         id: { type: integer }
         number: { type: string }
         clientId: { type: ["integer", "null"] }
         clientName: { type: ["string", "null"] }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         status: { type: string, enum: [draft, sent, paid, overdue, cancelled] }
         issuedDate: { type: ["string", "null"] }
         dueDate: { type: ["string", "null"] }
@@ -5443,6 +5479,7 @@ components:
         number: { type: string, minLength: 1 }
         clientId: { type: integer }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD], default: MXN }
         status: { type: string, enum: [draft, sent, paid, overdue, cancelled], default: draft }
         issuedDate: { type: string }
         dueDate: { type: string }
@@ -5453,10 +5490,38 @@ components:
         number: { type: string, minLength: 1 }
         clientId: { type: integer }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         status: { type: string, enum: [draft, sent, paid, overdue, cancelled] }
         issuedDate: { type: string }
         dueDate: { type: string }
         description: { type: string }
+
+    # Real invoice_payments row — one PayPal attempt (created/approved is
+    # in-flight, captured is resolved-paid, failed/refunded are
+    # resolved-not-paid). ageSeconds/stillBlocking are computed at request
+    # time with the same rule findActivePaymentAttempt uses server-side, so
+    # the staff view never has to reimplement or guess the guard's logic.
+    InvoicePaymentAttempt:
+      type: object
+      required: [id, status, paypalOrderId, currency, amount, createdAt, ageSeconds, stillBlocking]
+      properties:
+        id: { type: integer }
+        status: { type: string, enum: [created, approved, captured, failed, refunded] }
+        paypalOrderId: { type: string }
+        currency: { type: string }
+        amount: { type: number }
+        createdAt: { type: string }
+        capturedAt: { type: ["string", "null"] }
+        ageSeconds: { type: integer }
+        stillBlocking: { type: boolean }
+    InvoicePaymentEvidence:
+      type: object
+      required: [activeAttempt, history]
+      properties:
+        activeAttempt: { oneOf: [{ $ref: "#/components/schemas/InvoicePaymentAttempt" }, { type: "null" }] }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/InvoicePaymentAttempt" }
 
     # ── SEQUENCES ─────────────────────────────────────────────────────────────
     CommercialFollowupStatus:
@@ -5541,13 +5606,14 @@ components:
     # ── SUBSCRIPTION ──────────────────────────────────────────────────────────
     Subscription:
       type: object
-      required: [id, plan, amount, billingCycle, status, createdAt]
+      required: [id, plan, amount, currency, billingCycle, status, createdAt]
       properties:
         id: { type: integer }
         clientId: { type: ["integer", "null"] }
         clientName: { type: ["string", "null"] }
         plan: { type: string }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         billingCycle: { type: string, enum: [monthly, quarterly, annual] }
         status: { type: string, enum: [active, paused, cancelled] }
         startDate: { type: ["string", "null"] }
@@ -5562,6 +5628,7 @@ components:
         clientId: { type: integer }
         plan: { type: string, minLength: 1 }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD], default: MXN }
         billingCycle: { type: string, enum: [monthly, quarterly, annual], default: monthly }
         status: { type: string, enum: [active, paused, cancelled], default: active }
         startDate: { type: string }
@@ -5573,6 +5640,7 @@ components:
         clientId: { type: integer }
         plan: { type: string, minLength: 1 }
         amount: { type: number }
+        currency: { type: string, enum: [MXN, USD] }
         billingCycle: { type: string, enum: [monthly, quarterly, annual] }
         status: { type: string, enum: [active, paused, cancelled] }
         startDate: { type: string }
@@ -5580,22 +5648,34 @@ components:
         notes: { type: string }
 
     # ── REVENUE ───────────────────────────────────────────────────────────────
+    # MRR/ARR/high-ticket total are never a single blended number across
+    # currencies (no FX conversion exists anywhere in this system — see
+    # lib/agent-scope.ts-adjacent currency audit, 2026-09-22) — each is a
+    # breakdown of one entry per currency actually present, e.g.
+    # [{currency: "MXN", amount: 3000}, {currency: "USD", amount: 300}].
+    # Never sum these entries into one number.
+    CurrencyAmount:
+      type: object
+      required: [currency, amount]
+      properties:
+        currency: { type: string, enum: [MXN, USD] }
+        amount: { type: number }
     RevenueSummary:
       type: object
-      required: [mrr, arr, highTicketCount, highTicketTotal, dormantCount, activeSubscriptions]
+      required: [mrrByCurrency, arrByCurrency, highTicketCount, highTicketTotalByCurrency, dormantCount, activeSubscriptions]
       properties:
-        mrr: { type: number }
-        arr: { type: number }
+        mrrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        arrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
         highTicketCount: { type: integer }
-        highTicketTotal: { type: number }
+        highTicketTotalByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
         dormantCount: { type: integer }
         activeSubscriptions: { type: integer }
     MrrDataPoint:
       type: object
-      required: [month, mrr]
+      required: [month, mrrByCurrency]
       properties:
         month: { type: string }
-        mrr: { type: number }
+        mrrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
 
     # ── COST ──────────────────────────────────────────────────────────────────
     Cost:

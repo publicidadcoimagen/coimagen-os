@@ -19,6 +19,10 @@ type Contract = {
   // routes/contracts.ts. Only present once staff has actually sent the
   // contract for e-signature; older/manual "sent" contracts may not have one.
   signingUrl?: string | null;
+  // Combined signed PDF, populated by the submission.completed webhook
+  // (webhooks-docuseal.ts) once DocuSeal generates it. Can lag behind
+  // status "signed" by a few seconds, or stay null if that fetch failed.
+  signedDocumentUrl?: string | null;
 };
 
 const STATUS_COLOR: Record<string, string> = {
@@ -53,9 +57,13 @@ function ClientContractsBody({ slug }: { slug: string }) {
   const { data: rawOrg } = useGetOrganization(slug, { query: { queryKey: getGetOrganizationQueryKey(slug) } });
   const org = rawOrg as Org | undefined;
 
+  // includeTest: a client's own contract is still their document even if it
+  // was flagged is_test (e.g. the pilot account's real DocuSeal signature,
+  // contract 4) — the server already scopes a cliente caller to their own
+  // clientId, and nothing here feeds a KPI.
   const { data: rawContracts = [], isLoading } = useListContracts(
-    {},
-    { query: { queryKey: getListContractsQueryKey() } },
+    { includeTest: true },
+    { query: { queryKey: getListContractsQueryKey({ includeTest: true }) } },
   );
 
   const contracts = (rawContracts as Contract[]).filter((c) => org?.clientId ? c.clientId === org.clientId : false);
@@ -110,6 +118,18 @@ function ClientContractsBody({ slug }: { slug: string }) {
                       >
                         <a href={c.signingUrl} target="_blank" rel="noopener noreferrer">
                           {t.contracts.sign}
+                        </a>
+                      </Button>
+                    )}
+                    {(c.status === "signed" || c.status === "active") && c.signedDocumentUrl && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs flex-shrink-0"
+                        asChild
+                      >
+                        <a href={c.signedDocumentUrl} target="_blank" rel="noopener noreferrer">
+                          {t.contracts.viewSigned}
                         </a>
                       </Button>
                     )}

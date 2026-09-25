@@ -1,5 +1,5 @@
 import { eq, and } from "drizzle-orm";
-import { db, subscriptionsTable, proposalsTable, type Subscription } from "@workspace/db";
+import { db, subscriptionsTable, type Subscription } from "@workspace/db";
 import { createSubscription } from "./paypal/subscriptions";
 import { submitClientFiscalData } from "./fiscal-data/repository";
 import { applyFiscalInvoice } from "./payment-schedule/generate";
@@ -47,14 +47,10 @@ export async function finalizeSubscriptionAuthorization(subscriptionId: number, 
     });
   }
 
-  const proposal = subscription.proposalId
-    ? (await db.select().from(proposalsTable).where(eq(proposalsTable.id, subscription.proposalId)))[0]
-    : undefined;
-  const currency = proposal?.currency ?? "MXN";
   const baseAmount = parseFloat(subscription.amount);
   const { totalAmount: finalAmount } = applyFiscalInvoice(baseAmount, choice.requiresFiscalInvoice);
 
-  const { paypalSubscriptionId, approveUrl } = await createSubscription(finalAmount, currency, String(subscription.id));
+  const { paypalSubscriptionId, approveUrl } = await createSubscription(finalAmount, subscription.currency, String(subscription.id));
   await db.update(subscriptionsTable)
     .set({ paypalSubscriptionId, paypalApproveUrl: approveUrl, requiresFiscalInvoice: choice.requiresFiscalInvoice, updatedAt: new Date() })
     .where(eq(subscriptionsTable.id, subscription.id));

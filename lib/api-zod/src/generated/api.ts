@@ -2361,6 +2361,7 @@ export const ListInvoicesResponseItem = zod.object({
   "clientId": zod.number().nullish(),
   "clientName": zod.string().nullish(),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "issuedDate": zod.string().nullish(),
   "dueDate": zod.string().nullish(),
@@ -2373,12 +2374,14 @@ export const ListInvoicesResponse = zod.array(ListInvoicesResponseItem)
 
 
 
+export const createInvoiceBodyCurrencyDefault = `MXN`;
 export const createInvoiceBodyStatusDefault = `draft`;
 
 export const CreateInvoiceBody = zod.object({
   "number": zod.string().min(1),
   "clientId": zod.number().optional(),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']).default(createInvoiceBodyCurrencyDefault),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).default(createInvoiceBodyStatusDefault),
   "issuedDate": zod.string().optional(),
   "dueDate": zod.string().optional(),
@@ -2396,6 +2399,7 @@ export const GetInvoiceResponse = zod.object({
   "clientId": zod.number().nullish(),
   "clientName": zod.string().nullish(),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "issuedDate": zod.string().nullish(),
   "dueDate": zod.string().nullish(),
@@ -2417,6 +2421,7 @@ export const UpdateInvoiceBody = zod.object({
   "number": zod.string().min(1).optional(),
   "clientId": zod.number().optional(),
   "amount": zod.number().optional(),
+  "currency": zod.enum(['MXN', 'USD']).optional(),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).optional(),
   "issuedDate": zod.string().optional(),
   "dueDate": zod.string().optional(),
@@ -2429,6 +2434,7 @@ export const UpdateInvoiceResponse = zod.object({
   "clientId": zod.number().nullish(),
   "clientName": zod.string().nullish(),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']),
   "status": zod.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']),
   "issuedDate": zod.string().nullish(),
   "dueDate": zod.string().nullish(),
@@ -2441,6 +2447,73 @@ export const UpdateInvoiceResponse = zod.object({
 
 export const DeleteInvoiceParams = zod.object({
   "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Real PayPal payment-attempt evidence for one invoice — the full invoice_payments history plus which attempt (if any) is currently blocking a retry, per the same guard logic as create-paypal-order.
+ */
+export const ListInvoicePaymentsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListInvoicePaymentsResponse = zod.object({
+  "activeAttempt": zod.union([zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}),zod.null()]),
+  "history": zod.array(zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Staff manually releases a stuck created/approved payment attempt (marks it "failed") without waiting for the guard window to expire — same effect as the client-facing cancel-paypal-order endpoint, callable by staff for any invoice.
+ */
+export const ReleaseInvoicePaymentAttemptParams = zod.object({
+  "id": zod.coerce.number(),
+  "paymentId": zod.coerce.number()
+})
+
+export const ReleaseInvoicePaymentAttemptResponse = zod.object({
+  "activeAttempt": zod.union([zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}),zod.null()]),
+  "history": zod.array(zod.object({
+  "id": zod.number(),
+  "status": zod.enum(['created', 'approved', 'captured', 'failed', 'refunded']),
+  "paypalOrderId": zod.string(),
+  "currency": zod.string(),
+  "amount": zod.number(),
+  "createdAt": zod.string(),
+  "capturedAt": zod.string().nullish(),
+  "ageSeconds": zod.number(),
+  "stillBlocking": zod.boolean()
+}))
 })
 
 
@@ -2473,6 +2546,7 @@ export const ListSubscriptionsResponseItem = zod.object({
   "clientName": zod.string().nullish(),
   "plan": zod.string(),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']),
   "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']),
   "status": zod.enum(['active', 'paused', 'cancelled']),
   "startDate": zod.string().nullish(),
@@ -2485,6 +2559,7 @@ export const ListSubscriptionsResponse = zod.array(ListSubscriptionsResponseItem
 
 
 
+export const createSubscriptionBodyCurrencyDefault = `MXN`;
 export const createSubscriptionBodyBillingCycleDefault = `monthly`;
 export const createSubscriptionBodyStatusDefault = `active`;
 
@@ -2492,6 +2567,7 @@ export const CreateSubscriptionBody = zod.object({
   "clientId": zod.number().optional(),
   "plan": zod.string().min(1),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']).default(createSubscriptionBodyCurrencyDefault),
   "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']).default(createSubscriptionBodyBillingCycleDefault),
   "status": zod.enum(['active', 'paused', 'cancelled']).default(createSubscriptionBodyStatusDefault),
   "startDate": zod.string().optional(),
@@ -2510,6 +2586,7 @@ export const GetSubscriptionResponse = zod.object({
   "clientName": zod.string().nullish(),
   "plan": zod.string(),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']),
   "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']),
   "status": zod.enum(['active', 'paused', 'cancelled']),
   "startDate": zod.string().nullish(),
@@ -2531,6 +2608,7 @@ export const UpdateSubscriptionBody = zod.object({
   "clientId": zod.number().optional(),
   "plan": zod.string().min(1).optional(),
   "amount": zod.number().optional(),
+  "currency": zod.enum(['MXN', 'USD']).optional(),
   "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']).optional(),
   "status": zod.enum(['active', 'paused', 'cancelled']).optional(),
   "startDate": zod.string().optional(),
@@ -2544,6 +2622,7 @@ export const UpdateSubscriptionResponse = zod.object({
   "clientName": zod.string().nullish(),
   "plan": zod.string(),
   "amount": zod.number(),
+  "currency": zod.enum(['MXN', 'USD']),
   "billingCycle": zod.enum(['monthly', 'quarterly', 'annual']),
   "status": zod.enum(['active', 'paused', 'cancelled']),
   "startDate": zod.string().nullish(),
@@ -2560,10 +2639,19 @@ export const DeleteSubscriptionParams = zod.object({
 
 
 export const GetRevenueSummaryResponse = zod.object({
-  "mrr": zod.number(),
-  "arr": zod.number(),
+  "mrrByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+})),
+  "arrByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+})),
   "highTicketCount": zod.number(),
-  "highTicketTotal": zod.number(),
+  "highTicketTotalByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+})),
   "dormantCount": zod.number(),
   "activeSubscriptions": zod.number()
 })
@@ -2571,7 +2659,10 @@ export const GetRevenueSummaryResponse = zod.object({
 
 export const GetMrrTrendResponseItem = zod.object({
   "month": zod.string(),
-  "mrr": zod.number()
+  "mrrByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+}))
 })
 export const GetMrrTrendResponse = zod.array(GetMrrTrendResponseItem)
 

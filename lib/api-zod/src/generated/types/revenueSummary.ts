@@ -5,12 +5,13 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CurrencyAmount } from './currencyAmount';
 
 export interface RevenueSummary {
-  mrr: number;
-  arr: number;
+  mrrByCurrency: CurrencyAmount[];
+  arrByCurrency: CurrencyAmount[];
   highTicketCount: number;
-  highTicketTotal: number;
+  highTicketTotalByCurrency: CurrencyAmount[];
   dormantCount: number;
   activeSubscriptions: number;
 }

@@ -6,7 +6,10 @@ import {
   useUpdateInvoice,
   useUploadInvoiceFiscalDocument,
   useListClients,
+  useListInvoicePayments,
+  useReleaseInvoicePaymentAttempt,
   getListInvoicesQueryKey,
+  getListInvoicePaymentsQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +19,120 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Receipt, FileUp } from "lucide-react";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { Plus, Receipt, FileUp, CreditCard } from "lucide-react";
+import { formatDate, formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
+
+const CURRENCIES = ["MXN", "USD"] as const;
+
+function breakdownByCurrency(rows: { amount: number; currency: string }[]): { currency: string; amount: number }[] {
+  const totals = new Map<string, number>();
+  for (const r of rows) totals.set(r.currency, (totals.get(r.currency) ?? 0) + r.amount);
+  return [...totals.entries()].map(([currency, amount]) => ({ currency, amount }));
+}
+
+const PAYMENT_STATUS_ES: Record<string, string> = {
+  created: "Creado", approved: "Aprobado", captured: "Capturado", failed: "Fallido/liberado", refunded: "Reembolsado",
+};
+const PAYMENT_STATUS_COLOR: Record<string, string> = {
+  created: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  approved: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  captured: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  failed: "bg-muted text-muted-foreground border-border",
+  refunded: "bg-red-500/20 text-red-300 border-red-500/30",
+};
+
+function formatAge(seconds: number): string {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return `${hours} h ${minutes % 60} min`;
+}
+
+// Real PayPal payment-attempt evidence for one invoice — what's actually in
+// invoice_payments, not a reconstruction. No "método de pago" column: PayPal
+// Wallet and "Tarjeta de débito/crédito" both go through the same Orders
+// API flow into this same table, so the data to distinguish them doesn't
+// exist today (honest limitation, not an oversight).
+function PaymentEvidencePanel({ invoiceId, onClose }: { invoiceId: number; onClose: () => void }) {
+  const qc = useQueryClient();
+  const { data, isLoading } = useListInvoicePayments(invoiceId, { query: { queryKey: getListInvoicePaymentsQueryKey(invoiceId) } });
+  const release = useReleaseInvoicePaymentAttempt();
+
+  const handleRelease = (paymentId: number) => {
+    release.mutate({ id: invoiceId, paymentId }, {
+      onSuccess: () => qc.invalidateQueries({ queryKey: getListInvoicePaymentsQueryKey(invoiceId) }),
+    });
+  };
+
+  return (
+    <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader><DialogTitle>Evidencia de pago — Factura #{invoiceId}</DialogTitle></DialogHeader>
+        {isLoading ? (
+          <div className="text-muted-foreground text-sm">Cargando...</div>
+        ) : (
+          <div className="space-y-4">
+            {data?.activeAttempt ? (
+              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 flex items-center justify-between gap-3">
+                <div className="text-sm">
+                  <p className="font-medium text-amber-300">Intento activo bloqueando reintentos</p>
+                  <p className="text-xs text-muted-foreground">
+                    Creado hace {formatAge(data.activeAttempt.ageSeconds)} · {formatCurrency(data.activeAttempt.amount, data.activeAttempt.currency)} · orden {data.activeAttempt.paypalOrderId}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs flex-shrink-0"
+                  disabled={release.isPending}
+                  onClick={() => handleRelease(data.activeAttempt!.id)}
+                >
+                  {release.isPending ? "Liberando..." : "Liberar"}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Ningún intento bloqueando reintentos ahora mismo.</p>
+            )}
+
+            <div className="rounded-lg border border-border overflow-hidden">
+              <table className="w-full text-xs">
+                <thead><tr className="border-b border-border bg-muted/30">
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Fecha</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Resultado</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Monto</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Orden PayPal</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground">Antigüedad</th>
+                  <th className="px-3 py-2 text-left font-medium text-muted-foreground"></th>
+                </tr></thead>
+                <tbody>
+                  {data?.history.map((a) => (
+                    <tr key={a.id} className="border-b border-border/50">
+                      <td className="px-3 py-2 text-muted-foreground">{formatDate(a.createdAt)}</td>
+                      <td className="px-3 py-2"><span className={`px-2 py-0.5 rounded-full border ${PAYMENT_STATUS_COLOR[a.status] ?? ""}`}>{PAYMENT_STATUS_ES[a.status] ?? a.status}</span></td>
+                      <td className="px-3 py-2 tabular-nums">{formatCurrency(a.amount, a.currency)}</td>
+                      <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">{a.paypalOrderId}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{formatAge(a.ageSeconds)}</td>
+                      <td className="px-3 py-2">
+                        {a.stillBlocking && (
+                          <Button size="sm" variant="outline" className="h-6 text-xs" disabled={release.isPending} onClick={() => handleRelease(a.id)}>
+                            Liberar
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {!data?.history.length && <tr><td colSpan={6} className="px-3 py-6 text-center text-muted-foreground">Sin intentos de pago registrados.</td></tr>}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        <DialogFooter><Button variant="outline" onClick={onClose}>Cerrar</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function fileToDataUri(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -47,11 +162,12 @@ export function Invoices() {
   const updateInvoice = useUpdateInvoice();
   const uploadFiscalDocument = useUploadInvoiceFiscalDocument();
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ number: "", clientId: "", amount: "", status: "draft", issuedDate: "", dueDate: "", description: "" });
+  const [form, setForm] = useState({ number: "", clientId: "", amount: "", currency: "MXN", status: "draft", issuedDate: "", dueDate: "", description: "" });
   const [fiscalDocInvoiceId, setFiscalDocInvoiceId] = useState<number | null>(null);
   const [fiscalDocFile, setFiscalDocFile] = useState<File | null>(null);
   const [fiscalDocError, setFiscalDocError] = useState<string | null>(null);
   const [fiscalDocResult, setFiscalDocResult] = useState<string | null>(null);
+  const [paymentsInvoiceId, setPaymentsInvoiceId] = useState<number | null>(null);
 
   const closeFiscalDocDialog = () => {
     setFiscalDocInvoiceId(null);
@@ -74,14 +190,14 @@ export function Invoices() {
   };
 
   const filtered = invoices?.filter((i) => tab === "all" || i.status === tab) ?? [];
-  const totalPaid = invoices?.filter((i) => i.status === "paid").reduce((s, i) => s + i.amount, 0) ?? 0;
-  const totalPending = invoices?.filter((i) => i.status === "sent").reduce((s, i) => s + i.amount, 0) ?? 0;
-  const totalOverdue = invoices?.filter((i) => i.status === "overdue").reduce((s, i) => s + i.amount, 0) ?? 0;
+  const totalPaid = breakdownByCurrency(invoices?.filter((i) => i.status === "paid") ?? []);
+  const totalPending = breakdownByCurrency(invoices?.filter((i) => i.status === "sent") ?? []);
+  const totalOverdue = breakdownByCurrency(invoices?.filter((i) => i.status === "overdue") ?? []);
 
   const handleSubmit = () => {
     if (!form.number || !form.amount) return;
-    createInvoice.mutate({ data: { number: form.number, clientId: form.clientId ? parseInt(form.clientId) : undefined, amount: parseFloat(form.amount), status: form.status as "draft", issuedDate: form.issuedDate || undefined, dueDate: form.dueDate || undefined, description: form.description || undefined } }, {
-      onSuccess: () => { qc.invalidateQueries({ queryKey: getListInvoicesQueryKey() }); setOpen(false); setForm({ number: "", clientId: "", amount: "", status: "draft", issuedDate: "", dueDate: "", description: "" }); }
+    createInvoice.mutate({ data: { number: form.number, clientId: form.clientId ? parseInt(form.clientId) : undefined, amount: parseFloat(form.amount), currency: form.currency as "MXN" | "USD", status: form.status as "draft", issuedDate: form.issuedDate || undefined, dueDate: form.dueDate || undefined, description: form.description || undefined } }, {
+      onSuccess: () => { qc.invalidateQueries({ queryKey: getListInvoicesQueryKey() }); setOpen(false); setForm({ number: "", clientId: "", amount: "", currency: "MXN", status: "draft", issuedDate: "", dueDate: "", description: "" }); }
     });
   };
 
@@ -96,9 +212,9 @@ export function Invoices() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Total Pagado</div><div className="text-2xl font-bold text-emerald-400">{formatCurrency(totalPaid)}</div></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Por Cobrar</div><div className="text-2xl font-bold text-amber-400">{formatCurrency(totalPending)}</div></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Vencido</div><div className="text-2xl font-bold text-red-400">{formatCurrency(totalOverdue)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Total Pagado</div><div className="text-lg font-bold text-emerald-400">{formatCurrencyBreakdown(totalPaid)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Por Cobrar</div><div className="text-lg font-bold text-amber-400">{formatCurrencyBreakdown(totalPending)}</div></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Vencido</div><div className="text-lg font-bold text-red-400">{formatCurrencyBreakdown(totalOverdue)}</div></CardContent></Card>
       </div>
 
       <div className="flex gap-2">
@@ -126,7 +242,7 @@ export function Invoices() {
                 <tr key={inv.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{inv.number}</td>
                   <td className="px-4 py-3 font-medium">{inv.clientName ?? "-"}</td>
-                  <td className="px-4 py-3 tabular-nums font-medium">{formatCurrency(inv.amount)}</td>
+                  <td className="px-4 py-3 tabular-nums font-medium">{formatCurrency(inv.amount, inv.currency)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.issuedDate)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.dueDate)}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[inv.status]}`}>{STATUS_ES[inv.status] ?? inv.status}</span></td>
@@ -139,6 +255,11 @@ export function Invoices() {
                     {inv.requiresFiscalInvoice && inv.status === "paid" && (
                       <Button size="sm" variant="outline" className="h-6 text-xs gap-1" onClick={() => setFiscalDocInvoiceId(inv.id)}>
                         <FileUp className="h-3 w-3" /> Subir factura fiscal
+                      </Button>
+                    )}
+                    {inv.status !== "draft" && (
+                      <Button size="sm" variant="outline" className="h-6 text-xs gap-1" onClick={() => setPaymentsInvoiceId(inv.id)}>
+                        <CreditCard className="h-3 w-3" /> Ver pagos
                       </Button>
                     )}
                   </td>
@@ -156,7 +277,14 @@ export function Invoices() {
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Número *</Label><Input value={form.number} onChange={(e) => setForm({ ...form, number: e.target.value })} placeholder="INV-007" /></div>
-              <div><Label>Monto (USD) *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+              <div><Label>Monto *</Label><Input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} /></div>
+            </div>
+            <div>
+              <Label>Moneda *</Label>
+              <Select value={form.currency} onValueChange={(v) => setForm({ ...form, currency: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Cliente</Label>
@@ -209,6 +337,10 @@ export function Invoices() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {paymentsInvoiceId !== null && (
+        <PaymentEvidencePanel invoiceId={paymentsInvoiceId} onClose={() => setPaymentsInvoiceId(null)} />
+      )}
     </div>
   );
 }
