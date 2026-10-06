@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, sql } from "drizzle-orm";
-import { db, clientsTable, prospectsTable, clientTimelineTable, incidentsTable } from "@workspace/db";
+import { eq, desc, sql, and, isNotNull } from "drizzle-orm";
+import { db, clientsTable, prospectsTable, clientTimelineTable, incidentsTable, invoicesTable, subscriptionsTable, contractsTable, usersTable } from "@workspace/db";
 import {
   GetClientParams,
   UpdateClientParams,
@@ -14,6 +14,7 @@ import { requireRole } from "../middlewares/requireAuth";
 import { sendFounderWelcomeEmail } from "../lib/founder-welcome/email";
 import { logger } from "../lib/logger";
 import { grantPortalAccess } from "../lib/portal-onboarding/grant-portal-access";
+import { buildClientOverview } from "../lib/client-overview/build";
 
 const router: IRouter = Router();
 
@@ -51,6 +52,28 @@ router.post("/clients", requireRole("ceo", "admin"), async (req, res): Promise<v
     createdAt: client.createdAt.toISOString(),
     updatedAt: client.updatedAt ? client.updatedAt.toISOString() : null,
   });
+});
+
+// One health row per client for the CEO's client list (payments, contract,
+// portal access, modules, pro bono). Registered before /clients/:id so
+// "overview" is never parsed as an id. Staff-only in practice:
+// clientRoleGate default-denies it for cliente accounts.
+router.get("/clients/overview", async (_req, res): Promise<void> => {
+  const [clients, invoices, subscriptions, contracts, portalUsers] = await Promise.all([
+    db.select({ id: clientsTable.id, enabledModules: clientsTable.enabledModules, accessGateExempt: clientsTable.accessGateExempt }).from(clientsTable),
+    db.select({ clientId: invoicesTable.clientId, status: invoicesTable.status, dueDate: invoicesTable.dueDate }).from(invoicesTable),
+    db.select({ clientId: subscriptionsTable.clientId, status: subscriptionsTable.status, createdAt: subscriptionsTable.createdAt }).from(subscriptionsTable),
+    db.select({ clientId: contractsTable.clientId, status: contractsTable.status, isTest: contractsTable.isTest, createdAt: contractsTable.createdAt }).from(contractsTable),
+    db.select({ clientId: usersTable.clientId }).from(usersTable).where(and(eq(usersTable.role, "cliente"), isNotNull(usersTable.clientId))),
+  ]);
+  res.json(buildClientOverview({
+    clients,
+    invoices,
+    subscriptions,
+    contracts,
+    portalClientIds: new Set(portalUsers.map((u) => u.clientId!)),
+    today: new Date().toISOString().slice(0, 10),
+  }));
 });
 
 router.get("/clients/:id", async (req, res): Promise<void> => {

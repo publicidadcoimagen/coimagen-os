@@ -77,6 +77,7 @@ import type {
   ClientOnboarding,
   ClientOnboardingInput,
   ClientOnboardingPatch,
+  ClientOverview,
   ClientSocialCredentialCreate,
   ClientSocialCredentialMeta,
   ClientTimeline,
@@ -92,6 +93,7 @@ import type {
   ContentCalendarItemUpdate,
   Contract,
   ContractCreate,
+  ContractFromProposalInput,
   ContractSignedDocuments,
   ContractUpdate,
   ConvertProspectBody,
@@ -184,6 +186,7 @@ import type {
   Organization,
   OrganizationCreate,
   OrganizationUpdate,
+  PaymentRecoveryStatus,
   Product,
   ProductInput,
   ProductUpdate,
@@ -213,6 +216,7 @@ import type {
   SmartOnboardingUpdate,
   StatusCount,
   Subscription,
+  SubscriptionAlertStatus,
   SubscriptionFiscalDataBody,
   SubscriptionInput,
   SubscriptionUpdate,
@@ -1638,6 +1642,83 @@ export const useCreateClient = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getCreateClientMutationOptions(options));
     }
+
+export const getListClientOverviewUrl = () => {
+
+
+
+
+  return `/api/clients/overview`
+}
+
+/**
+ * @summary One health row per client (payments, contract, portal access, modules, pro bono) for the CEO client list
+ */
+export const listClientOverview = async ( options?: RequestInit): Promise<ClientOverview[]> => {
+
+  return customFetch<ClientOverview[]>(getListClientOverviewUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListClientOverviewQueryKey = () => {
+    return [
+    `/api/clients/overview`
+    ] as const;
+    }
+
+
+export const getListClientOverviewQueryOptions = <TData = Awaited<ReturnType<typeof listClientOverview>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListClientOverviewQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listClientOverview>>> = ({ signal }) => listClientOverview({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listClientOverview>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListClientOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof listClientOverview>>>
+export type ListClientOverviewQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary One health row per client (payments, contract, portal access, modules, pro bono) for the CEO client list
+ */
+
+export function useListClientOverview<TData = Awaited<ReturnType<typeof listClientOverview>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListClientOverviewQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getGetClientUrl = (id: number,) => {
 
@@ -7506,6 +7587,79 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getCreateProposalMutationOptions(options));
+    }
+
+export const getCreateContractFromProposalUrl = (id: number,) => {
+
+
+
+
+  return `/api/proposals/${id}/contract`
+}
+
+/**
+ * Draft contract linked to the proposal's client and to the proposal itself, with the amount taken from the proposal (monthly fee if any, else the one-time total). One non-test contract per proposal.
+ * @summary Generate a draft contract from an accepted, converted proposal
+ */
+export const createContractFromProposal = async (id: number,
+    contractFromProposalInput: ContractFromProposalInput, options?: RequestInit): Promise<Contract> => {
+
+  return customFetch<Contract>(getCreateContractFromProposalUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      contractFromProposalInput,)
+  }
+);}
+
+
+
+
+export const getCreateContractFromProposalMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContractFromProposal>>, TError,{id: number;data: BodyType<ContractFromProposalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createContractFromProposal>>, TError,{id: number;data: BodyType<ContractFromProposalInput>}, TContext> => {
+
+const mutationKey = ['createContractFromProposal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createContractFromProposal>>, {id: number;data: BodyType<ContractFromProposalInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createContractFromProposal(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateContractFromProposalMutationResult = NonNullable<Awaited<ReturnType<typeof createContractFromProposal>>>
+    export type CreateContractFromProposalMutationBody = BodyType<ContractFromProposalInput>
+    export type CreateContractFromProposalMutationError = ErrorType<void>
+
+    /**
+ * @summary Generate a draft contract from an accepted, converted proposal
+ */
+export const useCreateContractFromProposal = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContractFromProposal>>, TError,{id: number;data: BodyType<ContractFromProposalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createContractFromProposal>>,
+        TError,
+        {id: number;data: BodyType<ContractFromProposalInput>},
+        TContext
+      > => {
+      return useMutation(getCreateContractFromProposalMutationOptions(options));
     }
 
 export const getGetProposalUrl = (id: number,) => {
@@ -19225,6 +19379,148 @@ export function useListInvoiceReminderStatuses<TData = Awaited<ReturnType<typeof
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListInvoiceReminderStatusesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListSubscriptionAlertStatusesUrl = () => {
+
+
+
+
+  return `/api/sequences/subscription-alerts`
+}
+
+export const listSubscriptionAlertStatuses = async ( options?: RequestInit): Promise<SubscriptionAlertStatus[]> => {
+
+  return customFetch<SubscriptionAlertStatus[]>(getListSubscriptionAlertStatusesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSubscriptionAlertStatusesQueryKey = () => {
+    return [
+    `/api/sequences/subscription-alerts`
+    ] as const;
+    }
+
+
+export const getListSubscriptionAlertStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSubscriptionAlertStatusesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>> = ({ signal }) => listSubscriptionAlertStatuses({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSubscriptionAlertStatusesQueryResult = NonNullable<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>>
+export type ListSubscriptionAlertStatusesQueryError = ErrorType<unknown>
+
+
+
+export function useListSubscriptionAlertStatuses<TData = Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSubscriptionAlertStatusesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListPaymentRecoveryStatusesUrl = () => {
+
+
+
+
+  return `/api/sequences/payment-recovery`
+}
+
+export const listPaymentRecoveryStatuses = async ( options?: RequestInit): Promise<PaymentRecoveryStatus[]> => {
+
+  return customFetch<PaymentRecoveryStatus[]>(getListPaymentRecoveryStatusesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPaymentRecoveryStatusesQueryKey = () => {
+    return [
+    `/api/sequences/payment-recovery`
+    ] as const;
+    }
+
+
+export const getListPaymentRecoveryStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPaymentRecoveryStatusesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>> = ({ signal }) => listPaymentRecoveryStatuses({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPaymentRecoveryStatusesQueryResult = NonNullable<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>>
+export type ListPaymentRecoveryStatusesQueryError = ErrorType<unknown>
+
+
+
+export function useListPaymentRecoveryStatuses<TData = Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPaymentRecoveryStatusesQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

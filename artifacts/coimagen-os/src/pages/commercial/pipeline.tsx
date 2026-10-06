@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, ArrowRight, UserCheck, Check, X } from "lucide-react";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { formatDate, formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 
 // Mirrors ConvertProspectResult's error codes (lib/prospect-conversion/repository.ts)
@@ -76,7 +76,12 @@ export function Pipeline() {
     });
   };
 
-  const totalProposalValue = proposals?.filter((p) => p.status === "accepted").reduce((s, p) => s + (p.amount ?? 0), 0) ?? 0;
+  // Per currency — MXN and USD proposals are never summed together.
+  const acceptedTotals = new Map<string, number>();
+  for (const p of proposals ?? []) {
+    if (p.status === "accepted" && p.amount != null) acceptedTotals.set(p.currency, (acceptedTotals.get(p.currency) ?? 0) + p.amount);
+  }
+  const totalProposalValue = [...acceptedTotals.entries()].map(([currency, amount]) => ({ currency, amount }));
 
   return (
     <div className="space-y-6">
@@ -163,14 +168,14 @@ export function Pipeline() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Propuestas Recientes</CardTitle>
-            <p className="text-xs text-muted-foreground">Valor cerrado: <span className="text-emerald-400 font-semibold">{formatCurrency(totalProposalValue)}</span></p>
+            <p className="text-xs text-muted-foreground">Valor cerrado: <span className="text-emerald-400 font-semibold">{formatCurrencyBreakdown(totalProposalValue)}</span></p>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {proposals?.slice(0, 8).map((p) => (
                 <div key={p.id} className="flex items-center justify-between text-sm border-b border-border/30 pb-2">
                   <span className="truncate flex-1 mr-4">{p.title}</span>
-                  <span className="text-muted-foreground mr-3 whitespace-nowrap">{formatCurrency(p.amount)}</span>
+                  <span className="text-muted-foreground mr-3 whitespace-nowrap">{formatCurrency(p.amount, p.currency)}</span>
                   <span className={`text-xs font-medium whitespace-nowrap ${STATUS_COLORS[p.status] ?? "text-muted-foreground"}`}>{STATUS_LABELS[p.status] ?? p.status}</span>
                 </div>
               ))}

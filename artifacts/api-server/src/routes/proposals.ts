@@ -16,6 +16,7 @@ const router: IRouter = Router();
 const fmt = (p: typeof proposalsTable.$inferSelect) => ({
   ...p,
   amount: p.amount !== null ? parseFloat(p.amount) : null,
+  monthlyAmount: p.monthlyAmount !== null ? parseFloat(p.monthlyAmount) : null,
   createdAt: p.createdAt.toISOString(),
   updatedAt: p.updatedAt ? p.updatedAt.toISOString() : null,
 });

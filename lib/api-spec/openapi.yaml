@@ -427,6 +427,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Client"
+  /clients/overview:
+    get:
+      operationId: listClientOverview
+      tags: [clients]
+      summary: One health row per client (payments, contract, portal access, modules, pro bono) for the CEO client list
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientOverview"
   /clients/{id}:
     get:
       operationId: getClient
@@ -1769,6 +1783,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Proposal"
+  /proposals/{id}/contract:
+    post:
+      operationId: createContractFromProposal
+      tags: [contracts]
+      summary: Generate a draft contract from an accepted, converted proposal
+      description: >-
+        Draft contract linked to the proposal's client and to the proposal itself,
+        with the amount taken from the proposal (monthly fee if any, else the
+        one-time total). One non-test contract per proposal.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractFromProposalInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+        "400":
+          description: Missing type
+        "404":
+          description: Proposal not found
+        "409":
+          description: Proposal not converted / not accepted / has no amount, or a contract already exists for it
   /proposals/{id}:
     get:
       operationId: getProposal
@@ -4425,9 +4469,7 @@ paths:
   # ─── SEQUENCES (read-only status views for automated email sequences) ──────
   # Reuses the same eligibility.ts pure functions each cron already runs — no
   # new business logic, just a read model over commercial_followups and
-  # invoice_reminders. subscription-alerts and payment-recovery sequences are
-  # deliberately left out here: their tables only exist on the still-unmerged
-  # feature/paypal-payments branch, not on main. Add once that merges.
+  # invoice_reminders, subscription_alerts and payment_recovery_alerts.
   /sequences/commercial-followups:
     get:
       operationId: listCommercialFollowupStatuses
@@ -4456,6 +4498,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/InvoiceReminderStatus"
+  /sequences/subscription-alerts:
+    get:
+      operationId: listSubscriptionAlertStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionAlertStatus"
+  /sequences/payment-recovery:
+    get:
+      operationId: listPaymentRecoveryStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentRecoveryStatus"
 
   # ─── PROSPECTING AUDITS (P-82 Agente Prospectador) ─────────────────────────
   # Manual-review queue only — the 10-item checklist's 8 auto-checkable items
@@ -5064,7 +5132,7 @@ components:
     # ── DASHBOARD ─────────────────────────────────────────────────────────────
     DashboardSummary:
       type: object
-      required: [totalClients, activeClients, suspendedClients, activeProjects, openTasks, overdueTasks, completedProjectsThisMonth, totalAgents, activeClientsThisMonth, pendingApprovals, mrr, arr, totalCostsThisMonth, marginThisMonth, overdueInvoices, upcomingPayments]
+      required: [totalClients, activeClients, suspendedClients, activeProjects, openTasks, overdueTasks, completedProjectsThisMonth, totalAgents, pendingApprovals, mrrByCurrency, arrByCurrency, totalCostsThisMonth, marginThisMonth, overdueInvoices, upcomingPayments]
       properties:
         totalClients: { type: integer }
         activeClients: { type: integer }
@@ -5074,12 +5142,13 @@ components:
         overdueTasks: { type: integer }
         completedProjectsThisMonth: { type: integer }
         totalAgents: { type: integer }
-        activeClientsThisMonth: { type: integer }
         pendingApprovals: { type: integer }
-        mrr: { type: number }
-        arr: { type: number }
+        mrrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        arrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        # costs carry no currency column; they are USD provider bills
         totalCostsThisMonth: { type: number }
-        marginThisMonth: { type: number }
+        # null unless all recurring revenue is USD (costs are USD; MXN/USD are never converted)
+        marginThisMonth: { type: ["number", "null"] }
         overdueInvoices: { type: integer }
         upcomingPayments: { type: integer }
     GrantPortalAccessResult:
@@ -5087,6 +5156,23 @@ components:
       required: [emailSent]
       properties:
         emailSent: { type: boolean, description: "false if the login was created but the credentials email failed" }
+    ContractFromProposalInput:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, description: "contract type label, e.g. starter, growth, ecommerce" }
+    ClientOverview:
+      type: object
+      required: [clientId, overdueInvoices, pendingInvoices, subscriptionStatus, contractStatus, hasPortalAccount, enabledModules, proBono]
+      properties:
+        clientId: { type: integer }
+        overdueInvoices: { type: integer, description: "status overdue, or sent and past due — same rule as the dashboard" }
+        pendingInvoices: { type: integer, description: "sent and not yet due" }
+        subscriptionStatus: { type: ["string", "null"], description: "most recent subscription's status; null if none" }
+        contractStatus: { type: ["string", "null"], description: "most recent non-test contract's status; null if none" }
+        hasPortalAccount: { type: boolean, description: "a role=cliente login is linked to this client" }
+        enabledModules: { type: array, items: { type: string } }
+        proBono: { type: boolean, description: "access_gate_exempt — pro-bono test account, never billed" }
     ClientTimeline:
       type: object
       required: [id, clientId, eventType, title, occurredAt, createdAt]
@@ -5285,13 +5371,18 @@ components:
     # ── PROPOSAL ──────────────────────────────────────────────────────────────
     Proposal:
       type: object
-      required: [id, title, status, createdAt, isTest]
+      required: [id, title, status, createdAt, isTest, currency, paymentPlan, monthlyAmount]
       properties:
         id: { type: integer }
         title: { type: string }
         prospectId: { type: ["integer", "null"] }
         clientId: { type: ["integer", "null"] }
-        amount: { type: ["number", "null"] }
+        amount: { type: ["number", "null"], description: "one-time project total" }
+        # already returned by the API (row spread) but undeclared, so the UI
+        # rendered every amount as USD and could not show the monthly fee
+        currency: { type: string, enum: [MXN, USD] }
+        paymentPlan: { type: string }
+        monthlyAmount: { type: ["number", "null"], description: "recurring monthly fee, if any" }
         status: { type: string, enum: [draft, sent, accepted, rejected] }
         isTest: { type: boolean, description: "Real production row created for verification/testing, not a real proposal. Excluded by default from GET /proposals and pipeline value KPIs." }
         notes: { type: ["string", "null"] }
@@ -5605,6 +5696,33 @@ components:
         clientWindowStage: { type: ["string", "null"], enum: [upcoming, overdue, null] }
         clientSentStages: { type: array, items: { type: string } }
         clientLastSentAt: { type: ["string", "null"] }
+    SubscriptionAlertStatus:
+      type: object
+      required: [subscriptionId, clientName, status, amount, currency, createdAt, stale, alertSentAt]
+      properties:
+        subscriptionId: { type: integer }
+        clientName: { type: string }
+        status: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        createdAt: { type: string }
+        stale: { type: boolean, description: "pending_authorization for 3+ days — same rule as the subscription-alerts cron" }
+        alertSentAt: { type: ["string", "null"] }
+    PaymentRecoveryStatus:
+      type: object
+      required: [invoiceId, invoiceNumber, clientName, clientEmail, invoiceStatus, createdAt, sentStages, declined, lastSentAt, nextStage, nextEligibleAt]
+      properties:
+        invoiceId: { type: integer }
+        invoiceNumber: { type: string }
+        clientName: { type: string }
+        clientEmail: { type: ["string", "null"] }
+        invoiceStatus: { type: string }
+        createdAt: { type: string }
+        sentStages: { type: array, items: { type: string } }
+        declined: { type: boolean }
+        lastSentAt: { type: ["string", "null"] }
+        nextStage: { type: ["string", "null"], enum: [reminder_24h, discount_30d, discount_60d, null] }
+        nextEligibleAt: { type: ["string", "null"] }
 
     # ── PROSPECTING AUDITS (P-82) ───────────────────────────────────────────────
     ProspectingChecklist:
