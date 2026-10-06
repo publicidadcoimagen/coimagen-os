@@ -854,6 +854,19 @@ export interface CapturePublicOrderResponse {
   status: string;
 }
 
+export type CurrencyAmountCurrency = typeof CurrencyAmountCurrency[keyof typeof CurrencyAmountCurrency];
+
+
+export const CurrencyAmountCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
+
+export interface CurrencyAmount {
+  currency: CurrencyAmountCurrency;
+  amount: number;
+}
+
 export interface DashboardSummary {
   totalClients: number;
   activeClients: number;
@@ -863,12 +876,12 @@ export interface DashboardSummary {
   overdueTasks: number;
   completedProjectsThisMonth: number;
   totalAgents: number;
-  activeClientsThisMonth: number;
   pendingApprovals: number;
-  mrr: number;
-  arr: number;
+  mrrByCurrency: CurrencyAmount[];
+  arrByCurrency: CurrencyAmount[];
   totalCostsThisMonth: number;
-  marginThisMonth: number;
+  /** @nullable */
+  marginThisMonth: number | null;
   overdueInvoices: number;
   upcomingPayments: number;
 }
@@ -1930,19 +1943,6 @@ export interface SubscriptionUpdate {
   startDate?: string;
   nextBillingDate?: string;
   notes?: string;
-}
-
-export type CurrencyAmountCurrency = typeof CurrencyAmountCurrency[keyof typeof CurrencyAmountCurrency];
-
-
-export const CurrencyAmountCurrency = {
-  MXN: 'MXN',
-  USD: 'USD',
-} as const;
-
-export interface CurrencyAmount {
-  currency: CurrencyAmountCurrency;
-  amount: number;
 }
 
 export interface RevenueSummary {

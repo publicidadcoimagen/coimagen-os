@@ -5062,7 +5062,7 @@ components:
     # ── DASHBOARD ─────────────────────────────────────────────────────────────
     DashboardSummary:
       type: object
-      required: [totalClients, activeClients, suspendedClients, activeProjects, openTasks, overdueTasks, completedProjectsThisMonth, totalAgents, activeClientsThisMonth, pendingApprovals, mrr, arr, totalCostsThisMonth, marginThisMonth, overdueInvoices, upcomingPayments]
+      required: [totalClients, activeClients, suspendedClients, activeProjects, openTasks, overdueTasks, completedProjectsThisMonth, totalAgents, pendingApprovals, mrrByCurrency, arrByCurrency, totalCostsThisMonth, marginThisMonth, overdueInvoices, upcomingPayments]
       properties:
         totalClients: { type: integer }
         activeClients: { type: integer }
@@ -5072,12 +5072,13 @@ components:
         overdueTasks: { type: integer }
         completedProjectsThisMonth: { type: integer }
         totalAgents: { type: integer }
-        activeClientsThisMonth: { type: integer }
         pendingApprovals: { type: integer }
-        mrr: { type: number }
-        arr: { type: number }
+        mrrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        arrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        # costs carry no currency column; they are USD provider bills
         totalCostsThisMonth: { type: number }
-        marginThisMonth: { type: number }
+        # null unless all recurring revenue is USD (costs are USD; MXN/USD are never converted)
+        marginThisMonth: { type: ["number", "null"] }
         overdueInvoices: { type: integer }
         upcomingPayments: { type: integer }
     ClientTimeline:
