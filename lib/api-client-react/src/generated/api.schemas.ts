@@ -886,6 +886,11 @@ export interface DashboardSummary {
   upcomingPayments: number;
 }
 
+export interface ContractFromProposalInput {
+  /** contract type label, e.g. starter, growth, ecommerce */
+  type: string;
+}
+
 export interface ClientOverview {
   clientId: number;
   /** status overdue, or sent and past due — same rule as the dashboard */
@@ -1212,6 +1217,14 @@ export interface PublicFoundersCount {
   max: number;
 }
 
+export type ProposalCurrency = typeof ProposalCurrency[keyof typeof ProposalCurrency];
+
+
+export const ProposalCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
+
 export type ProposalStatus = typeof ProposalStatus[keyof typeof ProposalStatus];
 
 
@@ -1229,8 +1242,18 @@ export interface Proposal {
   prospectId?: number | null;
   /** @nullable */
   clientId?: number | null;
-  /** @nullable */
+  /**
+     * one-time project total
+     * @nullable
+     */
   amount?: number | null;
+  currency: ProposalCurrency;
+  paymentPlan: string;
+  /**
+     * recurring monthly fee, if any
+     * @nullable
+     */
+  monthlyAmount: number | null;
   status: ProposalStatus;
   /** Real production row created for verification/testing, not a real proposal. Excluded by default from GET /proposals and pipeline value KPIs. */
   isTest: boolean;

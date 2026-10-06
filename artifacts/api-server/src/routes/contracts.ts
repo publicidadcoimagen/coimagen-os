@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, and } from "drizzle-orm";
-import { db, contractsTable, clientsTable } from "@workspace/db";
+import { db, contractsTable, clientsTable, proposalsTable } from "@workspace/db";
 import {
   ListContractsQueryParams,
   CreateContractBody,
@@ -9,12 +9,16 @@ import {
   UpdateContractParams,
   UpdateContractBody,
   DeleteContractParams,
+  CreateContractFromProposalParams,
+  CreateContractFromProposalBody,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 import { createDocusealSubmission, getDocusealSubmissionDocumentUrls, DocusealApiError, DocusealNotConfiguredError } from "../lib/docuseal/client";
 import { backfillSignedDocumentUrls } from "../lib/docuseal/backfill";
 import { logger } from "../lib/logger";
+import { contractFeeText } from "../lib/contracts/from-proposal";
+import { generateContractFromProposal } from "../lib/contracts/generate";
 
 const router: IRouter = Router();
 
@@ -67,6 +71,27 @@ router.get("/contracts", async (req, res): Promise<void> => {
 
   const rows = await backfillSignedDocumentUrls(await query.orderBy(desc(contractsTable.createdAt)));
   res.json(rows.map(serialize));
+});
+
+// "Generar contrato" from an accepted, converted proposal: a draft contract
+// already linked to the client and the proposal, with the amount taken from
+// the proposal instead of re-typed by hand. Atomic + audited — see
+// lib/contracts/generate.ts.
+router.post("/proposals/:id/contract", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const params = CreateContractFromProposalParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  const body = CreateContractFromProposalBody.safeParse(req.body);
+  const type = body.success ? body.data.type.trim() : "";
+  if (!type) { res.status(400).json({ error: "type_required" }); return; }
+  const proposalId = params.data.id;
+
+  const user = req.user as { id: string; name?: string | null; email?: string | null };
+  const result = await generateContractFromProposal(proposalId, type, { id: user.id, label: user.name || user.email || user.id });
+  if (!result.ok) {
+    res.status(result.status).json(result.error === "contract_already_exists" ? { error: result.error, contractId: result.contractId } : { error: result.error });
+    return;
+  }
+  res.status(201).json(serialize(result.contract));
 });
 
 router.post("/contracts", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
@@ -222,9 +247,12 @@ router.post("/contracts/:id/send", requireRole("ceo", "admin"), async (req, res)
   const today = new Date();
   const contractDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
   const currency = contract.currency ?? "MXN";
-  const monthlyFee = contract.amount != null
-    ? `${new Intl.NumberFormat(isEn ? "en-US" : "es-MX", { style: "currency", currency }).format(contract.amount / 100)}/${isEn ? "mo" : "mes"}`
-    : "";
+  // With a linked proposal, states what the client actually pays (monthly,
+  // one-time, or both) instead of always rendering the amount as "/mes".
+  const [linkedProposal] = contract.proposalId
+    ? await db.select({ amount: proposalsTable.amount, monthlyAmount: proposalsTable.monthlyAmount }).from(proposalsTable).where(eq(proposalsTable.id, contract.proposalId))
+    : [];
+  const monthlyFee = contractFeeText({ contractAmountCents: contract.amount, currency, isEn, proposal: linkedProposal ?? null });
 
   let submission;
   try {
