@@ -886,6 +886,29 @@ export interface DashboardSummary {
   upcomingPayments: number;
 }
 
+export interface ClientOverview {
+  clientId: number;
+  /** status overdue, or sent and past due — same rule as the dashboard */
+  overdueInvoices: number;
+  /** sent and not yet due */
+  pendingInvoices: number;
+  /**
+     * most recent subscription's status; null if none
+     * @nullable
+     */
+  subscriptionStatus: string | null;
+  /**
+     * most recent non-test contract's status; null if none
+     * @nullable
+     */
+  contractStatus: string | null;
+  /** a role=cliente login is linked to this client */
+  hasPortalAccount: boolean;
+  enabledModules: string[];
+  /** access_gate_exempt — pro-bono test account, never billed */
+  proBono: boolean;
+}
+
 export interface ClientTimeline {
   id: number;
   clientId: number;
