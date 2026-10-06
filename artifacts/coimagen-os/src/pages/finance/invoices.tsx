@@ -156,6 +156,7 @@ const STATUSES = ["draft", "sent", "paid", "overdue", "cancelled"];
 export function Invoices() {
   const qc = useQueryClient();
   const [tab, setTab] = useState("all");
+  const [clientFilter, setClientFilter] = useState("all");
   const { data: invoices, isLoading } = useListInvoices({}, { query: { queryKey: getListInvoicesQueryKey() } });
   const { data: clients } = useListClients();
   const createInvoice = useCreateInvoice();
@@ -189,10 +190,18 @@ export function Invoices() {
       .catch((err) => setFiscalDocError(err instanceof Error ? err.message : "No se pudo subir el documento"));
   };
 
-  const filtered = invoices?.filter((i) => tab === "all" || i.status === tab) ?? [];
-  const totalPaid = breakdownByCurrency(invoices?.filter((i) => i.status === "paid") ?? []);
-  const totalPending = breakdownByCurrency(invoices?.filter((i) => i.status === "sent") ?? []);
-  const totalOverdue = breakdownByCurrency(invoices?.filter((i) => i.status === "overdue") ?? []);
+  // Only the PayPal recurring-payment webhook ever sets status "overdue" —
+  // a one-time cuota that was sent and passed its due date stays "sent".
+  // Same rule as the API's dashboard/client-overview: overdue = explicitly
+  // overdue, or sent and past due.
+  const today = new Date().toISOString().slice(0, 10);
+  const isOverdue = (i: { status: string; dueDate?: string | null }) =>
+    i.status === "overdue" || (i.status === "sent" && !!i.dueDate && i.dueDate < today);
+  const forClient = invoices?.filter((i) => clientFilter === "all" || String(i.clientId) === clientFilter) ?? [];
+  const filtered = forClient.filter((i) => tab === "all" || (tab === "overdue" ? isOverdue(i) : tab === "sent" ? i.status === "sent" && !isOverdue(i) : i.status === tab));
+  const totalPaid = breakdownByCurrency(forClient.filter((i) => i.status === "paid"));
+  const totalPending = breakdownByCurrency(forClient.filter((i) => i.status === "sent" && !isOverdue(i)));
+  const totalOverdue = breakdownByCurrency(forClient.filter(isOverdue));
 
   const handleSubmit = () => {
     if (!form.number || !form.amount) return;
@@ -217,12 +226,19 @@ export function Invoices() {
         <Card><CardContent className="pt-4 pb-4"><div className="text-xs text-muted-foreground mb-1">Vencido</div><div className="text-lg font-bold text-red-400">{formatCurrencyBreakdown(totalOverdue)}</div></CardContent></Card>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {["all", ...STATUSES].map((s) => (
           <Button key={s} size="sm" variant={tab === s ? "default" : "outline"} onClick={() => setTab(s)} className="text-xs h-7">
             {s === "all" ? "Todas" : STATUS_ES[s]}
           </Button>
         ))}
+        <Select value={clientFilter} onValueChange={setClientFilter}>
+          <SelectTrigger className="ml-auto w-56 h-7 text-xs"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los clientes</SelectItem>
+            {clients?.map((c) => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? <div className="text-muted-foreground text-sm">Cargando...</div> : (
@@ -245,7 +261,7 @@ export function Invoices() {
                   <td className="px-4 py-3 tabular-nums font-medium">{formatCurrency(inv.amount, inv.currency)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.issuedDate)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(inv.dueDate)}</td>
-                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[inv.status]}`}>{STATUS_ES[inv.status] ?? inv.status}</span></td>
+                  <td className="px-4 py-3">{(() => { const shown = isOverdue(inv) ? "overdue" : inv.status; return <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[shown]}`}>{STATUS_ES[shown] ?? shown}</span>; })()}</td>
                   <td className="px-4 py-3 space-x-1">
                     {inv.status === "sent" && (
                       <Button size="sm" variant="outline" className="h-6 text-xs" onClick={() => {

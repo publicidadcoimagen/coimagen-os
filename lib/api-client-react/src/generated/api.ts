@@ -77,6 +77,7 @@ import type {
   ClientOnboarding,
   ClientOnboardingInput,
   ClientOnboardingPatch,
+  ClientOverview,
   ClientSocialCredentialCreate,
   ClientSocialCredentialMeta,
   ClientTimeline,
@@ -1637,6 +1638,83 @@ export const useCreateClient = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getCreateClientMutationOptions(options));
     }
+
+export const getListClientOverviewUrl = () => {
+
+
+
+
+  return `/api/clients/overview`
+}
+
+/**
+ * @summary One health row per client (payments, contract, portal access, modules, pro bono) for the CEO client list
+ */
+export const listClientOverview = async ( options?: RequestInit): Promise<ClientOverview[]> => {
+
+  return customFetch<ClientOverview[]>(getListClientOverviewUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListClientOverviewQueryKey = () => {
+    return [
+    `/api/clients/overview`
+    ] as const;
+    }
+
+
+export const getListClientOverviewQueryOptions = <TData = Awaited<ReturnType<typeof listClientOverview>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListClientOverviewQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listClientOverview>>> = ({ signal }) => listClientOverview({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listClientOverview>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListClientOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof listClientOverview>>>
+export type ListClientOverviewQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary One health row per client (payments, contract, portal access, modules, pro bono) for the CEO client list
+ */
+
+export function useListClientOverview<TData = Awaited<ReturnType<typeof listClientOverview>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listClientOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListClientOverviewQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getGetClientUrl = (id: number,) => {
 

@@ -427,6 +427,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Client"
+  /clients/overview:
+    get:
+      operationId: listClientOverview
+      tags: [clients]
+      summary: One health row per client (payments, contract, portal access, modules, pro bono) for the CEO client list
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ClientOverview"
   /clients/{id}:
     get:
       operationId: getClient
@@ -5056,6 +5070,18 @@ components:
         marginThisMonth: { type: number }
         overdueInvoices: { type: integer }
         upcomingPayments: { type: integer }
+    ClientOverview:
+      type: object
+      required: [clientId, overdueInvoices, pendingInvoices, subscriptionStatus, contractStatus, hasPortalAccount, enabledModules, proBono]
+      properties:
+        clientId: { type: integer }
+        overdueInvoices: { type: integer, description: "status overdue, or sent and past due — same rule as the dashboard" }
+        pendingInvoices: { type: integer, description: "sent and not yet due" }
+        subscriptionStatus: { type: ["string", "null"], description: "most recent subscription's status; null if none" }
+        contractStatus: { type: ["string", "null"], description: "most recent non-test contract's status; null if none" }
+        hasPortalAccount: { type: boolean, description: "a role=cliente login is linked to this client" }
+        enabledModules: { type: array, items: { type: string } }
+        proBono: { type: boolean, description: "access_gate_exempt — pro-bono test account, never billed" }
     ClientTimeline:
       type: object
       required: [id, clientId, eventType, title, occurredAt, createdAt]

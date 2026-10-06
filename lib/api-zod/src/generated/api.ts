@@ -373,6 +373,22 @@ export const CreateClientBody = zod.object({
 })
 
 
+/**
+ * @summary One health row per client (payments, contract, portal access, modules, pro bono) for the CEO client list
+ */
+export const ListClientOverviewResponseItem = zod.object({
+  "clientId": zod.number(),
+  "overdueInvoices": zod.number().describe('status overdue, or sent and past due — same rule as the dashboard'),
+  "pendingInvoices": zod.number().describe('sent and not yet due'),
+  "subscriptionStatus": zod.string().nullable().describe('most recent subscription\'s status; null if none'),
+  "contractStatus": zod.string().nullable().describe('most recent non-test contract\'s status; null if none'),
+  "hasPortalAccount": zod.boolean().describe('a role=cliente login is linked to this client'),
+  "enabledModules": zod.array(zod.string()),
+  "proBono": zod.boolean().describe('access_gate_exempt — pro-bono test account, never billed')
+})
+export const ListClientOverviewResponse = zod.array(ListClientOverviewResponseItem)
+
+
 export const GetClientParams = zod.object({
   "id": zod.coerce.number()
 })
