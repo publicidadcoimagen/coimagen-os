@@ -12,7 +12,7 @@ export type RecoveryStage = (typeof RECOVERY_STAGES)[number];
 // isStalePendingAuthorization — because "24 horas" is a literal hour
 // threshold, not "1 día" in the loose calendar sense commercial-followup's
 // daysSince uses.
-const STAGE_MIN_DAYS: Record<RecoveryStage, number> = {
+export const STAGE_MIN_DAYS: Record<RecoveryStage, number> = {
   reminder_24h: 1,
   discount_30d: 30,
   discount_60d: 60,
@@ -27,10 +27,18 @@ function daysSince(createdAt: Date, now: Date): number {
 // not discount_60d, then picks up the rest on later runs as it becomes due
 // for each one in turn.
 export function nextRecoveryStageToSend(createdAt: Date, now: Date, alreadySent: ReadonlySet<RecoveryStage>): RecoveryStage | null {
-  const sentIndexes = [...alreadySent].map((stage) => RECOVERY_STAGES.indexOf(stage));
-  const nextIndex = sentIndexes.length === 0 ? 0 : Math.max(...sentIndexes) + 1;
-  const nextStage = RECOVERY_STAGES[nextIndex];
+  const nextStage = upcomingRecoveryStage(alreadySent);
   if (!nextStage) return null; // already sent every stage there is
 
   return daysSince(createdAt, now) >= STAGE_MIN_DAYS[nextStage] ? nextStage : null;
+}
+
+// The stage that comes after everything already sent, regardless of whether
+// its day threshold has passed yet — what the read-only Secuencias view
+// shows as "next". nextRecoveryStageToSend above is the cron's version,
+// which additionally requires the threshold to be met.
+export function upcomingRecoveryStage(alreadySent: ReadonlySet<RecoveryStage>): RecoveryStage | null {
+  const sentIndexes = [...alreadySent].map((stage) => RECOVERY_STAGES.indexOf(stage));
+  const nextIndex = sentIndexes.length === 0 ? 0 : Math.max(...sentIndexes) + 1;
+  return RECOVERY_STAGES[nextIndex] ?? null;
 }
