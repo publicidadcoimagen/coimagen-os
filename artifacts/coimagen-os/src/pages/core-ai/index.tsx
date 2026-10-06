@@ -13,7 +13,9 @@ import {
   useListQcTickets, getListQcTicketsQueryKey,
   useListIntegrations, getListIntegrationsQueryKey,
   useListAiExecutions, getListAiExecutionsQueryKey,
+  type DashboardSummary,
 } from "@workspace/api-client-react";
+import { formatCurrencyBreakdown } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,15 +32,6 @@ import {
 import { Link } from "wouter";
 import { getEventLabel, SOURCE_LABELS } from "@/pages/orchestration/catalog";
 
-type DashSummary = {
-  totalClients: number; activeClients: number; suspendedClients: number;
-  activeProjects: number; openTasks: number; overdueTasks: number;
-  completedProjectsThisMonth: number; totalAgents: number;
-  activeClientsThisMonth: number; pendingApprovals: number;
-  mrr: number; arr: number; totalCostsThisMonth: number;
-  marginThisMonth: number; overdueInvoices: number; upcomingPayments: number;
-};
-type RevSummary = { mrr: number; arr: number; highTicketCount: number; highTicketTotal: number };
 type Agent = { id: number; name: string; status: string };
 type Workflow = { id: number; name: string; status?: string | null; currentStage?: string | null };
 type Invoice = { id: number; status: string; totalAmount?: number | null; clientName?: string | null };
@@ -50,12 +43,6 @@ type Incident = { id: number; status?: string | null; severity?: string | null; 
 type QcTicket = { id: number; status?: string | null; priority?: string | null; title: string };
 type OEvent = { id: number; eventType: string; source: string; status: string; createdAt: string };
 type Integ = { id: number; status: string };
-
-function fmtMoney(n: number) {
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
-  return `$${n.toLocaleString("es-MX")}`;
-}
 
 function getHour() {
   const h = new Date().getHours();
@@ -74,7 +61,7 @@ type Priority = { label: string; detail: string; href: string; level: "critical"
 
 function ReviewDialog({ open, onClose, summary, agents, workflows, incidents, qcTickets, events }: {
   open: boolean; onClose: () => void;
-  summary: DashSummary | undefined;
+  summary: DashboardSummary | undefined;
   agents: Agent[]; workflows: Workflow[];
   incidents: Incident[]; qcTickets: QcTicket[];
   events: OEvent[];
@@ -90,8 +77,8 @@ function ReviewDialog({ open, onClose, summary, agents, workflows, incidents, qc
     { label: "Agentes activos",    value: agents.filter((a) => a.status === "active").length, icon: Bot, ok: true },
     { label: "Workflows activos",  value: workflows.filter((w) => w.status === "active").length, icon: GitBranch, ok: true },
     { label: "Eventos hoy",        value: events.filter((e) => new Date(e.createdAt).toDateString() === new Date().toDateString()).length, icon: Activity, ok: true },
-    { label: "MRR",                value: fmtMoney(summary?.mrr ?? 0),      icon: DollarSign,   ok: true },
-    { label: "ARR",                value: fmtMoney(summary?.arr ?? 0),      icon: TrendingUp,   ok: true },
+    { label: "MRR",                value: formatCurrencyBreakdown(summary?.mrrByCurrency), icon: DollarSign,   ok: true },
+    { label: "ARR",                value: formatCurrencyBreakdown(summary?.arrByCurrency), icon: TrendingUp,   ok: true },
   ];
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
@@ -122,7 +109,7 @@ export function CoreAIDashboard() {
   const today = new Date().toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   const { data: summary } = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey() } });
-  const s = summary as DashSummary | undefined;
+  const s = summary;
 
   const { data: rawAgents = [] }     = useListAgents({ query: { queryKey: getListAgentsQueryKey() } });
   const { data: rawWorkflows = [] }  = useListWorkflows({}, { query: { queryKey: getListWorkflowsQueryKey({}) } });
@@ -143,7 +130,7 @@ export function CoreAIDashboard() {
   const automations= rawAutomations as Automation[];
   const incidents  = rawIncidents  as Incident[];
   const qcTickets  = rawQcTickets  as QcTicket[];
-  const revenue    = rawRevenue    as RevSummary | undefined;
+  const revenue    = rawRevenue;
   const events     = rawEvents     as OEvent[];
 
   const { data: rawIntegrations = [] } = useListIntegrations({}, { query: { queryKey: getListIntegrationsQueryKey({}) } });
@@ -446,8 +433,8 @@ export function CoreAIDashboard() {
             <CardContent className="p-4 pt-2">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { label: "MRR",             value: fmtMoney(revenue?.mrr ?? s?.mrr ?? 0),  color: "text-primary" },
-                  { label: "ARR",             value: fmtMoney(revenue?.arr ?? s?.arr ?? 0),  color: "text-primary" },
+                  { label: "MRR",             value: formatCurrencyBreakdown(revenue?.mrrByCurrency ?? s?.mrrByCurrency),  color: "text-primary" },
+                  { label: "ARR",             value: formatCurrencyBreakdown(revenue?.arrByCurrency ?? s?.arrByCurrency),  color: "text-primary" },
                   { label: "Facturación",     value: `${invoices.length} facturas`,           color: "text-muted-foreground" },
                   { label: "Cobrado",         value: `${invoices.filter((i) => i.status === "paid").length} pagadas`, color: "text-green-400" },
                   { label: "Pendiente",       value: `${invoices.filter((i) => i.status === "sent" || i.status === "draft").length} en espera`, color: "text-yellow-400" },
