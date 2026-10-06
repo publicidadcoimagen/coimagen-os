@@ -13,6 +13,7 @@ import {
 import { requireRole } from "../middlewares/requireAuth";
 import { sendFounderWelcomeEmail } from "../lib/founder-welcome/email";
 import { logger } from "../lib/logger";
+import { grantPortalAccess } from "../lib/portal-onboarding/grant-portal-access";
 import { buildClientOverview } from "../lib/client-overview/build";
 
 const router: IRouter = Router();
@@ -227,6 +228,17 @@ router.post("/clients/:id/mark-founder", requireRole("ceo", "admin"), async (req
     emailSent,
     emailError,
   });
+});
+
+// Staff button "Enviar acceso al portal": gives any client a portal login
+// without waiting for a paid proposal installment. Sends a real email.
+router.post("/clients/:id/portal-access", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const params = GetClientParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  const user = req.user as { id: string; name?: string | null; email?: string | null };
+  const result = await grantPortalAccess(params.data.id, { id: user.id, label: user.name || user.email || user.id });
+  if (!result.ok) { res.status(result.status).json({ error: result.error }); return; }
+  res.status(201).json({ emailSent: result.emailSent });
 });
 
 router.delete("/clients/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {

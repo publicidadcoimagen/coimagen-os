@@ -161,6 +161,7 @@ export * from './errorEnvelope';
 export * from './fiscalDataBody';
 export * from './fiscalDocumentUploadBody';
 export * from './fiscalDocumentUploadResponse';
+export * from './grantPortalAccessResult';
 export * from './healthStatus';
 export * from './healthStatusEnvironment';
 export * from './healthStatusProviders';

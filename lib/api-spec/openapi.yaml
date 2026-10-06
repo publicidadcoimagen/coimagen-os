@@ -530,6 +530,32 @@ paths:
         "404":
           description: Client not found
 
+  /clients/{id}/portal-access:
+    post:
+      operationId: grantClientPortalAccess
+      tags: [clients]
+      summary: Create the client's portal login (temporary password) and email the credentials
+      description: >-
+        Same provisioning a client's first paid installment triggers (Client Room +
+        role=cliente login + credentials email), on demand for clients created any
+        other way. The temporary password is never returned; if the email fails the
+        client can use the password-reset flow.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "201":
+          description: Login created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrantPortalAccessResult"
+        "400":
+          description: Client has no email
+        "404":
+          description: Client not found
+        "409":
+          description: Client already has a portal login, or its email belongs to another account
+
   /impersonation/end:
     post:
       operationId: endImpersonation
@@ -5125,6 +5151,11 @@ components:
         marginThisMonth: { type: ["number", "null"] }
         overdueInvoices: { type: integer }
         upcomingPayments: { type: integer }
+    GrantPortalAccessResult:
+      type: object
+      required: [emailSent]
+      properties:
+        emailSent: { type: boolean, description: "false if the login was created but the credentials email failed" }
     ContractFromProposalInput:
       type: object
       required: [type]

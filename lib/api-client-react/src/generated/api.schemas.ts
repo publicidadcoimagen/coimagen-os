@@ -886,6 +886,11 @@ export interface DashboardSummary {
   upcomingPayments: number;
 }
 
+export interface GrantPortalAccessResult {
+  /** false if the login was created but the credentials email failed */
+  emailSent: boolean;
+}
+
 export interface ContractFromProposalInput {
   /** contract type label, e.g. starter, growth, ecommerce */
   type: string;

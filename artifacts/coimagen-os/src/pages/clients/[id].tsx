@@ -4,6 +4,7 @@ import {
   useGetClient,
   useUpdateClient,
   useMarkClientFounder,
+  useGrantClientPortalAccess,
   useListProjects,
   useListClientAccess,
   useCreateClientAccess,
@@ -46,13 +47,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge, PriorityBadge } from "@/components/status-badge";
 import {
-  Building2, Mail, Phone, Calendar, Briefcase, Plus, Key, Eye, EyeOff,
+  Building2, Mail, Phone, Calendar, Briefcase, Plus, Key, Eye, EyeOff, Send,
   Pencil, Trash2, Globe, Shield, CheckCircle2, XCircle, Lock, ExternalLink,
   Palette, Image, Link2, AlignLeft, Layers, Clock, StickyNote, Pin, Crown, Share2,
 } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@workspace/better-auth-web";
 import { useImpersonation } from "@/hooks/use-impersonation";
 
@@ -198,6 +203,26 @@ export function ClientDetail() {
   const updateNote = useUpdateClientNote();
   const deleteNote = useDeleteClientNote();
   const markFounder = useMarkClientFounder();
+  const [portalConfirm, setPortalConfirm] = useState(false);
+  const grantPortal = useGrantClientPortalAccess({
+    mutation: {
+      onSuccess: (result) => toast({
+        title: "Acceso al portal creado",
+        description: result.emailSent
+          ? "Le enviamos al cliente sus credenciales por correo."
+          : "La cuenta quedó creada, pero el correo falló. El cliente puede entrar con \"olvidé mi contraseña\".",
+      }),
+      onError: (err) => {
+        const code = (err as { data?: { error?: string } })?.data?.error;
+        const messages: Record<string, string> = {
+          already_has_portal_access: "Este cliente ya tiene acceso al portal.",
+          email_in_use: "Ese correo ya pertenece a otra cuenta. Cambia el email del cliente.",
+          client_has_no_email: "Agrega un email al cliente antes de darle acceso.",
+        };
+        toast({ title: "No se pudo crear el acceso", description: messages[code ?? ""] ?? "Error inesperado.", variant: "destructive" });
+      },
+    },
+  });
   const updateClient = useUpdateClient({
     mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getGetClientQueryKey(id) }) },
   });
@@ -385,6 +410,26 @@ export function ClientDetail() {
               {isStartingImpersonation ? "Entrando..." : "Ver como cliente"}
             </Button>
           )}
+          {canImpersonate && (
+            <Button variant="outline" size="sm" disabled={grantPortal.isPending} onClick={() => setPortalConfirm(true)}>
+              <Send className="h-3.5 w-3.5 mr-1.5" />
+              {grantPortal.isPending ? "Enviando..." : "Enviar acceso al portal"}
+            </Button>
+          )}
+          <AlertDialog open={portalConfirm} onOpenChange={setPortalConfirm}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Enviar acceso al portal?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Se creará la cuenta de {client.name} con una contraseña temporal y se le enviará por correo a {client.email ?? "(sin email)"}. Deberá cambiarla en su primer inicio de sesión.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => grantPortal.mutate({ id })}>Enviar acceso</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           {client.isFounder ? (
             <Badge className="gap-1 bg-amber-500/15 text-amber-400 border-amber-500/30 hover:bg-amber-500/15">
               <Crown className="h-3.5 w-3.5" />Fundador #{client.founderNumber}
