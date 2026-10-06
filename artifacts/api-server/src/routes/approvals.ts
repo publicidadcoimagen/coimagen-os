@@ -10,6 +10,7 @@ import {
   ListApprovalsQueryParams,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
+import { actorLabel, approvalUpdate, reviewerOnCreate, type SessionUser } from "../lib/approvals/reviewer";
 
 const router: IRouter = Router();
 
@@ -38,7 +39,7 @@ router.post("/approvals", requireRole("ceo", "admin"), async (req, res): Promise
     type: parsed.data.type,
     status: parsed.data.status ?? "draft",
     submittedBy: parsed.data.submittedBy ?? null,
-    reviewedBy: parsed.data.reviewedBy ?? null,
+    reviewedBy: reviewerOnCreate(parsed.data.status, actorLabel(req.user as SessionUser)),
     entityId: parsed.data.entityId ?? null,
     entityType: parsed.data.entityType ?? null,
     notes: parsed.data.notes ?? null,
@@ -59,14 +60,9 @@ router.patch("/approvals/:id", requireRole("ceo", "admin"), async (req, res): Pr
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   const parsed = UpdateApprovalBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
-  // Whoever changes the status is the reviewer — taken from the session,
-  // never from the request body (the UI used to hardcode "Camila Segovia",
-  // so every admin's approval was attributed to the CEO).
-  const update = { ...parsed.data, updatedAt: new Date() };
-  if (parsed.data.status !== undefined) {
-    const user = req.user as { id: string; name?: string | null; email?: string | null };
-    update.reviewedBy = user.name || user.email || user.id;
-  }
+  // reviewedBy always comes from the session, never the body — see
+  // lib/approvals/reviewer.ts.
+  const update = { ...approvalUpdate(parsed.data, actorLabel(req.user as SessionUser)), updatedAt: new Date() };
   const [row] = await db.update(approvalsTable).set(update).where(eq(approvalsTable.id, params.data.id)).returning();
   if (!row) { res.status(404).json({ error: "Approval not found" }); return; }
   res.json(fmt(row));
