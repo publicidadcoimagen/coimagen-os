@@ -17,7 +17,8 @@ import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 import { createDocusealSubmission, getDocusealSubmissionDocumentUrls, DocusealApiError, DocusealNotConfiguredError } from "../lib/docuseal/client";
 import { backfillSignedDocumentUrls } from "../lib/docuseal/backfill";
 import { logger } from "../lib/logger";
-import { contractFromProposalError, contractValuesFromProposal, contractFeeText } from "../lib/contracts/from-proposal";
+import { contractFeeText } from "../lib/contracts/from-proposal";
+import { generateContractFromProposal } from "../lib/contracts/generate";
 
 const router: IRouter = Router();
 
@@ -74,8 +75,8 @@ router.get("/contracts", async (req, res): Promise<void> => {
 
 // "Generar contrato" from an accepted, converted proposal: a draft contract
 // already linked to the client and the proposal, with the amount taken from
-// the proposal instead of re-typed by hand. One live contract per proposal —
-// a second click returns the existing one (409) rather than a duplicate.
+// the proposal instead of re-typed by hand. Atomic + audited — see
+// lib/contracts/generate.ts.
 router.post("/proposals/:id/contract", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
   const params = CreateContractFromProposalParams.safeParse(req.params);
   if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
@@ -84,20 +85,13 @@ router.post("/proposals/:id/contract", requireRole("ceo", "admin"), async (req, 
   if (!type) { res.status(400).json({ error: "type_required" }); return; }
   const proposalId = params.data.id;
 
-  const [proposal] = await db.select().from(proposalsTable).where(eq(proposalsTable.id, proposalId));
-  if (!proposal) { res.status(404).json({ error: "proposal_not_found" }); return; }
-  const invalid = contractFromProposalError(proposal);
-  if (invalid) { res.status(409).json({ error: invalid }); return; }
-
-  const [existing] = await db.select({ id: contractsTable.id }).from(contractsTable)
-    .where(and(eq(contractsTable.proposalId, proposalId), eq(contractsTable.isTest, false)));
-  if (existing) { res.status(409).json({ error: "contract_already_exists", contractId: existing.id }); return; }
-
   const user = req.user as { id: string; name?: string | null; email?: string | null };
-  const [row] = await db.insert(contractsTable)
-    .values(contractValuesFromProposal(proposal, type, user.name || user.email || user.id))
-    .returning();
-  res.status(201).json(serialize(row));
+  const result = await generateContractFromProposal(proposalId, type, { id: user.id, label: user.name || user.email || user.id });
+  if (!result.ok) {
+    res.status(result.status).json(result.error === "contract_already_exists" ? { error: result.error, contractId: result.contractId } : { error: result.error });
+    return;
+  }
+  res.status(201).json(serialize(result.contract));
 });
 
 router.post("/contracts", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
