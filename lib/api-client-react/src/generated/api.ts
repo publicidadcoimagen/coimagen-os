@@ -184,6 +184,7 @@ import type {
   Organization,
   OrganizationCreate,
   OrganizationUpdate,
+  PaymentRecoveryStatus,
   Product,
   ProductInput,
   ProductUpdate,
@@ -213,6 +214,7 @@ import type {
   SmartOnboardingUpdate,
   StatusCount,
   Subscription,
+  SubscriptionAlertStatus,
   SubscriptionFiscalDataBody,
   SubscriptionInput,
   SubscriptionUpdate,
@@ -19231,6 +19233,148 @@ export function useListInvoiceReminderStatuses<TData = Awaited<ReturnType<typeof
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getListInvoiceReminderStatusesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListSubscriptionAlertStatusesUrl = () => {
+
+
+
+
+  return `/api/sequences/subscription-alerts`
+}
+
+export const listSubscriptionAlertStatuses = async ( options?: RequestInit): Promise<SubscriptionAlertStatus[]> => {
+
+  return customFetch<SubscriptionAlertStatus[]>(getListSubscriptionAlertStatusesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSubscriptionAlertStatusesQueryKey = () => {
+    return [
+    `/api/sequences/subscription-alerts`
+    ] as const;
+    }
+
+
+export const getListSubscriptionAlertStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSubscriptionAlertStatusesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>> = ({ signal }) => listSubscriptionAlertStatuses({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSubscriptionAlertStatusesQueryResult = NonNullable<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>>
+export type ListSubscriptionAlertStatusesQueryError = ErrorType<unknown>
+
+
+
+export function useListSubscriptionAlertStatuses<TData = Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSubscriptionAlertStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSubscriptionAlertStatusesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getListPaymentRecoveryStatusesUrl = () => {
+
+
+
+
+  return `/api/sequences/payment-recovery`
+}
+
+export const listPaymentRecoveryStatuses = async ( options?: RequestInit): Promise<PaymentRecoveryStatus[]> => {
+
+  return customFetch<PaymentRecoveryStatus[]>(getListPaymentRecoveryStatusesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPaymentRecoveryStatusesQueryKey = () => {
+    return [
+    `/api/sequences/payment-recovery`
+    ] as const;
+    }
+
+
+export const getListPaymentRecoveryStatusesQueryOptions = <TData = Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPaymentRecoveryStatusesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>> = ({ signal }) => listPaymentRecoveryStatuses({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPaymentRecoveryStatusesQueryResult = NonNullable<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>>
+export type ListPaymentRecoveryStatusesQueryError = ErrorType<unknown>
+
+
+
+export function useListPaymentRecoveryStatuses<TData = Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPaymentRecoveryStatuses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPaymentRecoveryStatusesQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

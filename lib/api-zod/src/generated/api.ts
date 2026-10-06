@@ -1923,12 +1923,17 @@ export const GetDashboardSummaryResponse = zod.object({
   "overdueTasks": zod.number(),
   "completedProjectsThisMonth": zod.number(),
   "totalAgents": zod.number(),
-  "activeClientsThisMonth": zod.number(),
   "pendingApprovals": zod.number(),
-  "mrr": zod.number(),
-  "arr": zod.number(),
+  "mrrByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+})),
+  "arrByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+})),
   "totalCostsThisMonth": zod.number(),
-  "marginThisMonth": zod.number(),
+  "marginThisMonth": zod.number().nullable(),
   "overdueInvoices": zod.number(),
   "upcomingPayments": zod.number()
 })
@@ -6001,6 +6006,35 @@ export const ListInvoiceReminderStatusesResponseItem = zod.object({
   "clientLastSentAt": zod.string().nullable()
 })
 export const ListInvoiceReminderStatusesResponse = zod.array(ListInvoiceReminderStatusesResponseItem)
+
+
+export const ListSubscriptionAlertStatusesResponseItem = zod.object({
+  "subscriptionId": zod.number(),
+  "clientName": zod.string(),
+  "status": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "createdAt": zod.string(),
+  "stale": zod.boolean().describe('pending_authorization for 3+ days — same rule as the subscription-alerts cron'),
+  "alertSentAt": zod.string().nullable()
+})
+export const ListSubscriptionAlertStatusesResponse = zod.array(ListSubscriptionAlertStatusesResponseItem)
+
+
+export const ListPaymentRecoveryStatusesResponseItem = zod.object({
+  "invoiceId": zod.number(),
+  "invoiceNumber": zod.string(),
+  "clientName": zod.string(),
+  "clientEmail": zod.string().nullable(),
+  "invoiceStatus": zod.string(),
+  "createdAt": zod.string(),
+  "sentStages": zod.array(zod.string()),
+  "declined": zod.boolean(),
+  "lastSentAt": zod.string().nullable(),
+  "nextStage": zod.union([zod.literal('reminder_24h'),zod.literal('discount_30d'),zod.literal('discount_60d'),zod.literal(null)]).nullable(),
+  "nextEligibleAt": zod.string().nullable()
+})
+export const ListPaymentRecoveryStatusesResponse = zod.array(ListPaymentRecoveryStatusesResponseItem)
 
 
 /**

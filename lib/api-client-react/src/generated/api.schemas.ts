@@ -854,6 +854,19 @@ export interface CapturePublicOrderResponse {
   status: string;
 }
 
+export type CurrencyAmountCurrency = typeof CurrencyAmountCurrency[keyof typeof CurrencyAmountCurrency];
+
+
+export const CurrencyAmountCurrency = {
+  MXN: 'MXN',
+  USD: 'USD',
+} as const;
+
+export interface CurrencyAmount {
+  currency: CurrencyAmountCurrency;
+  amount: number;
+}
+
 export interface DashboardSummary {
   totalClients: number;
   activeClients: number;
@@ -863,12 +876,12 @@ export interface DashboardSummary {
   overdueTasks: number;
   completedProjectsThisMonth: number;
   totalAgents: number;
-  activeClientsThisMonth: number;
   pendingApprovals: number;
-  mrr: number;
-  arr: number;
+  mrrByCurrency: CurrencyAmount[];
+  arrByCurrency: CurrencyAmount[];
   totalCostsThisMonth: number;
-  marginThisMonth: number;
+  /** @nullable */
+  marginThisMonth: number | null;
   overdueInvoices: number;
   upcomingPayments: number;
 }
@@ -1714,6 +1727,49 @@ export interface InvoiceReminderStatus {
   clientLastSentAt: string | null;
 }
 
+export interface SubscriptionAlertStatus {
+  subscriptionId: number;
+  clientName: string;
+  status: string;
+  amount: number;
+  currency: string;
+  createdAt: string;
+  /** pending_authorization for 3+ days — same rule as the subscription-alerts cron */
+  stale: boolean;
+  /** @nullable */
+  alertSentAt: string | null;
+}
+
+/**
+ * @nullable
+ */
+export type PaymentRecoveryStatusNextStage = typeof PaymentRecoveryStatusNextStage[keyof typeof PaymentRecoveryStatusNextStage] | null;
+
+
+export const PaymentRecoveryStatusNextStage = {
+  reminder_24h: 'reminder_24h',
+  discount_30d: 'discount_30d',
+  discount_60d: 'discount_60d',
+} as const;
+
+export interface PaymentRecoveryStatus {
+  invoiceId: number;
+  invoiceNumber: string;
+  clientName: string;
+  /** @nullable */
+  clientEmail: string | null;
+  invoiceStatus: string;
+  createdAt: string;
+  sentStages: string[];
+  declined: boolean;
+  /** @nullable */
+  lastSentAt: string | null;
+  /** @nullable */
+  nextStage: PaymentRecoveryStatusNextStage;
+  /** @nullable */
+  nextEligibleAt: string | null;
+}
+
 /**
  * The 10-item digital-presence checklist. abandonedSocial and noContentPublished are manual-only (no reliable API) — see ProspectingAuditReviewSubmit. All others are auto-checkable in a later phase, not built yet, so they are always null today.
  */
@@ -1910,19 +1966,6 @@ export interface SubscriptionUpdate {
   startDate?: string;
   nextBillingDate?: string;
   notes?: string;
-}
-
-export type CurrencyAmountCurrency = typeof CurrencyAmountCurrency[keyof typeof CurrencyAmountCurrency];
-
-
-export const CurrencyAmountCurrency = {
-  MXN: 'MXN',
-  USD: 'USD',
-} as const;
-
-export interface CurrencyAmount {
-  currency: CurrencyAmountCurrency;
-  amount: number;
 }
 
 export interface RevenueSummary {

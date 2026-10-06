@@ -4413,9 +4413,7 @@ paths:
   # ─── SEQUENCES (read-only status views for automated email sequences) ──────
   # Reuses the same eligibility.ts pure functions each cron already runs — no
   # new business logic, just a read model over commercial_followups and
-  # invoice_reminders. subscription-alerts and payment-recovery sequences are
-  # deliberately left out here: their tables only exist on the still-unmerged
-  # feature/paypal-payments branch, not on main. Add once that merges.
+  # invoice_reminders, subscription_alerts and payment_recovery_alerts.
   /sequences/commercial-followups:
     get:
       operationId: listCommercialFollowupStatuses
@@ -4444,6 +4442,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/InvoiceReminderStatus"
+  /sequences/subscription-alerts:
+    get:
+      operationId: listSubscriptionAlertStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionAlertStatus"
+  /sequences/payment-recovery:
+    get:
+      operationId: listPaymentRecoveryStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentRecoveryStatus"
 
   # ─── PROSPECTING AUDITS (P-82 Agente Prospectador) ─────────────────────────
   # Manual-review queue only — the 10-item checklist's 8 auto-checkable items
@@ -5052,7 +5076,7 @@ components:
     # ── DASHBOARD ─────────────────────────────────────────────────────────────
     DashboardSummary:
       type: object
-      required: [totalClients, activeClients, suspendedClients, activeProjects, openTasks, overdueTasks, completedProjectsThisMonth, totalAgents, activeClientsThisMonth, pendingApprovals, mrr, arr, totalCostsThisMonth, marginThisMonth, overdueInvoices, upcomingPayments]
+      required: [totalClients, activeClients, suspendedClients, activeProjects, openTasks, overdueTasks, completedProjectsThisMonth, totalAgents, pendingApprovals, mrrByCurrency, arrByCurrency, totalCostsThisMonth, marginThisMonth, overdueInvoices, upcomingPayments]
       properties:
         totalClients: { type: integer }
         activeClients: { type: integer }
@@ -5062,12 +5086,13 @@ components:
         overdueTasks: { type: integer }
         completedProjectsThisMonth: { type: integer }
         totalAgents: { type: integer }
-        activeClientsThisMonth: { type: integer }
         pendingApprovals: { type: integer }
-        mrr: { type: number }
-        arr: { type: number }
+        mrrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        arrByCurrency: { type: array, items: { $ref: "#/components/schemas/CurrencyAmount" } }
+        # costs carry no currency column; they are USD provider bills
         totalCostsThisMonth: { type: number }
-        marginThisMonth: { type: number }
+        # null unless all recurring revenue is USD (costs are USD; MXN/USD are never converted)
+        marginThisMonth: { type: ["number", "null"] }
         overdueInvoices: { type: integer }
         upcomingPayments: { type: integer }
     ClientOverview:
@@ -5600,6 +5625,33 @@ components:
         clientWindowStage: { type: ["string", "null"], enum: [upcoming, overdue, null] }
         clientSentStages: { type: array, items: { type: string } }
         clientLastSentAt: { type: ["string", "null"] }
+    SubscriptionAlertStatus:
+      type: object
+      required: [subscriptionId, clientName, status, amount, currency, createdAt, stale, alertSentAt]
+      properties:
+        subscriptionId: { type: integer }
+        clientName: { type: string }
+        status: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        createdAt: { type: string }
+        stale: { type: boolean, description: "pending_authorization for 3+ days — same rule as the subscription-alerts cron" }
+        alertSentAt: { type: ["string", "null"] }
+    PaymentRecoveryStatus:
+      type: object
+      required: [invoiceId, invoiceNumber, clientName, clientEmail, invoiceStatus, createdAt, sentStages, declined, lastSentAt, nextStage, nextEligibleAt]
+      properties:
+        invoiceId: { type: integer }
+        invoiceNumber: { type: string }
+        clientName: { type: string }
+        clientEmail: { type: ["string", "null"] }
+        invoiceStatus: { type: string }
+        createdAt: { type: string }
+        sentStages: { type: array, items: { type: string } }
+        declined: { type: boolean }
+        lastSentAt: { type: ["string", "null"] }
+        nextStage: { type: ["string", "null"], enum: [reminder_24h, discount_30d, discount_60d, null] }
+        nextEligibleAt: { type: ["string", "null"] }
 
     # ── PROSPECTING AUDITS (P-82) ───────────────────────────────────────────────
     ProspectingChecklist:

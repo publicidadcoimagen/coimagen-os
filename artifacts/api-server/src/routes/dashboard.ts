@@ -4,6 +4,7 @@ import {
   subscriptionsTable, approvalsTable, invoicesTable, costsTable,
 } from "@workspace/db";
 import { sql, eq, and } from "drizzle-orm";
+import { mrrByCurrency as toMrrByCurrency, annualize, usdMarginPercent } from "../lib/currency-aggregates";
 
 const router: IRouter = Router();
 
@@ -27,16 +28,18 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
     db.select({ count: sql<number>`count(*)::int` }).from(projectsTable).where(sql`${projectsTable.status} = 'completed' AND ${projectsTable.updatedAt} >= ${startOfMonth}`),
     db.select({ count: sql<number>`count(*)::int` }).from(agentsTable).where(eq(agentsTable.status, "active")),
     db.select({ count: sql<number>`count(*)::int` }).from(approvalsTable).where(sql`${approvalsTable.status} IN ('draft','pending')`),
-    db.select({ amount: subscriptionsTable.amount }).from(subscriptionsTable).where(eq(subscriptionsTable.status, "active")),
+    db.select({ amount: subscriptionsTable.amount, billingCycle: subscriptionsTable.billingCycle, currency: subscriptionsTable.currency }).from(subscriptionsTable).where(eq(subscriptionsTable.status, "active")),
     db.select({ amount: costsTable.amount }).from(costsTable).where(eq(costsTable.month, currentMonth)),
-    db.select({ count: sql<number>`count(*)::int` }).from(invoicesTable).where(sql`${invoicesTable.status} IN ('pending','draft') AND ${invoicesTable.dueDate} < ${todayStr}`),
-    db.select({ amount: invoicesTable.amount, dueDate: invoicesTable.dueDate, number: invoicesTable.number }).from(invoicesTable).where(sql`${invoicesTable.status} IN ('pending','draft') AND ${invoicesTable.dueDate} >= ${todayStr} AND ${invoicesTable.dueDate} <= ${in7DaysStr}`),
+    db.select({ count: sql<number>`count(*)::int` }).from(invoicesTable).where(sql`${invoicesTable.status} = 'overdue' OR (${invoicesTable.status} = 'sent' AND ${invoicesTable.dueDate} < ${todayStr})`),
+    db.select({ amount: invoicesTable.amount, dueDate: invoicesTable.dueDate, number: invoicesTable.number }).from(invoicesTable).where(sql`${invoicesTable.status} = 'sent' AND ${invoicesTable.dueDate} >= ${todayStr} AND ${invoicesTable.dueDate} <= ${in7DaysStr}`),
   ]);
 
-  const mrr = subs.reduce((sum, s) => sum + parseFloat(String(s.amount ?? "0")), 0);
-  const arr = mrr * 12;
+  // Per currency, monthly-equivalent — same math as /revenue/summary (the
+  // old blended `mrr` summed MXN + USD and counted annual plans as monthly).
+  const mrrByCurrency = toMrrByCurrency(subs);
+  const arrByCurrency = annualize(mrrByCurrency);
   const totalCostsThisMonth = monthCosts.reduce((sum, c) => sum + parseFloat(String(c.amount ?? "0")), 0);
-  const marginThisMonth = mrr > 0 ? Math.round(((mrr - totalCostsThisMonth) / mrr) * 1000) / 10 : 0;
+  const marginThisMonth = usdMarginPercent(mrrByCurrency, totalCostsThisMonth);
 
   res.json({
     totalClients: totalClients?.count ?? 0,
@@ -47,10 +50,9 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
     overdueTasks: overdueTasks?.count ?? 0,
     completedProjectsThisMonth: completedThisMonth?.count ?? 0,
     totalAgents: totalAgents?.count ?? 0,
-    activeClientsThisMonth: activeClients?.count ?? 0,
     pendingApprovals: pendingApprovals?.count ?? 0,
-    mrr,
-    arr,
+    mrrByCurrency,
+    arrByCurrency,
     totalCostsThisMonth,
     marginThisMonth,
     overdueInvoices: overdueInvoices?.count ?? 0,
