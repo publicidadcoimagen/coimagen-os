@@ -24,7 +24,7 @@ import {
   Server, Database, KeyRound, Lock, Siren,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { formatDate, formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
 
 const CATEGORY_LABELS: Record<string, string> = {
   openai: "OpenAI", claude: "Claude", gemini: "Gemini", whatsapp: "WhatsApp",
@@ -239,7 +239,6 @@ export function Dashboard() {
 
   const openIncidentsCount = openIncidents?.length ?? 0;
   const totalAlerts = (summary?.pendingApprovals ?? 0) + (summary?.overdueInvoices ?? 0) + (summary?.overdueTasks ?? 0) + openIncidentsCount;
-  const fmt = (n: number) => `$${n.toLocaleString("es-MX", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
   return (
     <div className="space-y-6">
@@ -268,10 +267,10 @@ export function Dashboard() {
       <div>
         <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 mb-2 font-semibold">Finanzas</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <KpiCard title="MRR" value={fmt(summary?.mrr ?? 0)} icon={DollarSign} color="text-emerald-500" sub="Ingreso mensual recurrente" />
-          <KpiCard title="ARR" value={fmt(summary?.arr ?? 0)} icon={TrendingUp} color="text-emerald-400" sub="Proyección anual" />
-          <KpiCard title="Costos del mes" value={fmt(summary?.totalCostsThisMonth ?? 0)} icon={BarChart2} color="text-orange-500" sub="Gastos registrados" />
-          <KpiCard title="Margen estimado" value={`${summary?.marginThisMonth ?? 0}%`} icon={Zap} color="text-primary" sub={`MRR - Costos`} />
+          <KpiCard title="MRR" value={formatCurrencyBreakdown(summary?.mrrByCurrency)} icon={DollarSign} color="text-emerald-500" sub="Ingreso mensual recurrente" />
+          <KpiCard title="ARR" value={formatCurrencyBreakdown(summary?.arrByCurrency)} icon={TrendingUp} color="text-emerald-400" sub="Proyección anual" />
+          <KpiCard title="Costos del mes" value={formatCurrency(summary?.totalCostsThisMonth ?? 0, "USD")} icon={BarChart2} color="text-orange-500" sub="Gastos registrados" />
+          <KpiCard title="Margen estimado" value={summary?.marginThisMonth != null ? `${summary.marginThisMonth}%` : "—"} icon={Zap} color="text-primary" sub={summary?.marginThisMonth != null ? "MRR - Costos" : "Solo con MRR en USD (costos en USD)"} />
         </div>
       </div>
 

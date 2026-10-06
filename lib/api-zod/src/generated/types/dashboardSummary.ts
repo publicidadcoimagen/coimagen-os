@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { CurrencyAmount } from './currencyAmount';
 
 export interface DashboardSummary {
   totalClients: number;
@@ -15,12 +16,12 @@ export interface DashboardSummary {
   overdueTasks: number;
   completedProjectsThisMonth: number;
   totalAgents: number;
-  activeClientsThisMonth: number;
   pendingApprovals: number;
-  mrr: number;
-  arr: number;
+  mrrByCurrency: CurrencyAmount[];
+  arrByCurrency: CurrencyAmount[];
   totalCostsThisMonth: number;
-  marginThisMonth: number;
+  /** @nullable */
+  marginThisMonth: number | null;
   overdueInvoices: number;
   upcomingPayments: number;
 }
