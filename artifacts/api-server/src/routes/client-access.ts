@@ -41,7 +41,7 @@ router.post("/clients/:clientId/access", requireRole("ceo", "admin"), async (req
     notes: body.notes ?? null,
   }).returning();
   await db.insert(auditLogsTable).values({
-    userId: "camila.segovia",
+    userId: (req.user as { id: string }).id,
     module: "Clientes",
     action: "Registrar acceso",
     result: `Acceso ${row.accessType} creado para cliente ${clientId}`,
@@ -74,7 +74,7 @@ router.patch("/clients/:clientId/access/:id", requireRole("ceo", "admin"), async
     .returning();
   if (!row) { res.status(404).json({ error: "Not found" }); return; }
   await db.insert(auditLogsTable).values({
-    userId: "camila.segovia",
+    userId: (req.user as { id: string }).id,
     module: "Clientes",
     action: "Actualizar acceso",
     result: `Acceso ${row.accessType} actualizado para cliente ${clientId}`,

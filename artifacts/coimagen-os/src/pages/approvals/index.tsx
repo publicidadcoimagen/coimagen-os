@@ -48,7 +48,7 @@ export function Approvals() {
   const filtered = approvals?.filter((a) => tab === "all" || a.status === tab) ?? [];
 
   const act = (id: number, status: string) => {
-    updateApproval.mutate({ id, data: { status: status as "approved", reviewedBy: "Camila Segovia" } }, {
+    updateApproval.mutate({ id, data: { status: status as "approved" } }, {
       onSuccess: () => qc.invalidateQueries({ queryKey: getListApprovalsQueryKey() })
     });
   };
