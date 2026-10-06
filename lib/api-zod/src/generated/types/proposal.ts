@@ -5,6 +5,7 @@
  * COIMAGEN OS API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ProposalCurrency } from './proposalCurrency';
 import type { ProposalStatus } from './proposalStatus';
 
 export interface Proposal {
@@ -14,8 +15,18 @@ export interface Proposal {
   prospectId?: number | null;
   /** @nullable */
   clientId?: number | null;
-  /** @nullable */
+  /**
+     * one-time project total
+     * @nullable
+     */
   amount?: number | null;
+  currency: ProposalCurrency;
+  paymentPlan: string;
+  /**
+     * recurring monthly fee, if any
+     * @nullable
+     */
+  monthlyAmount: number | null;
   status: ProposalStatus;
   /** Real production row created for verification/testing, not a real proposal. Excluded by default from GET /proposals and pipeline value KPIs. */
   isTest: boolean;

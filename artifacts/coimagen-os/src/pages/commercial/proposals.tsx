@@ -9,6 +9,8 @@ import {
   getListProposalsQueryKey,
   getListProspectsQueryKey,
   getListClientsQueryKey,
+  useCreateContractFromProposal,
+  getListContractsQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,8 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectLabel, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileText, Copy } from "lucide-react";
-import { formatDate, formatCurrency } from "@/lib/format";
+import { Plus, FileText, Copy, FileSignature } from "lucide-react";
+import { formatDate, formatCurrency, formatCurrencyBreakdown } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 
 // Same pattern as commercial/diagnosis.tsx's PUBLIC_RESULTS_BASE_URL — the
@@ -111,7 +113,34 @@ export function Proposals() {
     }
   };
 
-  const totalAccepted = proposals?.filter((p) => p.status === "accepted").reduce((s, p) => s + (p.amount ?? 0), 0) ?? 0;
+  // Per currency — MXN and USD proposals are never summed together.
+  const acceptedTotals = new Map<string, number>();
+  for (const p of proposals ?? []) {
+    if (p.status === "accepted" && p.amount != null) acceptedTotals.set(p.currency, (acceptedTotals.get(p.currency) ?? 0) + p.amount);
+  }
+  const totalAccepted = [...acceptedTotals.entries()].map(([currency, amount]) => ({ currency, amount }));
+
+  const [contractFor, setContractFor] = useState<{ id: number; title: string } | null>(null);
+  const [contractType, setContractType] = useState("starter");
+  const createContract = useCreateContractFromProposal({
+    mutation: {
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: getListContractsQueryKey() });
+        setContractFor(null);
+        toast({ title: "Contrato generado", description: "Quedó como borrador en Contratos, listo para revisar y enviar a firma." });
+      },
+      onError: (err) => {
+        const code = (err as { data?: { error?: string } })?.data?.error;
+        const messages: Record<string, string> = {
+          contract_already_exists: "Esta propuesta ya tiene un contrato. Búscalo en Contratos.",
+          proposal_not_converted: "Primero convierte el prospecto en cliente.",
+          proposal_not_accepted: "La propuesta todavía no está aceptada.",
+          proposal_has_no_amount: "La propuesta no tiene monto.",
+        };
+        toast({ title: "No se pudo generar el contrato", description: messages[code ?? ""] ?? "Error inesperado.", variant: "destructive" });
+      },
+    },
+  });
 
   return (
     <div className="space-y-6">
@@ -132,7 +161,7 @@ export function Proposals() {
             </Button>
           ))}
         </div>
-        <span className="text-sm text-muted-foreground">Valor cerrado: <span className="text-emerald-400 font-semibold">{formatCurrency(totalAccepted)}</span></span>
+        <span className="text-sm text-muted-foreground">Valor cerrado: <span className="text-emerald-400 font-semibold">{formatCurrencyBreakdown(totalAccepted)}</span></span>
       </div>
 
       {isLoading ? <div className="text-muted-foreground text-sm">Cargando...</div> : (
@@ -148,7 +177,10 @@ export function Proposals() {
                       : p.prospectId != null ? (prospectName(p.prospectId) ?? `Prospecto #${p.prospectId}`)
                       : <span className="italic">Sin vincular</span>}
                   </td>
-                  <td className="px-4 py-3 tabular-nums">{formatCurrency(p.amount)}</td>
+                  <td className="px-4 py-3 tabular-nums">
+                    {formatCurrency(p.amount, p.currency)}
+                    {p.monthlyAmount != null && <div className="text-xs text-muted-foreground">+ {formatCurrency(p.monthlyAmount, p.currency)}/mes</div>}
+                  </td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(p.validUntil)}</td>
                   <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_COLOR[p.status]}`}>{STATUS_ES[p.status] ?? p.status}</span></td>
                   <td className="px-4 py-3 text-muted-foreground">{formatDate(p.createdAt)}</td>
@@ -156,6 +188,11 @@ export function Proposals() {
                     <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" disabled={!p.publicToken} onClick={() => p.publicToken && handleCopyLink(p.publicToken)}>
                       <Copy className="h-3.5 w-3.5" /> Copiar enlace
                     </Button>
+                    {p.status === "accepted" && p.clientId != null && (
+                      <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" onClick={() => setContractFor({ id: p.id, title: p.title })}>
+                        <FileSignature className="h-3.5 w-3.5" /> Generar contrato
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -164,6 +201,34 @@ export function Proposals() {
           </table>
         </div>
       )}
+
+      <Dialog open={contractFor !== null} onOpenChange={(o) => { if (!o) setContractFor(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader><DialogTitle>Generar contrato</DialogTitle></DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Se creará un contrato en borrador para «{contractFor?.title}», vinculado al cliente y con el monto de la propuesta. Después lo revisas y lo envías a firma desde Contratos.
+          </p>
+          <div className="space-y-1.5">
+            <Label>Tipo de contrato</Label>
+            <Select value={contractType} onValueChange={setContractType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="starter">Contrato Starter</SelectItem>
+                <SelectItem value="growth">Contrato Growth</SelectItem>
+                <SelectItem value="automation">Contrato Automation</SelectItem>
+                <SelectItem value="ai_business">Contrato AI Business</SelectItem>
+                <SelectItem value="ecommerce">Contrato Ecommerce</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContractFor(null)}>Cancelar</Button>
+            <Button disabled={createContract.isPending} onClick={() => contractFor && createContract.mutate({ id: contractFor.id, data: { type: contractType } })}>
+              {createContract.isPending ? "Generando..." : "Generar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">

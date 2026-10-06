@@ -92,6 +92,7 @@ import type {
   ContentCalendarItemUpdate,
   Contract,
   ContractCreate,
+  ContractFromProposalInput,
   ContractSignedDocuments,
   ContractUpdate,
   ConvertProspectBody,
@@ -7434,6 +7435,79 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getCreateProposalMutationOptions(options));
+    }
+
+export const getCreateContractFromProposalUrl = (id: number,) => {
+
+
+
+
+  return `/api/proposals/${id}/contract`
+}
+
+/**
+ * Draft contract linked to the proposal's client and to the proposal itself, with the amount taken from the proposal (monthly fee if any, else the one-time total). One non-test contract per proposal.
+ * @summary Generate a draft contract from an accepted, converted proposal
+ */
+export const createContractFromProposal = async (id: number,
+    contractFromProposalInput: ContractFromProposalInput, options?: RequestInit): Promise<Contract> => {
+
+  return customFetch<Contract>(getCreateContractFromProposalUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      contractFromProposalInput,)
+  }
+);}
+
+
+
+
+export const getCreateContractFromProposalMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContractFromProposal>>, TError,{id: number;data: BodyType<ContractFromProposalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createContractFromProposal>>, TError,{id: number;data: BodyType<ContractFromProposalInput>}, TContext> => {
+
+const mutationKey = ['createContractFromProposal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createContractFromProposal>>, {id: number;data: BodyType<ContractFromProposalInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createContractFromProposal(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateContractFromProposalMutationResult = NonNullable<Awaited<ReturnType<typeof createContractFromProposal>>>
+    export type CreateContractFromProposalMutationBody = BodyType<ContractFromProposalInput>
+    export type CreateContractFromProposalMutationError = ErrorType<void>
+
+    /**
+ * @summary Generate a draft contract from an accepted, converted proposal
+ */
+export const useCreateContractFromProposal = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createContractFromProposal>>, TError,{id: number;data: BodyType<ContractFromProposalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createContractFromProposal>>,
+        TError,
+        {id: number;data: BodyType<ContractFromProposalInput>},
+        TContext
+      > => {
+      return useMutation(getCreateContractFromProposalMutationOptions(options));
     }
 
 export const getGetProposalUrl = (id: number,) => {

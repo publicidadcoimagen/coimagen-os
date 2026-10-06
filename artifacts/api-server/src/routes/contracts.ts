@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, and } from "drizzle-orm";
-import { db, contractsTable, clientsTable } from "@workspace/db";
+import { db, contractsTable, clientsTable, proposalsTable } from "@workspace/db";
 import {
   ListContractsQueryParams,
   CreateContractBody,
@@ -9,12 +9,15 @@ import {
   UpdateContractParams,
   UpdateContractBody,
   DeleteContractParams,
+  CreateContractFromProposalParams,
+  CreateContractFromProposalBody,
 } from "@workspace/api-zod";
 import { requireRole } from "../middlewares/requireAuth";
 import { isClienteRole, ownClientId } from "../middlewares/clientScope";
 import { createDocusealSubmission, getDocusealSubmissionDocumentUrls, DocusealApiError, DocusealNotConfiguredError } from "../lib/docuseal/client";
 import { backfillSignedDocumentUrls } from "../lib/docuseal/backfill";
 import { logger } from "../lib/logger";
+import { contractFromProposalError, contractValuesFromProposal, contractFeeText } from "../lib/contracts/from-proposal";
 
 const router: IRouter = Router();
 
@@ -67,6 +70,34 @@ router.get("/contracts", async (req, res): Promise<void> => {
 
   const rows = await backfillSignedDocumentUrls(await query.orderBy(desc(contractsTable.createdAt)));
   res.json(rows.map(serialize));
+});
+
+// "Generar contrato" from an accepted, converted proposal: a draft contract
+// already linked to the client and the proposal, with the amount taken from
+// the proposal instead of re-typed by hand. One live contract per proposal —
+// a second click returns the existing one (409) rather than a duplicate.
+router.post("/proposals/:id/contract", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const params = CreateContractFromProposalParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  const body = CreateContractFromProposalBody.safeParse(req.body);
+  const type = body.success ? body.data.type.trim() : "";
+  if (!type) { res.status(400).json({ error: "type_required" }); return; }
+  const proposalId = params.data.id;
+
+  const [proposal] = await db.select().from(proposalsTable).where(eq(proposalsTable.id, proposalId));
+  if (!proposal) { res.status(404).json({ error: "proposal_not_found" }); return; }
+  const invalid = contractFromProposalError(proposal);
+  if (invalid) { res.status(409).json({ error: invalid }); return; }
+
+  const [existing] = await db.select({ id: contractsTable.id }).from(contractsTable)
+    .where(and(eq(contractsTable.proposalId, proposalId), eq(contractsTable.isTest, false)));
+  if (existing) { res.status(409).json({ error: "contract_already_exists", contractId: existing.id }); return; }
+
+  const user = req.user as { id: string; name?: string | null; email?: string | null };
+  const [row] = await db.insert(contractsTable)
+    .values(contractValuesFromProposal(proposal, type, user.name || user.email || user.id))
+    .returning();
+  res.status(201).json(serialize(row));
 });
 
 router.post("/contracts", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
@@ -222,9 +253,12 @@ router.post("/contracts/:id/send", requireRole("ceo", "admin"), async (req, res)
   const today = new Date();
   const contractDate = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
   const currency = contract.currency ?? "MXN";
-  const monthlyFee = contract.amount != null
-    ? `${new Intl.NumberFormat(isEn ? "en-US" : "es-MX", { style: "currency", currency }).format(contract.amount / 100)}/${isEn ? "mo" : "mes"}`
-    : "";
+  // With a linked proposal, states what the client actually pays (monthly,
+  // one-time, or both) instead of always rendering the amount as "/mes".
+  const [linkedProposal] = contract.proposalId
+    ? await db.select({ amount: proposalsTable.amount, monthlyAmount: proposalsTable.monthlyAmount }).from(proposalsTable).where(eq(proposalsTable.id, contract.proposalId))
+    : [];
+  const monthlyFee = contractFeeText({ contractAmountCents: contract.amount, currency, isEn, proposal: linkedProposal ?? null });
 
   let submission;
   try {

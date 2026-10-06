@@ -2174,7 +2174,10 @@ export const ListProposalsResponseItem = zod.object({
   "title": zod.string(),
   "prospectId": zod.number().nullish(),
   "clientId": zod.number().nullish(),
-  "amount": zod.number().nullish(),
+  "amount": zod.number().nullish().describe('one-time project total'),
+  "currency": zod.enum(['MXN', 'USD']),
+  "paymentPlan": zod.string(),
+  "monthlyAmount": zod.number().nullable().describe('recurring monthly fee, if any'),
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real proposal. Excluded by default from GET \/proposals and pipeline value KPIs.'),
   "notes": zod.string().nullish(),
@@ -2200,6 +2203,19 @@ export const CreateProposalBody = zod.object({
 })
 
 
+/**
+ * Draft contract linked to the proposal's client and to the proposal itself, with the amount taken from the proposal (monthly fee if any, else the one-time total). One non-test contract per proposal.
+ * @summary Generate a draft contract from an accepted, converted proposal
+ */
+export const CreateContractFromProposalParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const CreateContractFromProposalBody = zod.object({
+  "type": zod.string().describe('contract type label, e.g. starter, growth, ecommerce')
+})
+
+
 export const GetProposalParams = zod.object({
   "id": zod.coerce.number()
 })
@@ -2209,7 +2225,10 @@ export const GetProposalResponse = zod.object({
   "title": zod.string(),
   "prospectId": zod.number().nullish(),
   "clientId": zod.number().nullish(),
-  "amount": zod.number().nullish(),
+  "amount": zod.number().nullish().describe('one-time project total'),
+  "currency": zod.enum(['MXN', 'USD']),
+  "paymentPlan": zod.string(),
+  "monthlyAmount": zod.number().nullable().describe('recurring monthly fee, if any'),
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real proposal. Excluded by default from GET \/proposals and pipeline value KPIs.'),
   "notes": zod.string().nullish(),
@@ -2242,7 +2261,10 @@ export const UpdateProposalResponse = zod.object({
   "title": zod.string(),
   "prospectId": zod.number().nullish(),
   "clientId": zod.number().nullish(),
-  "amount": zod.number().nullish(),
+  "amount": zod.number().nullish().describe('one-time project total'),
+  "currency": zod.enum(['MXN', 'USD']),
+  "paymentPlan": zod.string(),
+  "monthlyAmount": zod.number().nullable().describe('recurring monthly fee, if any'),
   "status": zod.enum(['draft', 'sent', 'accepted', 'rejected']),
   "isTest": zod.boolean().describe('Real production row created for verification\/testing, not a real proposal. Excluded by default from GET \/proposals and pipeline value KPIs.'),
   "notes": zod.string().nullish(),

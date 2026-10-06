@@ -1743,6 +1743,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Proposal"
+  /proposals/{id}/contract:
+    post:
+      operationId: createContractFromProposal
+      tags: [contracts]
+      summary: Generate a draft contract from an accepted, converted proposal
+      description: >-
+        Draft contract linked to the proposal's client and to the proposal itself,
+        with the amount taken from the proposal (monthly fee if any, else the
+        one-time total). One non-test contract per proposal.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractFromProposalInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contract"
+        "400":
+          description: Missing type
+        "404":
+          description: Proposal not found
+        "409":
+          description: Proposal not converted / not accepted / has no amount, or a contract already exists for it
   /proposals/{id}:
     get:
       operationId: getProposal
@@ -5056,6 +5086,11 @@ components:
         marginThisMonth: { type: number }
         overdueInvoices: { type: integer }
         upcomingPayments: { type: integer }
+    ContractFromProposalInput:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, description: "contract type label, e.g. starter, growth, ecommerce" }
     ClientTimeline:
       type: object
       required: [id, clientId, eventType, title, occurredAt, createdAt]
@@ -5254,13 +5289,18 @@ components:
     # ── PROPOSAL ──────────────────────────────────────────────────────────────
     Proposal:
       type: object
-      required: [id, title, status, createdAt, isTest]
+      required: [id, title, status, createdAt, isTest, currency, paymentPlan, monthlyAmount]
       properties:
         id: { type: integer }
         title: { type: string }
         prospectId: { type: ["integer", "null"] }
         clientId: { type: ["integer", "null"] }
-        amount: { type: ["number", "null"] }
+        amount: { type: ["number", "null"], description: "one-time project total" }
+        # already returned by the API (row spread) but undeclared, so the UI
+        # rendered every amount as USD and could not show the monthly fee
+        currency: { type: string, enum: [MXN, USD] }
+        paymentPlan: { type: string }
+        monthlyAmount: { type: ["number", "null"], description: "recurring monthly fee, if any" }
         status: { type: string, enum: [draft, sent, accepted, rejected] }
         isTest: { type: boolean, description: "Real production row created for verification/testing, not a real proposal. Excluded by default from GET /proposals and pipeline value KPIs." }
         notes: { type: ["string", "null"] }
