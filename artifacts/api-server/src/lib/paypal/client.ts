@@ -36,9 +36,11 @@ export function getPaypalClient() {
 // PAYPAL_ENV defaults to "sandbox" whenever unset — this must never
 // silently point at production. Required env vars for this whole module:
 // PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_WEBHOOK_ID (webhook-verify.ts),
-// PAYPAL_ENV ("sandbox" | "live"), PAYPAL_PLAN_ID (subscriptions.ts —
-// created once via a manual one-time setup step, not by any
-// request-handling code path here).
+// PAYPAL_ENV ("sandbox" | "live"), and one billing plan per currency:
+// PAYPAL_PLAN_ID_MXN / PAYPAL_PLAN_ID_USD (legacy PAYPAL_PLAN_ID is the
+// fallback) — see subscriptions.ts's planIdForCurrency. Plans are created
+// once via a manual one-time setup step, not by any request-handling code
+// path here.
 
 export function paypalApiBase(): string {
   return process.env.PAYPAL_ENV === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
