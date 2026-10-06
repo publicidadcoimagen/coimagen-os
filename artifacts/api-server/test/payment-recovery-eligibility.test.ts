@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { nextRecoveryStageToSend, type RecoveryStage } from "../src/lib/payment-recovery/eligibility";
+import { nextRecoveryStageToSend, upcomingRecoveryStage, type RecoveryStage } from "../src/lib/payment-recovery/eligibility";
 
 const HOUR = 60 * 60 * 1000;
 const DAY = 24 * HOUR;
@@ -55,5 +55,20 @@ describe("nextRecoveryStageToSend", () => {
     // "overdue" by day count, but discount_30d must go out first.
     const createdAt = new Date(NOW.getTime() - 90 * DAY);
     assert.equal(nextRecoveryStageToSend(createdAt, NOW, sent("reminder_24h")), "discount_30d");
+  });
+});
+
+describe("upcomingRecoveryStage — Secuencias view's 'next' column", () => {
+  test("nothing sent → reminder_24h, regardless of age", () => {
+    assert.equal(upcomingRecoveryStage(new Set()), "reminder_24h");
+  });
+
+  test("advances past the furthest stage already sent", () => {
+    assert.equal(upcomingRecoveryStage(new Set<RecoveryStage>(["reminder_24h"])), "discount_30d");
+    assert.equal(upcomingRecoveryStage(new Set<RecoveryStage>(["reminder_24h", "discount_30d"])), "discount_60d");
+  });
+
+  test("every stage sent → null (sequence complete)", () => {
+    assert.equal(upcomingRecoveryStage(new Set<RecoveryStage>(["reminder_24h", "discount_30d", "discount_60d"])), null);
   });
 });

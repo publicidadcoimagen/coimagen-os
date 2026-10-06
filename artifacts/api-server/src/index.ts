@@ -61,6 +61,8 @@ app.listen(port, (err) => {
   // plain Express routes, not scheduled jobs. To reactivate: uncomment the
   // two lines below (and their imports at the top of this file) once there
   // are real prospects/invoices/subscriptions for these to act on.
+  // Re-enabling any of these? Also remove the "envíos en pausa" notice at the
+  // top of coimagen-os/src/pages/sequences/index.tsx.
   // registerCommercialFollowupCron();
   // registerInvoiceRemindersCron();
   // Also paused on merge (2026-08-17), same reasoning as above — see note

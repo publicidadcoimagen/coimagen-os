@@ -5987,6 +5987,35 @@ export const ListInvoiceReminderStatusesResponseItem = zod.object({
 export const ListInvoiceReminderStatusesResponse = zod.array(ListInvoiceReminderStatusesResponseItem)
 
 
+export const ListSubscriptionAlertStatusesResponseItem = zod.object({
+  "subscriptionId": zod.number(),
+  "clientName": zod.string(),
+  "status": zod.string(),
+  "amount": zod.number(),
+  "currency": zod.string(),
+  "createdAt": zod.string(),
+  "stale": zod.boolean().describe('pending_authorization for 3+ days — same rule as the subscription-alerts cron'),
+  "alertSentAt": zod.string().nullable()
+})
+export const ListSubscriptionAlertStatusesResponse = zod.array(ListSubscriptionAlertStatusesResponseItem)
+
+
+export const ListPaymentRecoveryStatusesResponseItem = zod.object({
+  "invoiceId": zod.number(),
+  "invoiceNumber": zod.string(),
+  "clientName": zod.string(),
+  "clientEmail": zod.string().nullable(),
+  "invoiceStatus": zod.string(),
+  "createdAt": zod.string(),
+  "sentStages": zod.array(zod.string()),
+  "declined": zod.boolean(),
+  "lastSentAt": zod.string().nullable(),
+  "nextStage": zod.union([zod.literal('reminder_24h'),zod.literal('discount_30d'),zod.literal('discount_60d'),zod.literal(null)]).nullable(),
+  "nextEligibleAt": zod.string().nullable()
+})
+export const ListPaymentRecoveryStatusesResponse = zod.array(ListPaymentRecoveryStatusesResponseItem)
+
+
 /**
  * @summary List prospecting audits awaiting the 2 manual checklist answers
  */

@@ -4399,9 +4399,7 @@ paths:
   # ─── SEQUENCES (read-only status views for automated email sequences) ──────
   # Reuses the same eligibility.ts pure functions each cron already runs — no
   # new business logic, just a read model over commercial_followups and
-  # invoice_reminders. subscription-alerts and payment-recovery sequences are
-  # deliberately left out here: their tables only exist on the still-unmerged
-  # feature/paypal-payments branch, not on main. Add once that merges.
+  # invoice_reminders, subscription_alerts and payment_recovery_alerts.
   /sequences/commercial-followups:
     get:
       operationId: listCommercialFollowupStatuses
@@ -4430,6 +4428,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/InvoiceReminderStatus"
+  /sequences/subscription-alerts:
+    get:
+      operationId: listSubscriptionAlertStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubscriptionAlertStatus"
+  /sequences/payment-recovery:
+    get:
+      operationId: listPaymentRecoveryStatuses
+      tags: [sequences]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentRecoveryStatus"
 
   # ─── PROSPECTING AUDITS (P-82 Agente Prospectador) ─────────────────────────
   # Manual-review queue only — the 10-item checklist's 8 auto-checkable items
@@ -5574,6 +5598,33 @@ components:
         clientWindowStage: { type: ["string", "null"], enum: [upcoming, overdue, null] }
         clientSentStages: { type: array, items: { type: string } }
         clientLastSentAt: { type: ["string", "null"] }
+    SubscriptionAlertStatus:
+      type: object
+      required: [subscriptionId, clientName, status, amount, currency, createdAt, stale, alertSentAt]
+      properties:
+        subscriptionId: { type: integer }
+        clientName: { type: string }
+        status: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        createdAt: { type: string }
+        stale: { type: boolean, description: "pending_authorization for 3+ days — same rule as the subscription-alerts cron" }
+        alertSentAt: { type: ["string", "null"] }
+    PaymentRecoveryStatus:
+      type: object
+      required: [invoiceId, invoiceNumber, clientName, clientEmail, invoiceStatus, createdAt, sentStages, declined, lastSentAt, nextStage, nextEligibleAt]
+      properties:
+        invoiceId: { type: integer }
+        invoiceNumber: { type: string }
+        clientName: { type: string }
+        clientEmail: { type: ["string", "null"] }
+        invoiceStatus: { type: string }
+        createdAt: { type: string }
+        sentStages: { type: array, items: { type: string } }
+        declined: { type: boolean }
+        lastSentAt: { type: ["string", "null"] }
+        nextStage: { type: ["string", "null"], enum: [reminder_24h, discount_30d, discount_60d, null] }
+        nextEligibleAt: { type: ["string", "null"] }
 
     # ── PROSPECTING AUDITS (P-82) ───────────────────────────────────────────────
     ProspectingChecklist:
