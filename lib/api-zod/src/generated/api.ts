@@ -1907,12 +1907,17 @@ export const GetDashboardSummaryResponse = zod.object({
   "overdueTasks": zod.number(),
   "completedProjectsThisMonth": zod.number(),
   "totalAgents": zod.number(),
-  "activeClientsThisMonth": zod.number(),
   "pendingApprovals": zod.number(),
-  "mrr": zod.number(),
-  "arr": zod.number(),
+  "mrrByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+})),
+  "arrByCurrency": zod.array(zod.object({
+  "currency": zod.enum(['MXN', 'USD']),
+  "amount": zod.number()
+})),
   "totalCostsThisMonth": zod.number(),
-  "marginThisMonth": zod.number(),
+  "marginThisMonth": zod.number().nullable(),
   "overdueInvoices": zod.number(),
   "upcomingPayments": zod.number()
 })
