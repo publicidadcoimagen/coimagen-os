@@ -8,11 +8,16 @@ import {
   invoicesTable,
   clientsTable,
   invoiceRemindersTable,
+  subscriptionsTable,
+  subscriptionAlertsTable,
+  paymentRecoveryAlertsTable,
 } from "@workspace/db";
 import { STAGE_MIN_DAYS, LAST_STAGE, PROSPECTING_FUNNEL_SOURCES } from "../lib/commercial-followup/eligibility";
 import { eligibleClientIds } from "../lib/commercial-followup/repository";
 import { stageForDueDate } from "../lib/invoice-reminders/eligibility";
 import { STAFF_WINDOW_DAYS, CLIENT_WINDOW_DAYS } from "../lib/invoice-reminders/repository";
+import { isStalePendingAuthorization } from "../lib/subscription-alerts/eligibility";
+import { RECOVERY_STAGES, STAGE_MIN_DAYS as RECOVERY_STAGE_MIN_DAYS, upcomingRecoveryStage, type RecoveryStage } from "../lib/payment-recovery/eligibility";
 
 const router: IRouter = Router();
 
@@ -133,6 +138,83 @@ router.get("/sequences/invoice-reminders", async (_req, res): Promise<void> => {
         clientWindowStage,
         clientSentStages: clientReminders.map((r) => r.stage),
         clientLastSentAt: lastSentAt(clientReminders),
+      };
+    });
+
+  res.json(result);
+});
+
+// Read-only view for the subscription-alerts cron: every subscription still
+// waiting on the client's PayPal authorization, plus any that ever got an
+// alert (so a resolved one doesn't vanish from the record). `stale` reuses
+// the cron's own isStalePendingAuthorization, so it can never disagree with
+// what the cron would do.
+router.get("/sequences/subscription-alerts", async (_req, res): Promise<void> => {
+  const rows = await db.select({ subscription: subscriptionsTable, clientName: clientsTable.name })
+    .from(subscriptionsTable)
+    .innerJoin(clientsTable, eq(subscriptionsTable.clientId, clientsTable.id));
+  const alerts = await db.select().from(subscriptionAlertsTable);
+  const alertBySubscription = new Map(alerts.map((a) => [a.subscriptionId, a]));
+  const now = new Date();
+
+  res.json(rows
+    .filter((r) => r.subscription.status === "pending_authorization" || alertBySubscription.has(r.subscription.id))
+    .map((r) => ({
+      subscriptionId: r.subscription.id,
+      clientName: r.clientName,
+      status: r.subscription.status,
+      amount: parseFloat(r.subscription.amount),
+      currency: r.subscription.currency,
+      createdAt: r.subscription.createdAt.toISOString(),
+      stale: r.subscription.status === "pending_authorization" && isStalePendingAuthorization(r.subscription.createdAt, now),
+      alertSentAt: alertBySubscription.get(r.subscription.id)?.sentAt.toISOString() ?? null,
+    })));
+});
+
+// Read-only view for the payment-recovery cron. Same scope as
+// findDueRecoveries: only a proposal's FIRST installment (lowest invoice id
+// per proposal — the deposit) takes part, while it's still "sent"; plus any
+// invoice with recovery history. nextStage/nextEligibleAt use the cron's own
+// RECOVERY_STAGES + STAGE_MIN_DAYS.
+router.get("/sequences/payment-recovery", async (_req, res): Promise<void> => {
+  const invoiceRows = await db.select({ invoice: invoicesTable, clientName: clientsTable.name, clientEmail: clientsTable.email })
+    .from(invoicesTable)
+    .innerJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id))
+    .where(isNotNull(invoicesTable.proposalId));
+
+  const depositIdByProposal = new Map<number, number>();
+  for (const { invoice } of invoiceRows) {
+    const current = depositIdByProposal.get(invoice.proposalId!);
+    if (current === undefined || invoice.id < current) depositIdByProposal.set(invoice.proposalId!, invoice.id);
+  }
+
+  const alerts = await db.select().from(paymentRecoveryAlertsTable);
+  const alertsByInvoice = new Map<number, typeof alerts>();
+  for (const a of alerts) alertsByInvoice.set(a.invoiceId, [...(alertsByInvoice.get(a.invoiceId) ?? []), a]);
+
+  const result = invoiceRows
+    .filter(({ invoice }) => {
+      const isDeposit = depositIdByProposal.get(invoice.proposalId!) === invoice.id;
+      return (isDeposit && invoice.status === "sent") || alertsByInvoice.has(invoice.id);
+    })
+    .map(({ invoice, clientName, clientEmail }) => {
+      const history = alertsByInvoice.get(invoice.id) ?? [];
+      const sent = new Set(history.map((a) => a.stage).filter((s): s is RecoveryStage => (RECOVERY_STAGES as readonly string[]).includes(s)));
+      const nextStage = invoice.status === "sent" ? upcomingRecoveryStage(sent) : null;
+      const nextEligibleAt = nextStage ? new Date(invoice.createdAt.getTime() + RECOVERY_STAGE_MIN_DAYS[nextStage] * 24 * 60 * 60 * 1000).toISOString() : null;
+      const lastSent = history.reduce<Date | null>((latest, a) => (latest && latest > a.sentAt ? latest : a.sentAt), null);
+      return {
+        invoiceId: invoice.id,
+        invoiceNumber: invoice.number,
+        clientName,
+        clientEmail,
+        invoiceStatus: invoice.status,
+        createdAt: invoice.createdAt.toISOString(),
+        sentStages: [...sent],
+        declined: history.some((a) => a.stage === "declined"),
+        lastSentAt: lastSent ? lastSent.toISOString() : null,
+        nextStage,
+        nextEligibleAt,
       };
     });
 
