@@ -123,6 +123,7 @@ import type {
   FiscalDataBody,
   FiscalDocumentUploadBody,
   FiscalDocumentUploadResponse,
+  GrantPortalAccessResult,
   HealthStatus,
   Idea,
   IdeaCreate,
@@ -1980,6 +1981,77 @@ export const useImpersonateClient = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getImpersonateClientMutationOptions(options));
+    }
+
+export const getGrantClientPortalAccessUrl = (id: number,) => {
+
+
+
+
+  return `/api/clients/${id}/portal-access`
+}
+
+/**
+ * Same provisioning a client's first paid installment triggers (Client Room + role=cliente login + credentials email), on demand for clients created any other way. The temporary password is never returned; if the email fails the client can use the password-reset flow.
+ * @summary Create the client's portal login (temporary password) and email the credentials
+ */
+export const grantClientPortalAccess = async (id: number, options?: RequestInit): Promise<GrantPortalAccessResult> => {
+
+  return customFetch<GrantPortalAccessResult>(getGrantClientPortalAccessUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getGrantClientPortalAccessMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof grantClientPortalAccess>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof grantClientPortalAccess>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['grantClientPortalAccess'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof grantClientPortalAccess>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  grantClientPortalAccess(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GrantClientPortalAccessMutationResult = NonNullable<Awaited<ReturnType<typeof grantClientPortalAccess>>>
+
+    export type GrantClientPortalAccessMutationError = ErrorType<void>
+
+    /**
+ * @summary Create the client's portal login (temporary password) and email the credentials
+ */
+export const useGrantClientPortalAccess = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof grantClientPortalAccess>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof grantClientPortalAccess>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getGrantClientPortalAccessMutationOptions(options));
     }
 
 export const getEndImpersonationUrl = () => {

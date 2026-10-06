@@ -873,6 +873,11 @@ export interface DashboardSummary {
   upcomingPayments: number;
 }
 
+export interface GrantPortalAccessResult {
+  /** false if the login was created but the credentials email failed */
+  emailSent: boolean;
+}
+
 export interface ClientTimeline {
   id: number;
   clientId: number;

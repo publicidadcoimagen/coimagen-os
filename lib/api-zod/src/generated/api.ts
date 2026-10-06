@@ -491,6 +491,15 @@ export const ImpersonateClientResponse = zod.object({
 
 
 /**
+ * Same provisioning a client's first paid installment triggers (Client Room + role=cliente login + credentials email), on demand for clients created any other way. The temporary password is never returned; if the email fails the client can use the password-reset flow.
+ * @summary Create the client's portal login (temporary password) and email the credentials
+ */
+export const GrantClientPortalAccessParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary End an active "Ver como cliente" impersonation session
  */
 export const EndImpersonationBody = zod.object({
