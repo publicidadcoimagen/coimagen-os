@@ -22,6 +22,7 @@ import { findPendingSubscriptionForProposal, finalizeSubscriptionAuthorization }
 import { invoiceHasActiveDiscount, isDeclined, recordDeclineIfNew } from "../lib/payment-recovery/repository";
 import { sendDeclineNotifiedStaffEmail } from "../lib/payment-recovery/email";
 import { createOrder, captureOrder } from "../lib/paypal/orders";
+import { isZeroAmount } from "../lib/payment-schedule/generate";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -162,6 +163,12 @@ router.post("/public/invoices/:token/create-paypal-order", async (req, res): Pro
   if (invoice.status === "paid") { res.status(409).json({ error: "Esta cuota ya fue pagada" }); return; }
   if (invoice.status !== "sent" && invoice.status !== "overdue") {
     res.status(409).json({ error: "Esta cuota todavía no está disponible para pago" });
+    return;
+  }
+  // A $0 cuota (pro-bono) is never charged — PayPal rejects zero-amount
+  // orders anyway. Staff confirms it from the dashboard instead.
+  if (isZeroAmount(invoice.amount)) {
+    res.status(409).json({ error: "Esta cuota es de $0 y no requiere pago." });
     return;
   }
   if (await isParentProposalExpired(invoice.proposalId)) {

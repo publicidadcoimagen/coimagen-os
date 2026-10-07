@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { SHOW_COMING_SOON } from "@/lib/feature-flags";
 import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Users, FolderKanban, CheckSquare, Settings,
@@ -208,6 +209,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               ))}
             </div>
           ))}
+          {SHOW_COMING_SOON && (
           <div className="mt-4">
             <p className="px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40">
               Próximamente
@@ -222,6 +224,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               </div>
             ))}
           </div>
+          )}
         </nav>
 
         <div className="p-3 border-t border-border flex-shrink-0">

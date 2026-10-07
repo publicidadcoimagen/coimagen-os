@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, and, asc, desc, inArray } from "drizzle-orm";
 import { db, invoicesTable, invoicePaymentsTable, type Invoice, type Proposal } from "@workspace/db";
-import { generateInstallments } from "./generate";
+import { generateInstallments, isZeroAmount } from "./generate";
 import { isPaymentAttemptStillActive } from "./eligibility";
 
 // "created"/"approved" are the two invoice_payments states between order
@@ -80,25 +80,39 @@ export async function markInvoicePaid(invoiceId: number): Promise<void> {
 // The next "draft" cuota for this proposal (large-plan only — standard
 // plans have nothing left to advance after the deposit's pair), flipped to
 // "sent" so it becomes visible/payable on its own /factura/:token page.
-export async function advanceNextInstallment(proposalId: number): Promise<Invoice | null> {
-  const [next] = await db.select().from(invoicesTable)
-    .where(and(eq(invoicesTable.proposalId, proposalId), eq(invoicesTable.status, "draft")))
-    .orderBy(asc(invoicesTable.id))
-    .limit(1);
-  if (!next) return null;
-
+// Moves the proposal's next draft cuota to "sent". A $0 cuota (pro-bono /
+// setup $0) is never sent or charged: it's settled as paid on the spot
+// ("no cobrable") and the next one is considered, until a cuota with a real
+// amount is sent or none are left. Returns the cuota that was sent, if any.
+export async function advanceNextInstallment(
+  proposalId: number,
+  dbClient: Pick<typeof db, "select" | "update"> = db,
+): Promise<Invoice | null> {
   const today = todayIso();
-  const [updated] = await db.update(invoicesTable)
-    .set({ status: "sent", issuedDate: today, dueDate: today, updatedAt: new Date() })
-    .where(eq(invoicesTable.id, next.id))
-    .returning();
-  return updated;
+  for (;;) {
+    const [next] = await dbClient.select().from(invoicesTable)
+      .where(and(eq(invoicesTable.proposalId, proposalId), eq(invoicesTable.status, "draft")))
+      .orderBy(asc(invoicesTable.id))
+      .limit(1);
+    if (!next) return null;
+
+    if (isZeroAmount(next.amount)) {
+      await dbClient.update(invoicesTable)
+        .set({ status: "paid", issuedDate: today, dueDate: today, updatedAt: new Date() })
+        .where(eq(invoicesTable.id, next.id));
+      continue;
+    }
+
+    const [updated] = await dbClient.update(invoicesTable)
+      .set({ status: "sent", issuedDate: today, dueDate: today, updatedAt: new Date() })
+      .where(eq(invoicesTable.id, next.id))
+      .returning();
+    return updated;
+  }
 }
 
-// True once every installment generated for this proposal is paid — the
-// trigger for creating the recurring subscription.
-export async function allInstallmentsPaid(proposalId: number): Promise<boolean> {
-  const rows = await db.select({ status: invoicesTable.status }).from(invoicesTable).where(eq(invoicesTable.proposalId, proposalId));
+export async function allInstallmentsPaid(proposalId: number, dbClient: Pick<typeof db, "select"> = db): Promise<boolean> {
+  const rows = await dbClient.select({ status: invoicesTable.status }).from(invoicesTable).where(eq(invoicesTable.proposalId, proposalId));
   return rows.length > 0 && rows.every((r) => r.status === "paid");
 }
 
