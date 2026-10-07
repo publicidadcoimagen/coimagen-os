@@ -1,7 +1,9 @@
 import { Router, type IRouter } from "express";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count, inArray } from "drizzle-orm";
 import {
   db,
+  agentsTable,
+  automationsTable,
   directorsTable,
   directorClientsTable,
   directorProjectsTable,
@@ -250,13 +252,23 @@ async function getDirectorWithRelations(directorId: number) {
 
   return {
     ...director,
-    agentCount: 0,
-    automationCount: 0,
+    ...(await getDirectorCounts(directorId)),
     assignedClients: clientLinks,
     assignedProjects: projectLinks,
     createdAt: director.createdAt.toISOString(),
     updatedAt: director.updatedAt ? director.updatedAt.toISOString() : null,
   };
+}
+
+// Real counts (they were hardcoded to 0, so the Organigrama showed "0
+// agentes" for every director even with agents assigned). Same logic as
+// mundos.ts: agents by agents.directorId; automations via the agent that
+// owns them (automations.agentId -> agents.directorId).
+async function getDirectorCounts(directorId: number): Promise<{ agentCount: number; automationCount: number }> {
+  const agentRows = await db.select({ id: agentsTable.id }).from(agentsTable).where(eq(agentsTable.directorId, directorId));
+  if (agentRows.length === 0) return { agentCount: 0, automationCount: 0 };
+  const [row] = await db.select({ value: count() }).from(automationsTable).where(inArray(automationsTable.agentId, agentRows.map((r) => r.id)));
+  return { agentCount: agentRows.length, automationCount: Number(row?.value ?? 0) };
 }
 
 router.get("/org/directors", async (req, res): Promise<void> => {
@@ -278,8 +290,7 @@ router.get("/org/directors", async (req, res): Promise<void> => {
 
     return {
       ...d,
-      agentCount: 0,
-      automationCount: 0,
+      ...(await getDirectorCounts(d.id)),
       assignedClients: clientLinks,
       assignedProjects: projectLinks,
       createdAt: d.createdAt.toISOString(),
