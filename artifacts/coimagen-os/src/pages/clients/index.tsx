@@ -24,6 +24,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Check, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@workspace/better-auth-web";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const CONTRACT_LABELS: Record<string, { label: string; color: string }> = {
   signed: { label: "Firmado", color: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
@@ -51,7 +53,8 @@ export function Clients() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", industry: "", status: "active" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", industry: "", status: "active", accessGateExempt: false });
+  const { user } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
 
@@ -69,7 +72,7 @@ export function Clients() {
         qc.invalidateQueries({ queryKey: getListClientsQueryKey() });
         qc.invalidateQueries({ queryKey: getListClientOverviewQueryKey() });
         setOpen(false);
-        setForm({ name: "", email: "", phone: "", company: "", industry: "", status: "active" });
+        setForm({ name: "", email: "", phone: "", company: "", industry: "", status: "active", accessGateExempt: false });
         toast({ title: "Cliente creado correctamente" });
       },
       onError: () => toast({ title: "Error al crear cliente", variant: "destructive" }),
@@ -228,6 +231,12 @@ export function Clients() {
                 </SelectContent>
               </Select>
             </div>
+            {user?.role === "ceo" && (
+              <label className="flex items-start gap-2 text-sm cursor-pointer">
+                <Checkbox checked={form.accessGateExempt} onCheckedChange={(v) => setForm(f => ({ ...f, accessGateExempt: v === true }))} className="mt-0.5" />
+                <span>Pro bono permanente <span className="block text-xs text-muted-foreground">Nunca se le cobra ni se le restringe el acceso por falta de pago.</span></span>
+              </label>
+            )}
             <DialogFooter>
               <Button variant="outline" type="button" onClick={() => setOpen(false)}>Cancelar</Button>
               <Button type="submit" disabled={createClient.isPending}>

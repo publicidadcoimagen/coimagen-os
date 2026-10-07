@@ -26,6 +26,8 @@ export interface Client {
   isFounder: boolean;
   /** @nullable */
   founderNumber?: number | null;
+  /** Permanent pro-bono account: never billed, never restricted for non-payment */
+  accessGateExempt: boolean;
   enabledModules?: ClientEnabledModulesItem[];
   language?: ClientLanguage;
   createdAt: string;
