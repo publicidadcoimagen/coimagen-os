@@ -1,4 +1,4 @@
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, gt, isNotNull } from "drizzle-orm";
 import { db, invoicesTable, clientsTable, invoiceRemindersTable, type Invoice } from "@workspace/db";
 import { stageForDueDate, type ReminderStage } from "./eligibility";
 import { isDeclined } from "../payment-recovery/repository";
@@ -27,12 +27,17 @@ function todayIso(now: Date): string {
   return now.toISOString().slice(0, 10);
 }
 
-async function unpaidInvoicesWithClient(): Promise<Array<{ invoice: Invoice; clientName: string; clientEmail: string | null }>> {
-  const rows = await db
+// A $0 cuota (pro-bono) is never owed — it must never get a "vence pronto"
+// / "vencida" reminder, to staff or to the client. Filtered in SQL so every
+// caller (both audiences) inherits it.
+export async function unpaidInvoicesWithClient(
+  dbClient: Pick<typeof db, "select"> = db,
+): Promise<Array<{ invoice: Invoice; clientName: string; clientEmail: string | null }>> {
+  const rows = await dbClient
     .select({ invoice: invoicesTable, clientName: clientsTable.name, clientEmail: clientsTable.email })
     .from(invoicesTable)
     .innerJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id))
-    .where(and(eq(invoicesTable.status, UNPAID_STATUS), isNotNull(invoicesTable.dueDate)));
+    .where(and(eq(invoicesTable.status, UNPAID_STATUS), isNotNull(invoicesTable.dueDate), gt(invoicesTable.amount, "0")));
   return rows;
 }
 
