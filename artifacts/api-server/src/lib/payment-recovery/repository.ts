@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, eq, gt, inArray, isNotNull } from "drizzle-orm";
 import { db, invoicesTable, clientsTable, paymentRecoveryAlertsTable, type Invoice } from "@workspace/db";
 import { findActivePaymentAttempt } from "../payment-schedule/repository";
 import { RECOVERY_STAGES, nextRecoveryStageToSend, type RecoveryStage } from "./eligibility";
@@ -19,22 +19,26 @@ export interface DueRecovery {
 // lowest invoice id among every invoice ever generated for that proposal,
 // not just among currently-"sent" ones — an invoice's own siblings can be
 // paid/draft/cancelled and it's still not necessarily the deposit.
-async function isFirstInstallment(invoice: Invoice): Promise<boolean> {
-  const siblings = await db.select({ id: invoicesTable.id }).from(invoicesTable).where(eq(invoicesTable.proposalId, invoice.proposalId!));
+async function isFirstInstallment(invoice: Invoice, dbClient: Pick<typeof db, "select"> = db): Promise<boolean> {
+  const siblings = await dbClient.select({ id: invoicesTable.id }).from(invoicesTable).where(eq(invoicesTable.proposalId, invoice.proposalId!));
   const minId = Math.min(...siblings.map((s) => s.id));
   return invoice.id === minId;
 }
 
-async function unpaidDepositInvoicesWithClient(): Promise<Array<{ invoice: Invoice; clientName: string; clientEmail: string | null }>> {
-  const candidates = await db
+// A $0 deposit (pro-bono) has nothing to recover: no 24h reminder and no
+// "10% off" win-back emails. Filtered in SQL.
+export async function unpaidDepositInvoicesWithClient(
+  dbClient: Pick<typeof db, "select"> = db,
+): Promise<Array<{ invoice: Invoice; clientName: string; clientEmail: string | null }>> {
+  const candidates = await dbClient
     .select({ invoice: invoicesTable, clientName: clientsTable.name, clientEmail: clientsTable.email })
     .from(invoicesTable)
     .innerJoin(clientsTable, eq(invoicesTable.clientId, clientsTable.id))
-    .where(and(isNotNull(invoicesTable.proposalId), eq(invoicesTable.status, "sent")));
+    .where(and(isNotNull(invoicesTable.proposalId), eq(invoicesTable.status, "sent"), gt(invoicesTable.amount, "0")));
 
   const deposits: Array<{ invoice: Invoice; clientName: string; clientEmail: string | null }> = [];
   for (const candidate of candidates) {
-    if (await isFirstInstallment(candidate.invoice)) deposits.push(candidate);
+    if (await isFirstInstallment(candidate.invoice, dbClient)) deposits.push(candidate);
   }
   return deposits;
 }

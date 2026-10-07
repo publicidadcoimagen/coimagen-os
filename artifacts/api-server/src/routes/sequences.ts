@@ -17,6 +17,7 @@ import { eligibleClientIds } from "../lib/commercial-followup/repository";
 import { stageForDueDate } from "../lib/invoice-reminders/eligibility";
 import { STAFF_WINDOW_DAYS, CLIENT_WINDOW_DAYS } from "../lib/invoice-reminders/repository";
 import { isStalePendingAuthorization } from "../lib/subscription-alerts/eligibility";
+import { isZeroAmount } from "../lib/payment-schedule/generate";
 import { RECOVERY_STAGES, STAGE_MIN_DAYS as RECOVERY_STAGE_MIN_DAYS, upcomingRecoveryStage, type RecoveryStage } from "../lib/payment-recovery/eligibility";
 
 const router: IRouter = Router();
@@ -113,7 +114,8 @@ router.get("/sequences/invoice-reminders", async (_req, res): Promise<void> => {
   const today = new Date().toISOString().slice(0, 10);
 
   const result = invoiceRows
-    .filter((row) => row.invoice.status === "sent" || (remindersByInvoice.get(row.invoice.id)?.length ?? 0) > 0)
+    // $0 cuotas (pro-bono) are never owed — same exclusion as the cron.
+    .filter((row) => (row.invoice.status === "sent" && !isZeroAmount(row.invoice.amount)) || (remindersByInvoice.get(row.invoice.id)?.length ?? 0) > 0)
     .map((row) => {
       const reminders = remindersByInvoice.get(row.invoice.id) ?? [];
       const staffReminders = reminders.filter((r) => r.audience === "staff");
@@ -195,7 +197,7 @@ router.get("/sequences/payment-recovery", async (_req, res): Promise<void> => {
   const result = invoiceRows
     .filter(({ invoice }) => {
       const isDeposit = depositIdByProposal.get(invoice.proposalId!) === invoice.id;
-      return (isDeposit && invoice.status === "sent") || alertsByInvoice.has(invoice.id);
+      return (isDeposit && invoice.status === "sent" && !isZeroAmount(invoice.amount)) || alertsByInvoice.has(invoice.id);
     })
     .map(({ invoice, clientName, clientEmail }) => {
       const history = alertsByInvoice.get(invoice.id) ?? [];
