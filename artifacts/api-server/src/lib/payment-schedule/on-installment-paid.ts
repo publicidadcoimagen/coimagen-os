@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db, invoicesTable, proposalsTable, subscriptionsTable, clientsTable } from "@workspace/db";
 import { markInvoicePaid, advanceNextInstallment, allInstallmentsPaid } from "./repository";
+import { isZeroAmount, recurringPlanFor, type RecurringPlan } from "./generate";
 import { sendPaymentConfirmedEmail } from "./payment-confirmed-email";
 import { createClientPortalAccount } from "../portal-onboarding/create-client-account";
 import { sendPortalCredentialsEmail } from "../portal-onboarding/credentials-email";
@@ -59,40 +60,60 @@ export async function handleInstallmentPaid(invoiceId: number): Promise<void> {
         logger.warn({ err, invoiceId, clientId: invoice.clientId }, "No se pudo crear la cuenta de portal / enviar credenciales");
       }
 
-      try {
-        const emailId = await sendPaymentConfirmedEmail(client.email, client.name, invoice.number, invoice.amount, invoice.currency, false);
-        logger.info({ invoiceId, emailId }, "Correo de pago confirmado enviado al cliente");
-      } catch (err) {
-        logger.warn({ err, invoiceId }, "No se pudo enviar el correo de pago confirmado");
+      // A $0 cuota (pro-bono) moved no money — no "payment confirmed" email.
+      if (!isZeroAmount(invoice.amount)) {
+        try {
+          const emailId = await sendPaymentConfirmedEmail(client.email, client.name, invoice.number, invoice.amount, invoice.currency, false);
+          logger.info({ invoiceId, emailId }, "Correo de pago confirmado enviado al cliente");
+        } catch (err) {
+          logger.warn({ err, invoiceId }, "No se pudo enviar el correo de pago confirmado");
+        }
       }
     }
   }
 
-  const allPaid = await allInstallmentsPaid(invoice.proposalId);
-  if (!allPaid) {
-    await advanceNextInstallment(invoice.proposalId);
-    return;
+  await settleScheduleAfterPayment(invoice.proposalId);
+}
+
+// After a cuota is paid: send the next one (settling any $0 cuotas on the
+// way — advanceNextInstallment), and once every cuota is paid, start the
+// recurring plan per recurringPlanFor:
+// - "none": one-off project, nothing to create.
+// - "internal_zero" (monthly exactly 0, pro-bono): an internal ACTIVE $0
+//   subscription — the visible record in the client portal and the CEO
+//   dashboard (adds 0 to MRR) — with no PayPal subscription and no fiscal
+//   question. Nothing is left pending.
+// - "paypal": pending_authorization with NO PayPal subscription yet — the
+//   actual PayPal subscription (and its fixed monthly price) is only created
+//   once the client answers the fiscal-invoice question on /factura/:token
+//   (lib/subscription-authorization.ts), since that answer changes the
+//   final price (base vs +16% IVA).
+// The old guard `!proposal.monthlyAmount` treated "0" (a non-empty string)
+// as a real fee and left pro-bono clients with a $0 pending_authorization
+// subscription waiting on PayPal forever.
+export async function settleScheduleAfterPayment(
+  proposalId: number,
+  dbClient: Pick<typeof db, "select" | "update" | "insert"> = db,
+): Promise<"pending_installments" | RecurringPlan> {
+  if (!(await allInstallmentsPaid(proposalId, dbClient))) {
+    await advanceNextInstallment(proposalId, dbClient);
+    if (!(await allInstallmentsPaid(proposalId, dbClient))) return "pending_installments";
   }
 
-  // Last installment just paid — start the recurring plan, if this
-  // proposal has one. No monthlyAmount means a one-off project with no
-  // recurring component; nothing to create. The row is left in
-  // pending_authorization with NO PayPal subscription yet — the actual
-  // PayPal subscription (and its fixed monthly price) is only created once
-  // the client answers the fiscal-invoice question on /factura/:token (see
-  // lib/subscription-authorization.ts), since that answer changes the
-  // final price (base vs +16% IVA). Creating it here, before that answer
-  // exists, would risk baking in the wrong price.
-  const [proposal] = await db.select().from(proposalsTable).where(eq(proposalsTable.id, invoice.proposalId));
-  if (!proposal?.monthlyAmount || !proposal.clientId) return;
+  const [proposal] = await dbClient.select().from(proposalsTable).where(eq(proposalsTable.id, proposalId));
+  if (!proposal?.clientId) return "none";
+  const plan = recurringPlanFor(proposal.monthlyAmount);
+  if (plan === "none") return plan;
 
-  await db.insert(subscriptionsTable).values({
+  await dbClient.insert(subscriptionsTable).values({
     clientId: proposal.clientId,
     proposalId: proposal.id,
     plan: proposal.title,
-    amount: proposal.monthlyAmount,
+    amount: proposal.monthlyAmount!,
     currency: proposal.currency,
     billingCycle: "monthly",
-    status: "pending_authorization",
+    status: plan === "internal_zero" ? "active" : "pending_authorization",
+    requiresFiscalInvoice: false,
   });
+  return plan;
 }

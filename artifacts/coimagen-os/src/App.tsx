@@ -104,6 +104,7 @@ import { ClientAI } from "@/pages/client-room/ai";
 import { ClientProfile } from "@/pages/client-room/profile";
 
 import { ComingSoon } from "@/pages/coming-soon";
+import { SHOW_COMING_SOON } from "@/lib/feature-flags";
 import { Bot, Factory, Stethoscope, Layers, Cloud } from "lucide-react";
 
 const queryClient = new QueryClient({
@@ -323,6 +324,9 @@ function Router() {
             {/* Client Room admin (list of orgs) — inside AppLayout */}
             <Route path="/client" component={ClientRoomAdmin} />
 
+            {/* Hidden unless VITE_SHOW_COMING_SOON=true (lib/feature-flags.ts) —
+                with the flag off, a direct visit falls through to NotFound. */}
+            {SHOW_COMING_SOON && (<>
             <Route path="/coming-soon/ai-agents-pro">
               {() => <ComingSoon title="AI Agents Pro" description="Agentes de IA especializados con capacidades avanzadas de razonamiento, memoria y ejecución autónoma." Icon={Bot} />}
             </Route>
@@ -338,6 +342,7 @@ function Router() {
             <Route path="/coming-soon/coimagen-cloud">
               {() => <ComingSoon title="Coimagen Cloud" description="Infraestructura cloud propia para despliegue, hosting y escalado de proyectos de clientes." Icon={Cloud} />}
             </Route>
+            </>)}
 
             <Route component={NotFound} />
           </Switch>

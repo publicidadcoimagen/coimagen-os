@@ -34,6 +34,13 @@ function round2(n: number): number {
 // (and nothing to reconcile later against proposals.amount).
 export function generateInstallments(totalAmount: number, paymentPlan: PaymentPlan): InstallmentSpec[] {
   const plan = PLAN_INSTALLMENTS[paymentPlan];
+  if (!Number.isFinite(totalAmount) || totalAmount < 0) {
+    throw new Error(`Monto de proyecto inválido para generar cuotas: ${totalAmount}`);
+  }
+  // Explicit zero path (pro-bono / setup $0): every cuota is exactly 0, never
+  // a rounding artifact. Downstream, zero cuotas are never sent to PayPal —
+  // see isZeroAmount below and advanceNextInstallment.
+  if (totalAmount === 0) return plan.map(([label, percentage]) => ({ label, percentage, amount: 0 }));
   const installments: InstallmentSpec[] = [];
   let allocated = 0;
 
@@ -88,4 +95,33 @@ const RECOVERY_DISCOUNT_RATE = 0.10;
 
 export function applyRecoveryDiscount(baseAmount: number, discountApplied: boolean): number {
   return discountApplied ? round2(baseAmount * (1 - RECOVERY_DISCOUNT_RATE)) : baseAmount;
+}
+
+// Numeric money checks for values stored as Postgres numeric (strings like
+// "0", "0.00", "1499.50"). A non-empty string is truthy in JS, so
+// `!proposal.monthlyAmount` treated "0" as a real recurring fee — always
+// compare numerically.
+function toNumber(value: string | number | null | undefined): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+export function isZeroAmount(value: string | number | null | undefined): boolean {
+  return toNumber(value) === 0;
+}
+
+// What happens once every cuota of a proposal is paid:
+// - "none": no monthly fee on the proposal (one-off project) → nothing.
+// - "internal_zero": monthly fee is exactly 0 (pro-bono) → an internal
+//   active $0 subscription, no PayPal, no fiscal question.
+// - "paypal": a real monthly fee → pending_authorization + PayPal flow.
+export type RecurringPlan = "none" | "internal_zero" | "paypal";
+
+export function recurringPlanFor(monthlyAmount: string | number | null | undefined): RecurringPlan {
+  const n = toNumber(monthlyAmount);
+  if (n === null) return "none";
+  if (n === 0) return "internal_zero";
+  if (n < 0) throw new Error(`Mensualidad inválida: ${monthlyAmount}`);
+  return "paypal";
 }
