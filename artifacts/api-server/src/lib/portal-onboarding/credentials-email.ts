@@ -1,8 +1,8 @@
 import { Resend } from "resend";
+import { PORTAL_LOGIN_URL } from "../portal-url";
 
 const FROM_ADDRESS = "Coimagen Media Agency <info@coimagenmedia.com>";
 const TEAM_ADDRESS = "info@coimagenmedia.com";
-const PORTAL_LOGIN_URL = "https://os.coimagenmedia.com/";
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -26,16 +26,11 @@ function wrapEmailHtml(bodyHtml: string): string {
 // is forced to change it on first login (forcePasswordReset, enforced
 // server-side by authMiddleware.ts), so this value stops being valid the
 // moment they do.
-export async function sendPortalCredentialsEmail(
+export function buildPortalCredentialsEmailHtml(
   clientEmail: string,
   clientName: string,
   temporaryPassword: string,
-): Promise<string> {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY no está configurada");
-  }
-
+): string {
   const name = escapeHtml(clientName);
   const email = escapeHtml(clientEmail);
   const password = escapeHtml(temporaryPassword);
@@ -73,6 +68,18 @@ export async function sendPortalCredentialsEmail(
         </table>
       </td></tr>
     </table>`;
+  return wrapEmailHtml(html);
+}
+
+export async function sendPortalCredentialsEmail(
+  clientEmail: string,
+  clientName: string,
+  temporaryPassword: string,
+): Promise<string> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY no está configurada");
+  }
 
   const resend = new Resend(apiKey);
   const { data, error } = await resend.emails.send({
@@ -80,7 +87,7 @@ export async function sendPortalCredentialsEmail(
     to: clientEmail,
     replyTo: TEAM_ADDRESS,
     subject: "Ya tienes acceso a tu portal Coimagen",
-    html: wrapEmailHtml(html),
+    html: buildPortalCredentialsEmailHtml(clientEmail, clientName, temporaryPassword),
   });
   if (error) {
     throw new Error(error.message);
