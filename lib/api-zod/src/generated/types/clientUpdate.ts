@@ -20,4 +20,6 @@ export interface ClientUpdate {
   notes?: string;
   enabledModules?: ClientUpdateEnabledModulesItem[];
   language?: ClientUpdateLanguage;
+  /** CEO only — permanent pro-bono account; every change is audited */
+  accessGateExempt?: boolean;
 }

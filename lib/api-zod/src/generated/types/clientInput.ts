@@ -18,4 +18,6 @@ export interface ClientInput {
   status?: ClientInputStatus;
   notes?: string;
   language?: ClientInputLanguage;
+  /** CEO only — create the client as a permanent pro-bono account */
+  accessGateExempt?: boolean;
 }

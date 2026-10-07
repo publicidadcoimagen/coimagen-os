@@ -150,6 +150,8 @@ export interface Client {
   isFounder: boolean;
   /** @nullable */
   founderNumber?: number | null;
+  /** Permanent pro-bono account: never billed, never restricted for non-payment */
+  accessGateExempt: boolean;
   enabledModules?: ClientEnabledModulesItem[];
   language?: ClientLanguage;
   createdAt: string;
@@ -184,6 +186,8 @@ export interface ClientInput {
   status?: ClientInputStatus;
   notes?: string;
   language?: ClientInputLanguage;
+  /** CEO only — create the client as a permanent pro-bono account */
+  accessGateExempt?: boolean;
 }
 
 export type ClientUpdateStatus = typeof ClientUpdateStatus[keyof typeof ClientUpdateStatus];
@@ -223,6 +227,8 @@ export interface ClientUpdate {
   notes?: string;
   enabledModules?: ClientUpdateEnabledModulesItem[];
   language?: ClientUpdateLanguage;
+  /** CEO only — permanent pro-bono account; every change is audited */
+  accessGateExempt?: boolean;
 }
 
 export interface MarkClientFounderInput {

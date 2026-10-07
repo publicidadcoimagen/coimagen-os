@@ -439,6 +439,22 @@ export function ClientDetail() {
               <Crown className="h-3.5 w-3.5 mr-1.5" />Marcar como Fundador
             </Button>
           )}
+          {user?.role === "ceo" ? (
+            <label className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1 text-xs cursor-pointer" title="Cuenta permanente sin cobro: nunca se factura ni se restringe por falta de pago">
+              <Switch
+                checked={client.accessGateExempt}
+                disabled={updateClient.isPending}
+                onCheckedChange={(checked) => updateClient.mutate(
+                  { id, data: { accessGateExempt: checked } },
+                  { onSuccess: () => toast({ title: checked ? "Marcado como pro-bono permanente" : "Ya no es pro-bono" }),
+                    onError: () => toast({ title: "No se pudo cambiar el estado pro-bono", variant: "destructive" }) },
+                )}
+              />
+              Pro bono permanente
+            </label>
+          ) : client.accessGateExempt ? (
+            <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/30">Pro bono</Badge>
+          ) : null}
           <StatusBadge status={client.status} />
         </div>
       </div>

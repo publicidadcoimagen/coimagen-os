@@ -346,6 +346,7 @@ export const ListClientsResponseItem = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "accessGateExempt": zod.boolean().describe('Permanent pro-bono account: never billed, never restricted for non-payment'),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
@@ -369,7 +370,8 @@ export const CreateClientBody = zod.object({
   "industry": zod.string().optional(),
   "status": zod.enum(['active', 'inactive', 'prospect']).default(createClientBodyStatusDefault),
   "notes": zod.string().optional(),
-  "language": zod.enum(['es', 'en']).default(createClientBodyLanguageDefault)
+  "language": zod.enum(['es', 'en']).default(createClientBodyLanguageDefault),
+  "accessGateExempt": zod.boolean().optional().describe('CEO only — create the client as a permanent pro-bono account')
 })
 
 
@@ -404,6 +406,7 @@ export const GetClientResponse = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "accessGateExempt": zod.boolean().describe('Permanent pro-bono account: never billed, never restricted for non-payment'),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
@@ -427,7 +430,8 @@ export const UpdateClientBody = zod.object({
   "status": zod.enum(['active', 'inactive', 'prospect']).optional(),
   "notes": zod.string().optional(),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
-  "language": zod.enum(['es', 'en']).optional()
+  "language": zod.enum(['es', 'en']).optional(),
+  "accessGateExempt": zod.boolean().optional().describe('CEO only — permanent pro-bono account; every change is audited')
 })
 
 export const UpdateClientResponse = zod.object({
@@ -441,6 +445,7 @@ export const UpdateClientResponse = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "accessGateExempt": zod.boolean().describe('Permanent pro-bono account: never billed, never restricted for non-payment'),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),
@@ -479,6 +484,7 @@ export const MarkClientFounderResponse = zod.object({
   "notes": zod.string().nullish(),
   "isFounder": zod.boolean(),
   "founderNumber": zod.number().nullish(),
+  "accessGateExempt": zod.boolean().describe('Permanent pro-bono account: never billed, never restricted for non-payment'),
   "enabledModules": zod.array(zod.enum(['ecommerce', 'autopublicador', 'seo'])).optional(),
   "language": zod.enum(['es', 'en']).optional(),
   "createdAt": zod.string(),

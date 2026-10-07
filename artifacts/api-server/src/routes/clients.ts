@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, desc, sql, and, isNotNull } from "drizzle-orm";
-import { db, clientsTable, prospectsTable, clientTimelineTable, incidentsTable, invoicesTable, subscriptionsTable, contractsTable, usersTable } from "@workspace/db";
+import { db, clientsTable, prospectsTable, clientTimelineTable, incidentsTable, invoicesTable, subscriptionsTable, contractsTable, usersTable, auditLogsTable } from "@workspace/db";
 import {
   GetClientParams,
   UpdateClientParams,
@@ -14,6 +14,7 @@ import { requireRole } from "../middlewares/requireAuth";
 import { sendFounderWelcomeEmail } from "../lib/founder-welcome/email";
 import { logger } from "../lib/logger";
 import { grantPortalAccess } from "../lib/portal-onboarding/grant-portal-access";
+import { proBonoChange } from "../lib/clients/pro-bono";
 import { buildClientOverview } from "../lib/client-overview/build";
 
 const router: IRouter = Router();
@@ -37,6 +38,11 @@ router.post("/clients", requireRole("ceo", "admin"), async (req, res): Promise<v
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const role = (req.user as { role?: string }).role;
+  if (!proBonoChange(role, false, parsed.data.accessGateExempt).allowed) {
+    res.status(403).json({ error: "Solo la CEO puede crear una cuenta pro-bono" });
+    return;
+  }
   const [client] = await db.insert(clientsTable).values({
     name: parsed.data.name,
     email: parsed.data.email ?? null,
@@ -46,7 +52,18 @@ router.post("/clients", requireRole("ceo", "admin"), async (req, res): Promise<v
     status: parsed.data.status ?? "prospect",
     notes: parsed.data.notes ?? null,
     language: parsed.data.language ?? "es",
+    accessGateExempt: parsed.data.accessGateExempt ?? false,
   }).returning();
+  if (client.accessGateExempt) {
+    await db.insert(auditLogsTable).values({
+      userId: (req.user as { id: string }).id,
+      module: "Clientes",
+      action: "Marcar pro-bono permanente",
+      result: `Cliente #${client.id} (${client.name}) creado como pro-bono permanente`,
+      status: "success",
+      metadata: JSON.stringify({ clientId: client.id, field: "accessGateExempt", from: null, to: true }),
+    });
+  }
   res.status(201).json({
     ...client,
     createdAt: client.createdAt.toISOString(),
@@ -105,6 +122,16 @@ router.patch("/clients/:id", requireRole("ceo", "admin"), async (req, res): Prom
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const [before] = await db.select({ accessGateExempt: clientsTable.accessGateExempt }).from(clientsTable).where(eq(clientsTable.id, params.data.id));
+  if (!before) {
+    res.status(404).json({ error: "Client not found" });
+    return;
+  }
+  const proBono = proBonoChange((req.user as { role?: string }).role, before.accessGateExempt, parsed.data.accessGateExempt);
+  if (!proBono.allowed) {
+    res.status(403).json({ error: "Solo la CEO puede cambiar el estado pro-bono" });
+    return;
+  }
   const [client] = await db.update(clientsTable)
     .set({ ...parsed.data, updatedAt: new Date() })
     .where(eq(clientsTable.id, params.data.id))
@@ -112,6 +139,16 @@ router.patch("/clients/:id", requireRole("ceo", "admin"), async (req, res): Prom
   if (!client) {
     res.status(404).json({ error: "Client not found" });
     return;
+  }
+  if (proBono.changed) {
+    await db.insert(auditLogsTable).values({
+      userId: (req.user as { id: string }).id,
+      module: "Clientes",
+      action: client.accessGateExempt ? "Marcar pro-bono permanente" : "Quitar pro-bono permanente",
+      result: `Cliente #${client.id} (${client.name}) accessGateExempt ${before.accessGateExempt} → ${client.accessGateExempt}`,
+      status: "success",
+      metadata: JSON.stringify({ clientId: client.id, field: "accessGateExempt", from: before.accessGateExempt, to: client.accessGateExempt }),
+    });
   }
   res.json({
     ...client,
