@@ -5,6 +5,7 @@ import {
   useUpdateClient,
   useMarkClientFounder,
   useGrantClientPortalAccess,
+  getListClientOverviewQueryKey,
   useListProjects,
   useListClientAccess,
   useCreateClientAccess,
@@ -60,6 +61,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@workspace/better-auth-web";
 import { useImpersonation } from "@/hooks/use-impersonation";
+import { nextEnabledModules } from "@/pages/client-room/nav-modules";
 
 const CLIENT_MODULES = ["ecommerce", "autopublicador", "seo"] as const;
 const CLIENT_MODULE_LABELS: Record<string, string> = {
@@ -226,6 +228,33 @@ export function ClientDetail() {
   const updateClient = useUpdateClient({
     mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getGetClientQueryKey(id) }) },
   });
+  // "Módulos del Portal" saves on every switch. The PATCH response is written
+  // straight into the cache (not just invalidated), so a second switch flipped
+  // right after the first builds its list from what the server saved — with
+  // only an invalidation, the refetch could still be in flight and the second
+  // PATCH would overwrite the first module.
+  const updateModules = useUpdateClient({
+    mutation: {
+      onSuccess: (updated) => {
+        qc.setQueryData(getGetClientQueryKey(id), updated);
+        qc.invalidateQueries({ queryKey: getListClientOverviewQueryKey() });
+      },
+    },
+  });
+  function toggleModule(m: (typeof CLIENT_MODULES)[number], checked: boolean) {
+    const saved = (qc.getQueryData(getGetClientQueryKey(id)) as typeof client | undefined)?.enabledModules ?? [];
+    const current = saved.filter((x): x is (typeof CLIENT_MODULES)[number] => (CLIENT_MODULES as readonly string[]).includes(x));
+    const next = nextEnabledModules(current, m, checked);
+    const label = CLIENT_MODULE_LABELS[m] ?? m;
+    updateModules.mutate({ id, data: { enabledModules: next } }, {
+      onSuccess: () => toast({ title: checked ? `${label} activado` : `${label} desactivado` }),
+      onError: (err) => toast({
+        title: `No se pudo guardar ${label}`,
+        description: err instanceof Error ? err.message : "Error inesperado.",
+        variant: "destructive",
+      }),
+    });
+  }
 
   /* ── Access state ── */
   const [accessModal, setAccessModal] = useState(false);
@@ -535,12 +564,8 @@ export function ClientDetail() {
                 <Label className="text-sm font-normal">{CLIENT_MODULE_LABELS[m]}</Label>
                 <Switch
                   checked={enabled}
-                  disabled={updateClient.isPending}
-                  onCheckedChange={(checked) => {
-                    const current = client.enabledModules ?? [];
-                    const next = checked ? [...current, m] : current.filter((x) => x !== m);
-                    updateClient.mutate({ id, data: { enabledModules: next } });
-                  }}
+                  disabled={updateModules.isPending}
+                  onCheckedChange={(checked) => toggleModule(m, checked)}
                 />
               </div>
             );

@@ -2,6 +2,7 @@ import { type ReactNode, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   useGetOrganization, getGetOrganizationQueryKey,
+  useGetClient, getGetClientQueryKey,
 } from "@workspace/api-client-react";
 import { useAuth } from "@workspace/better-auth-web";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { ChangePasswordDialog } from "@/components/change-password-dialog";
 import { LanguageProvider, useLang } from "@/context/LanguageContext";
 import { ImpersonationBanner } from "./impersonation-banner";
+import { clientRoomModuleKeys } from "./nav-modules";
 import {
   LayoutDashboard, FolderKanban, GitBranch, CheckSquare,
   FileSignature, Receipt, FileText, Calendar, MessageSquare,
@@ -99,21 +101,22 @@ function ClientRoomLayoutInner({ slug, children }: { slug: string; children: Rea
   // base modules + whatever their client's enabledModules unlocks, plus
   // their own profile. Staff previewing a client room still see everything,
   // including the not-yet-in-the-matrix scaffolded pages (P-79).
-  const moduleItems = (user?.enabledModules ?? []).flatMap((m) => MODULE_NAV_ITEMS[m] ?? []);
-  // Staff browsing a client room via the plain, non-impersonated "Abrir
-  // Client Room" link (admin.tsx) never gets moduleItems above: that list
-  // is derived from the STAFF user's own session enabledModules, which is
-  // always [] for a staff role (authMiddleware only populates it for a real
-  // cliente-role session) — it has nothing to do with which client's slug
-  // is being viewed. That silently hid Becky Beck's real, working legacy
-  // catalog (only reachable by typing /client/beckybeck/catalog by hand)
-  // even though her client record has "ecommerce" enabled. Keying off the
-  // slug directly, same as catalog.tsx's own beckybeck branch, fixes that
-  // without touching the already-correct cliente/impersonated path above.
-  const staffModuleItems = !isCliente && slug === "beckybeck" ? MODULE_NAV_ITEMS.ecommerce : [];
+  //
+  // Module entries: a cliente session reads its own session enabledModules.
+  // Staff on the plain, non-impersonated "Abrir Client Room" link
+  // (admin.tsx) have a session list that is always [] (authMiddleware only
+  // fills it for a cliente-role session), so for staff they come from the
+  // client this room belongs to (org.clientId). This replaces the old
+  // `slug === "beckybeck"` check, which never unlocked another client's
+  // catalog (client 26, 2026-10-08). See nav-modules.ts.
+  const { data: roomClient } = useGetClient(org?.clientId ?? 0, {
+    query: { queryKey: getGetClientQueryKey(org?.clientId ?? 0), enabled: !isCliente && !!org?.clientId },
+  });
+  const moduleItems = clientRoomModuleKeys(isCliente, user?.enabledModules, roomClient?.enabledModules)
+    .flatMap((m) => MODULE_NAV_ITEMS[m] ?? []);
   const navItems = isCliente
     ? [...BASE_NAV_ITEMS, ...moduleItems, PROFILE_ITEM]
-    : [...BASE_NAV_ITEMS, ...staffModuleItems, ...STAFF_EXTRA_ITEMS, PROFILE_ITEM];
+    : [...BASE_NAV_ITEMS, ...moduleItems, ...STAFF_EXTRA_ITEMS, PROFILE_ITEM];
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
