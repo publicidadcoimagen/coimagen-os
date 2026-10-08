@@ -208,6 +208,7 @@ import type {
   QcTicket,
   QcTicketCreate,
   QcTicketUpdate,
+  ResendPortalAccessResult,
   RevenueSummary,
   RoadmapItem,
   RoadmapItemCreate,
@@ -2133,6 +2134,77 @@ export const useGrantClientPortalAccess = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getGrantClientPortalAccessMutationOptions(options));
+    }
+
+export const getResendClientPortalAccessUrl = (id: number,) => {
+
+
+
+
+  return `/api/clients/${id}/portal-access/resend`
+}
+
+/**
+ * For a client that already has a role=cliente login. Generates a new temporary password, forces a change on next login, ends that login's open sessions, and emails the credentials. CEO/admin only, audited. The password is never returned.
+ * @summary Reset the client's existing portal login to a new temporary password and email it again
+ */
+export const resendClientPortalAccess = async (id: number, options?: RequestInit): Promise<ResendPortalAccessResult> => {
+
+  return customFetch<ResendPortalAccessResult>(getResendClientPortalAccessUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getResendClientPortalAccessMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resendClientPortalAccess>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resendClientPortalAccess>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['resendClientPortalAccess'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resendClientPortalAccess>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  resendClientPortalAccess(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResendClientPortalAccessMutationResult = NonNullable<Awaited<ReturnType<typeof resendClientPortalAccess>>>
+
+    export type ResendClientPortalAccessMutationError = ErrorType<void>
+
+    /**
+ * @summary Reset the client's existing portal login to a new temporary password and email it again
+ */
+export const useResendClientPortalAccess = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resendClientPortalAccess>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof resendClientPortalAccess>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getResendClientPortalAccessMutationOptions(options));
     }
 
 export const getEndImpersonationUrl = () => {

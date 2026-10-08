@@ -522,6 +522,20 @@ export const GrantClientPortalAccessParams = zod.object({
 
 
 /**
+ * For a client that already has a role=cliente login. Generates a new temporary password, forces a change on next login, ends that login's open sessions, and emails the credentials. CEO/admin only, audited. The password is never returned.
+ * @summary Reset the client's existing portal login to a new temporary password and email it again
+ */
+export const ResendClientPortalAccessParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ResendClientPortalAccessResponse = zod.object({
+  "ok": zod.boolean(),
+  "emailSent": zod.boolean().describe('false if the password was reset but the credentials email failed')
+})
+
+
+/**
  * @summary End an active "Ver como cliente" impersonation session
  */
 export const EndImpersonationBody = zod.object({

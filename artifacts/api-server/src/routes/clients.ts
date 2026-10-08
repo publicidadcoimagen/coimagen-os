@@ -14,6 +14,7 @@ import { requireRole } from "../middlewares/requireAuth";
 import { sendFounderWelcomeEmail } from "../lib/founder-welcome/email";
 import { logger } from "../lib/logger";
 import { grantPortalAccess } from "../lib/portal-onboarding/grant-portal-access";
+import { resendPortalAccess } from "../lib/portal-onboarding/resend-portal-access";
 import { proBonoChange } from "../lib/clients/pro-bono";
 import { buildClientOverview } from "../lib/client-overview/build";
 
@@ -276,6 +277,18 @@ router.post("/clients/:id/portal-access", requireRole("ceo", "admin"), async (re
   const result = await grantPortalAccess(params.data.id, { id: user.id, label: user.name || user.email || user.id });
   if (!result.ok) { res.status(result.status).json({ error: result.error }); return; }
   res.status(201).json({ emailSent: result.emailSent });
+});
+
+// Staff button "Reenviar acceso": new temporary password for a client that
+// already has a portal login, emailed again. The password never leaves the
+// email — the response is only { ok, emailSent }.
+router.post("/clients/:id/portal-access/resend", requireRole("ceo", "admin"), async (req, res): Promise<void> => {
+  const params = GetClientParams.safeParse(req.params);
+  if (!params.success) { res.status(400).json({ error: "Invalid id" }); return; }
+  const user = req.user as { id: string; name?: string | null; email?: string | null };
+  const result = await resendPortalAccess(params.data.id, { id: user.id, label: user.name || user.email || user.id });
+  if (!result.ok) { res.status(result.status).json({ error: result.error }); return; }
+  res.json({ ok: true, emailSent: result.emailSent });
 });
 
 router.delete("/clients/:id", requireRole("ceo", "admin"), async (req, res): Promise<void> => {

@@ -5,6 +5,9 @@ import {
   useUpdateClient,
   useMarkClientFounder,
   useGrantClientPortalAccess,
+  useResendClientPortalAccess,
+  useListClientOverview,
+  getListClientOverviewQueryKey,
   useListProjects,
   useListClientAccess,
   useCreateClientAccess,
@@ -49,7 +52,7 @@ import { StatusBadge, PriorityBadge } from "@/components/status-badge";
 import {
   Building2, Mail, Phone, Calendar, Briefcase, Plus, Key, Eye, EyeOff, Send,
   Pencil, Trash2, Globe, Shield, CheckCircle2, XCircle, Lock, ExternalLink,
-  Palette, Image, Link2, AlignLeft, Layers, Clock, StickyNote, Pin, Crown, Share2,
+  Palette, Image, Link2, AlignLeft, Layers, Clock, StickyNote, Pin, Crown, Share2, RotateCcw,
 } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { Link } from "wouter";
@@ -204,8 +207,15 @@ export function ClientDetail() {
   const deleteNote = useDeleteClientNote();
   const markFounder = useMarkClientFounder();
   const [portalConfirm, setPortalConfirm] = useState(false);
+  const [resendConfirm, setResendConfirm] = useState(false);
+  // Which of the two buttons to show: "Enviar acceso al portal" creates the
+  // login (409 once one exists), "Reenviar acceso" resets it to a new
+  // temporary password. Same overview row the client list already reads.
+  const { data: overview } = useListClientOverview({ query: { queryKey: getListClientOverviewQueryKey(), enabled: canImpersonate } });
+  const hasPortalAccount = overview?.find((r) => r.clientId === id)?.hasPortalAccount ?? false;
   const grantPortal = useGrantClientPortalAccess({
     mutation: {
+      onSettled: () => qc.invalidateQueries({ queryKey: getListClientOverviewQueryKey() }),
       onSuccess: (result) => toast({
         title: "Acceso al portal creado",
         description: result.emailSent
@@ -220,6 +230,24 @@ export function ClientDetail() {
           client_has_no_email: "Agrega un email al cliente antes de darle acceso.",
         };
         toast({ title: "No se pudo crear el acceso", description: messages[code ?? ""] ?? "Error inesperado.", variant: "destructive" });
+      },
+    },
+  });
+  const resendPortal = useResendClientPortalAccess({
+    mutation: {
+      onSuccess: (result) => toast({
+        title: "Acceso al portal reenviado",
+        description: result.emailSent
+          ? "Le enviamos una nueva contraseña temporal por correo. La anterior ya no funciona."
+          : "La contraseña se renovó, pero el correo falló. Vuelve a intentarlo o el cliente puede usar \"olvidé mi contraseña\".",
+      }),
+      onError: (err) => {
+        const code = (err as { data?: { error?: string } })?.data?.error;
+        const messages: Record<string, string> = {
+          no_portal_account: "Este cliente todavía no tiene acceso al portal. Usa \"Enviar acceso al portal\".",
+          client_not_found: "El cliente ya no existe.",
+        };
+        toast({ title: "No se pudo reenviar el acceso", description: messages[code ?? ""] ?? "Error inesperado.", variant: "destructive" });
       },
     },
   });
@@ -410,12 +438,32 @@ export function ClientDetail() {
               {isStartingImpersonation ? "Entrando..." : "Ver como cliente"}
             </Button>
           )}
-          {canImpersonate && (
+          {canImpersonate && !hasPortalAccount && (
             <Button variant="outline" size="sm" disabled={grantPortal.isPending} onClick={() => setPortalConfirm(true)}>
               <Send className="h-3.5 w-3.5 mr-1.5" />
               {grantPortal.isPending ? "Enviando..." : "Enviar acceso al portal"}
             </Button>
           )}
+          {canImpersonate && hasPortalAccount && (
+            <Button variant="outline" size="sm" disabled={resendPortal.isPending} onClick={() => setResendConfirm(true)}>
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              {resendPortal.isPending ? "Enviando..." : "Reenviar acceso"}
+            </Button>
+          )}
+          <AlertDialog open={resendConfirm} onOpenChange={setResendConfirm}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Reenviar acceso al portal?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Se generará una nueva contraseña temporal para el acceso de {client.name} y se le enviará por correo. La contraseña actual dejará de funcionar, se cerrarán sus sesiones abiertas y deberá cambiarla al entrar.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => resendPortal.mutate({ id })}>Reenviar acceso</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <AlertDialog open={portalConfirm} onOpenChange={setPortalConfirm}>
             <AlertDialogContent>
               <AlertDialogHeader>
