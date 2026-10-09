@@ -98,7 +98,7 @@ export async function sendStaffAlertEmail(invoice: Invoice, clientName: string, 
 
   const subject = stage === "overdue" ? `⚠️ Factura ${number} vencida — ${name}` : `⏳ Factura ${number} vence pronto — ${name}`;
   const accent = stage === "overdue" ? "#f87171" : "#facc15";
-  const html = shell(heading, bodyParagraphs, "https://os.coimagenmedia.com/revenue", "Ver facturación →", accent);
+  const html = shell(heading, bodyParagraphs, "https://portal.coimagenmedia.com/revenue", "Ver facturación →", accent);
 
   return send(TEAM_ADDRESS, subject, html);
 }
