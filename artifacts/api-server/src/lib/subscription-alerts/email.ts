@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { PORTAL_LOGIN_URL } from "../portal-url";
 
 const FROM_ADDRESS = "Coimagen Media Agency <info@coimagenmedia.com>";
 const TEAM_ADDRESS = "info@coimagenmedia.com";
@@ -106,7 +107,7 @@ export async function sendPaymentFailedClientEmail(clientEmail: string, clientNa
             <p style="color:#c8c3dd; font-size:15px; line-height:1.65; margin:0 0 18px 0;">El cobro mensual de tu plan <strong>${planLabel}</strong> por <strong>${amountLabel}</strong> no se pudo procesar. Puedes revisar el detalle iniciando sesión en tu portal con tu cuenta de siempre.</p>
             <p style="color:#c8c3dd; font-size:15px; line-height:1.65; margin:0 0 18px 0;">Si el problema no se resuelve, tu cuenta pasa a acceso restringido a partir del quinto día sin pago. Si ya resolviste esto o tienes dudas, contáctanos y con gusto te ayudamos.</p>
             <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px 0;">
-              <tr><td style="border-radius:8px; background-color:#f87171;"><a href="https://os.coimagenmedia.com/" style="display:inline-block; padding:12px 24px; color:#06060f; font-size:14px; font-weight:700; text-decoration:none;">Iniciar sesión →</a></td></tr>
+              <tr><td style="border-radius:8px; background-color:#f87171;"><a href="${PORTAL_LOGIN_URL}" style="display:inline-block; padding:12px 24px; color:#06060f; font-size:14px; font-weight:700; text-decoration:none;">Iniciar sesión →</a></td></tr>
             </table>
           </td></tr>
           <tr><td style="padding:24px 40px; background-color:rgba(0,0,0,0.2); border-top:1px solid rgba(255,255,255,0.06);">

@@ -1,10 +1,10 @@
 import { Resend } from "resend";
+import { PORTAL_LOGIN_URL } from "../portal-url";
 
 // Same branding/encoding pattern as invoice-reminders/email.ts and
 // subscription-alerts/email.ts — reused deliberately, not reinvented here.
 const FROM_ADDRESS = "Coimagen Media Agency <info@coimagenmedia.com>";
 const TEAM_ADDRESS = "info@coimagenmedia.com";
-const PORTAL_LOGIN_URL = "https://os.coimagenmedia.com/";
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
