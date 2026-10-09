@@ -897,6 +897,12 @@ export interface GrantPortalAccessResult {
   emailSent: boolean;
 }
 
+export interface ResendPortalAccessResult {
+  ok: boolean;
+  /** false if the password was reset but the credentials email failed */
+  emailSent: boolean;
+}
+
 export interface ContractFromProposalInput {
   /** contract type label, e.g. starter, growth, ecommerce */
   type: string;

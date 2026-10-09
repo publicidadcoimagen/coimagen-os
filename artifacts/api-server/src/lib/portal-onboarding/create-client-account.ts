@@ -6,7 +6,7 @@ import { auth } from "../auth";
 // 12 url-safe chars (A-Za-z0-9-_) — comfortably clears Better Auth's default
 // minPasswordLength (8), never seen again after the client's first login
 // forces a change (forcePasswordReset below), so readability doesn't matter.
-function generateTemporaryPassword(): string {
+export function generateTemporaryPassword(): string {
   return randomBytes(9).toString("base64url");
 }
 

@@ -292,6 +292,7 @@ export * from './qcTicketCreate';
 export * from './qcTicketUpdate';
 export * from './renderCostInfo';
 export * from './renderServiceInfo';
+export * from './resendPortalAccessResult';
 export * from './revenueSummary';
 export * from './roadmapItem';
 export * from './roadmapItemCreate';

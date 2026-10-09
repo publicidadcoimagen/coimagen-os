@@ -27,7 +27,7 @@ export function ResetPasswordScreen() {
     setError(null);
 
     if (!token) {
-      setError("El enlace no es válido. Solicitá uno nuevo.");
+      setError("El enlace no es válido. Solicita uno nuevo.");
       return;
     }
     if (newPassword.length < 8) {
@@ -62,7 +62,7 @@ export function ResetPasswordScreen() {
       <Card className="w-full max-w-sm">
         {done ? (
           <CardContent className="pt-6 space-y-4">
-            <p className="text-sm text-center">Tu contraseña fue actualizada. Ya podés iniciar sesión.</p>
+            <p className="text-sm text-center">Tu contraseña fue actualizada. Ya puedes iniciar sesión.</p>
             <Button asChild size="lg" className="w-full">
               <Link href="/">Ir a iniciar sesión</Link>
             </Button>
@@ -70,7 +70,7 @@ export function ResetPasswordScreen() {
         ) : !token ? (
           <CardContent className="pt-6 space-y-4">
             <p className="text-sm text-center text-destructive">
-              Este enlace no es válido o venció. Solicitá uno nuevo.
+              Este enlace no es válido o venció. Solicita uno nuevo.
             </p>
             <Button asChild variant="ghost" size="sm" className="w-full">
               <Link href="/forgot-password">Solicitar nuevo enlace</Link>
@@ -79,7 +79,7 @@ export function ResetPasswordScreen() {
         ) : (
           <>
             <CardHeader>
-              <p className="text-sm text-muted-foreground text-center">Ingresá tu nueva contraseña.</p>
+              <p className="text-sm text-muted-foreground text-center">Ingresa tu nueva contraseña.</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">

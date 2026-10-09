@@ -556,6 +556,27 @@ paths:
         "409":
           description: Client already has a portal login, or its email belongs to another account
 
+  /clients/{id}/portal-access/resend:
+    post:
+      operationId: resendClientPortalAccess
+      tags: [clients]
+      summary: Reset the client's existing portal login to a new temporary password and email it again
+      description: >-
+        For a client that already has a role=cliente login. Generates a new temporary
+        password, forces a change on next login, ends that login's open sessions, and
+        emails the credentials. CEO/admin only, audited. The password is never returned.
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Password reset and credentials email attempted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResendPortalAccessResult"
+        "404":
+          description: Client not found (client_not_found) or client has no portal login (no_portal_account)
+
   /impersonation/end:
     post:
       operationId: endImpersonation
@@ -5159,6 +5180,12 @@ components:
       required: [emailSent]
       properties:
         emailSent: { type: boolean, description: "false if the login was created but the credentials email failed" }
+    ResendPortalAccessResult:
+      type: object
+      required: [ok, emailSent]
+      properties:
+        ok: { type: boolean }
+        emailSent: { type: boolean, description: "false if the password was reset but the credentials email failed" }
     ContractFromProposalInput:
       type: object
       required: [type]
