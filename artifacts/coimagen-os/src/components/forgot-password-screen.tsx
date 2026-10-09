@@ -43,7 +43,7 @@ export function ForgotPasswordScreen() {
           <CardContent className="pt-6 space-y-4">
             <p className="text-sm text-center">
               Si ese correo existe en el sistema, te enviamos un enlace para restablecer tu contraseña.
-              Revisá tu bandeja de entrada.
+              Revisa tu bandeja de entrada.
             </p>
             <Button asChild variant="ghost" size="sm" className="w-full">
               <Link href="/">Volver a iniciar sesión</Link>
@@ -53,7 +53,7 @@ export function ForgotPasswordScreen() {
           <>
             <CardHeader>
               <p className="text-sm text-muted-foreground text-center">
-                Ingresá tu correo y te enviamos un enlace para restablecerla.
+                Ingresa tu correo y te enviamos un enlace para restablecerla.
               </p>
             </CardHeader>
             <CardContent>

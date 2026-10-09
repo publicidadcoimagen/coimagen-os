@@ -57,7 +57,7 @@ export function ForcePasswordResetScreen() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <p className="text-sm text-muted-foreground text-center">
-            Por seguridad, tenés que definir tu propia contraseña antes de continuar.
+            Por seguridad, tienes que definir tu propia contraseña antes de continuar.
           </p>
         </CardHeader>
         <CardContent>

@@ -63,6 +63,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@workspace/better-auth-web";
 import { useImpersonation } from "@/hooks/use-impersonation";
+import { nextEnabledModules } from "@/pages/client-room/nav-modules";
 
 const CLIENT_MODULES = ["ecommerce", "autopublicador", "seo"] as const;
 const CLIENT_MODULE_LABELS: Record<string, string> = {
@@ -70,6 +71,14 @@ const CLIENT_MODULE_LABELS: Record<string, string> = {
   autopublicador: "Autopublicador Social",
   seo: "SEO",
 };
+// What each switch actually does today, shown under its label. Autopublicador
+// has no Client Room page yet, but it does include the client in the monthly
+// social report (social-report/repository.ts). SEO has no effect anywhere
+// yet, so it can't be switched on.
+const CLIENT_MODULE_NOTES: Partial<Record<(typeof CLIENT_MODULES)[number], string>> = {
+  autopublicador: "Sin pantalla en el portal todavía · activa el reporte social mensual",
+};
+const COMING_SOON_MODULES: ReadonlySet<string> = new Set(["seo"]);
 
 const ACCESS_TYPES = [
   "social_media", "google_business", "website", "domain", "hosting",
@@ -254,6 +263,33 @@ export function ClientDetail() {
   const updateClient = useUpdateClient({
     mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getGetClientQueryKey(id) }) },
   });
+  // "Módulos del Portal" saves on every switch. The PATCH response is written
+  // straight into the cache (not just invalidated), so a second switch flipped
+  // right after the first builds its list from what the server saved — with
+  // only an invalidation, the refetch could still be in flight and the second
+  // PATCH would overwrite the first module.
+  const updateModules = useUpdateClient({
+    mutation: {
+      onSuccess: (updated) => {
+        qc.setQueryData(getGetClientQueryKey(id), updated);
+        qc.invalidateQueries({ queryKey: getListClientOverviewQueryKey() });
+      },
+    },
+  });
+  function toggleModule(m: (typeof CLIENT_MODULES)[number], checked: boolean) {
+    const saved = (qc.getQueryData(getGetClientQueryKey(id)) as typeof client | undefined)?.enabledModules ?? [];
+    const current = saved.filter((x): x is (typeof CLIENT_MODULES)[number] => (CLIENT_MODULES as readonly string[]).includes(x));
+    const next = nextEnabledModules(current, m, checked);
+    const label = CLIENT_MODULE_LABELS[m] ?? m;
+    updateModules.mutate({ id, data: { enabledModules: next } }, {
+      onSuccess: () => toast({ title: checked ? `${label} activado` : `${label} desactivado` }),
+      onError: (err) => toast({
+        title: `No se pudo guardar ${label}`,
+        description: err instanceof Error ? err.message : "Error inesperado.",
+        variant: "destructive",
+      }),
+    });
+  }
 
   /* ── Access state ── */
   const [accessModal, setAccessModal] = useState(false);
@@ -578,17 +614,20 @@ export function ClientDetail() {
         <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {CLIENT_MODULES.map((m) => {
             const enabled = (client.enabledModules ?? []).includes(m);
+            const comingSoon = COMING_SOON_MODULES.has(m);
             return (
               <div key={m} className="flex items-center justify-between gap-2 p-3 rounded-lg border border-border/50">
-                <Label className="text-sm font-normal">{CLIENT_MODULE_LABELS[m]}</Label>
+                <div className="min-w-0">
+                  <Label className="text-sm font-normal flex items-center gap-2">
+                    {CLIENT_MODULE_LABELS[m]}
+                    {comingSoon && <Badge variant="outline" className="text-[10px] py-0">Próximamente</Badge>}
+                  </Label>
+                  {CLIENT_MODULE_NOTES[m] && <p className="text-xs text-muted-foreground mt-1">{CLIENT_MODULE_NOTES[m]}</p>}
+                </div>
                 <Switch
                   checked={enabled}
-                  disabled={updateClient.isPending}
-                  onCheckedChange={(checked) => {
-                    const current = client.enabledModules ?? [];
-                    const next = checked ? [...current, m] : current.filter((x) => x !== m);
-                    updateClient.mutate({ id, data: { enabledModules: next } });
-                  }}
+                  disabled={comingSoon || updateModules.isPending}
+                  onCheckedChange={(checked) => toggleModule(m, checked)}
                 />
               </div>
             );
