@@ -13,7 +13,8 @@ const storageBackingStore = new Map<string, string>();
   removeItem: (key: string) => { storageBackingStore.delete(key); },
 };
 
-const { applyImpersonationStart, applyImpersonationEnd } = await import("./impersonation-store");
+const { applyImpersonationStart, applyImpersonationEnd, getSnapshot } = await import("./impersonation-store");
+const { customFetch } = await import("@workspace/api-client-react");
 
 // Mirrors the real shape closely enough for these tests: a staff AuthUser
 // (role ceo/admin, enabledModules always []) vs. the cliente-role view a
@@ -93,5 +94,70 @@ describe("applyImpersonationEnd — the reverse path back to the staff's own ses
     );
 
     assert.deepEqual(calls, ["refreshUser", "navigate:/clients/5"]);
+  });
+});
+
+// 2026-10-08: Camila's PC had its UTC clock 1 h ahead (Windows "Pacífico" with
+// DST adjustment off, wall clock hand-corrected). The server's absolute
+// expiresAt (now + 30 min, server clock) was already in the past on that
+// browser, so the session was cleared silently before refreshUser — no
+// banner, no x-impersonate-token, no Catálogo, while the page still navigated.
+describe("applyImpersonationStart — browser clock 1 h ahead of the server", () => {
+  const HOUR = 60 * 60 * 1000;
+
+  async function withSkewedClock<T>(fn: () => Promise<T>): Promise<T> {
+    const realNow = Date.now;
+    const skewed = realNow() + HOUR;
+    Date.now = () => skewed;
+    try { return await fn(); } finally { Date.now = realNow; }
+  }
+
+  async function headerSentBy(): Promise<string | null> {
+    const realFetch = globalThis.fetch;
+    let sent: string | null = null;
+    globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
+      sent = new Headers(init?.headers).get("x-impersonate-token");
+      return new Response(JSON.stringify({ user: null }), { status: 200, headers: { "content-type": "application/json" } });
+    }) as typeof fetch;
+    try { await customFetch("/api/auth/user"); } finally { globalThis.fetch = realFetch; }
+    return sent;
+  }
+
+  test("state, sessionStorage and the x-impersonate-token header all survive (expiresInSeconds from the server)", async () => {
+    const serverNow = Date.now();
+    const calls: string[] = [];
+    let expiredNotice = 0;
+    await withSkewedClock(() => applyImpersonationStart(
+      { token: "tok-skew", expiresAt: new Date(serverNow + 30 * 60_000).toISOString(), expiresInSeconds: 1800, clientId: 26, clientSlug: "building-levis", clientName: "building levis" },
+      async () => { calls.push("refreshUser"); },
+      (path) => { calls.push(`navigate:${path}`); },
+      () => { expiredNotice++; },
+    ));
+
+    assert.equal(expiredNotice, 0);
+    assert.deepEqual(calls, ["refreshUser", "navigate:/client/building-levis"]);
+    const state = getSnapshot();
+    assert.equal(state?.token, "tok-skew", "store state kept — the banner renders from this");
+    assert.ok(storageBackingStore.get("coimagen:impersonation")?.includes("tok-skew"), "sessionStorage kept");
+    assert.ok(new Date(state!.expiresAt).getTime() > Date.now() + HOUR, "deadline is on the browser's own (skewed) clock");
+    assert.equal(await headerSentBy(), "tok-skew", "the next API call carries x-impersonate-token");
+  });
+
+  test("a session that arrives already expired shows a visible notice and doesn't navigate (old API without expiresInSeconds)", async () => {
+    await applyImpersonationEnd(getSnapshot()!, async () => {}, () => {});
+    const serverNow = Date.now();
+    const calls: string[] = [];
+    let expiredNotice = 0;
+    await withSkewedClock(() => applyImpersonationStart(
+      { token: "tok-old-api", expiresAt: new Date(serverNow + 30 * 60_000).toISOString(), clientId: 26, clientSlug: "building-levis", clientName: "building levis" },
+      async () => { calls.push("refreshUser"); },
+      (path) => { calls.push(`navigate:${path}`); },
+      () => { expiredNotice++; },
+    ));
+
+    assert.equal(expiredNotice, 1, "visible notice instead of a silent clear");
+    assert.deepEqual(calls, [], "no refresh, no navigation into a room with no session");
+    assert.equal(getSnapshot(), null);
+    assert.equal(await headerSentBy(), null);
   });
 });

@@ -43,6 +43,7 @@ router.post("/clients/:id/impersonate", requireRole("ceo", "admin"), async (req,
   res.json({
     token,
     expiresAt: expiresAt.toISOString(),
+    expiresInSeconds: SESSION_MINUTES * 60,
     clientId: client.id,
     clientSlug: org.slug,
     clientName: client.name,
