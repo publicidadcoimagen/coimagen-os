@@ -506,6 +506,7 @@ export const ImpersonateClientParams = zod.object({
 export const ImpersonateClientResponse = zod.object({
   "token": zod.string(),
   "expiresAt": zod.string(),
+  "expiresInSeconds": zod.number().describe('Session length from the server\'s clock — the browser computes its own deadline from this, so a skewed local clock can\'t expire it on arrival'),
   "clientId": zod.number(),
   "clientSlug": zod.string(),
   "clientName": zod.string()

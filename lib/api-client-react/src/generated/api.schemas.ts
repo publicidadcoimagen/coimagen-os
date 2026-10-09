@@ -246,6 +246,8 @@ export interface MarkClientFounderResult {
 export interface ImpersonateClientResult {
   token: string;
   expiresAt: string;
+  /** Session length from the server's clock — the browser computes its own deadline from this, so a skewed local clock can't expire it on arrival */
+  expiresInSeconds: number;
   clientId: number;
   clientSlug: string;
   clientName: string;

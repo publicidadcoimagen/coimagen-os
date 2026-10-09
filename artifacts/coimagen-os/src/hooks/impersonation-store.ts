@@ -110,12 +110,46 @@ if (typeof window !== "undefined" && state === null) {
 // 2026-09-09 via Becky Beck's Catálogo module staying hidden while
 // impersonating her, even though the backend (fixed separately, see
 // impersonation.ts) already had the right data to serve.
+export type ImpersonationStartResult = NonNullable<ImpersonationState> & { expiresInSeconds?: number };
+
+// The deadline the banner counts down to and scheduleExpiry clears at, on
+// THIS browser's clock: Date.now() + the server's session length. Using the
+// server's absolute expiresAt broke on a PC whose clock ran 1 h ahead
+// (2026-10-08): the 30-minute session looked expired on arrival, so
+// scheduleExpiry silently cleared the state and the token before
+// refreshUser — no banner, no Catálogo, no error. The server's own expiry
+// check (impersonationMiddleware) is unchanged and still the real
+// enforcement. expiresInSeconds is optional so a frontend deployed before
+// the API falls back to the server's expiresAt, as before.
+export function localExpiresAt(result: ImpersonationStartResult, now: number = Date.now()): string {
+  return typeof result.expiresInSeconds === "number"
+    ? new Date(now + result.expiresInSeconds * 1000).toISOString()
+    : result.expiresAt;
+}
+
+function notifyExpiredOnArrival() {
+  toast({
+    title: "No se pudo entrar en modo 'ver como cliente'",
+    description: "La sesión llegó ya vencida. Revisa que la fecha y la hora de tu equipo estén en automático e inténtalo de nuevo.",
+    variant: "destructive",
+  });
+}
+
 export async function applyImpersonationStart(
-  result: NonNullable<ImpersonationState>,
+  result: ImpersonationStartResult,
   refreshUser: () => Promise<void>,
   navigate: (path: string) => void,
+  onExpiredOnArrival: () => void = notifyExpiredOnArrival,
 ): Promise<void> {
-  setState(result);
+  const { expiresInSeconds: _ignored, ...session } = result;
+  const next = { ...session, expiresAt: localExpiresAt(result) };
+  // Visible, not silent: without this, scheduleExpiry would clear an
+  // already-expired session on the spot and the page would still navigate.
+  if (new Date(next.expiresAt).getTime() <= Date.now()) {
+    onExpiredOnArrival();
+    return;
+  }
+  setState(next);
   await refreshUser();
   navigate(`/client/${result.clientSlug}`);
 }
