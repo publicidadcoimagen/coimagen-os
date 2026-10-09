@@ -166,6 +166,19 @@ function MaskedField({ value }: { value: string | null | undefined }) {
   );
 }
 
+// Which portal-access button the page shows. Nothing until this client's
+// overview row has loaded: falling back to "no login" showed "Enviar acceso
+// al portal" for a client that already had one, and clicking it hit 409
+// already_has_portal_access (client 26, 2026-10-09).
+export function portalAccessButton(
+  overview: readonly { clientId: number; hasPortalAccount: boolean }[] | undefined,
+  clientId: number,
+): "grant" | "resend" | null {
+  const row = overview?.find((r) => r.clientId === clientId);
+  if (!row) return null;
+  return row.hasPortalAccount ? "resend" : "grant";
+}
+
 export function ClientDetail() {
   const [, params] = useRoute("/clients/:id");
   const id = parseInt(params?.id || "0");
@@ -221,9 +234,11 @@ export function ClientDetail() {
   // login (409 once one exists), "Reenviar acceso" resets it to a new
   // temporary password. Same overview row the client list already reads.
   const { data: overview } = useListClientOverview({ query: { queryKey: getListClientOverviewQueryKey(), enabled: canImpersonate } });
-  const hasPortalAccount = overview?.find((r) => r.clientId === id)?.hasPortalAccount ?? false;
+  const portalButton = portalAccessButton(overview, id);
   const grantPortal = useGrantClientPortalAccess({
     mutation: {
+      // Every outcome refreshes the overview — a 409 already_has_portal_access
+      // included, so a stale "Enviar acceso" flips to "Reenviar acceso".
       onSettled: () => qc.invalidateQueries({ queryKey: getListClientOverviewQueryKey() }),
       onSuccess: (result) => toast({
         title: "Acceso al portal creado",
@@ -474,13 +489,13 @@ export function ClientDetail() {
               {isStartingImpersonation ? "Entrando..." : "Ver como cliente"}
             </Button>
           )}
-          {canImpersonate && !hasPortalAccount && (
+          {canImpersonate && portalButton === "grant" && (
             <Button variant="outline" size="sm" disabled={grantPortal.isPending} onClick={() => setPortalConfirm(true)}>
               <Send className="h-3.5 w-3.5 mr-1.5" />
               {grantPortal.isPending ? "Enviando..." : "Enviar acceso al portal"}
             </Button>
           )}
-          {canImpersonate && hasPortalAccount && (
+          {canImpersonate && portalButton === "resend" && (
             <Button variant="outline" size="sm" disabled={resendPortal.isPending} onClick={() => setResendConfirm(true)}>
               <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
               {resendPortal.isPending ? "Enviando..." : "Reenviar acceso"}
